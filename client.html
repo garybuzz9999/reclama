@@ -347,6 +347,7 @@ const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇�
 const TRIAL_DAYS = 3;
 let currentUser = null;
 let clientData  = null;
+let isRegistering = false;
 
 // ── TRIAL HELPERS ──
 function trialDaysLeft(trialEnd) {
@@ -388,6 +389,7 @@ window.contactAdmin = () => {
 
 // ── AUTH ──
 onAuthStateChanged(auth, async user => {
+  if (isRegistering) return;
   if (user) {
     const snap = await getDoc(doc(db, 'clients', user.uid));
     if (snap.exists()) {
@@ -432,6 +434,7 @@ window.doRegister = async () => {
   if (!company||!city||!email||!pass) { showErr('reg','Заповніть всі поля'); return; }
   if (pass.length < 6) { showErr('reg','Пароль мінімум 6 символів'); return; }
   try {
+    isRegistering = true;
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     const uid  = cred.user.uid;
 
@@ -439,6 +442,7 @@ window.doRegister = async () => {
     const trialEnd = new Date();
     trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
 
+    // Спочатку записуємо клієнта
     await setDoc(doc(db, 'clients', uid), {
       name: company, city, email,
       emoji: getEmoji(company),
@@ -448,7 +452,7 @@ window.doRegister = async () => {
       createdAt: serverTimestamp()
     });
 
-    // Автоматично 1 тестова ліцензія
+    // Потім ліцензію
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let part = '';
     for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
@@ -457,8 +461,17 @@ window.doRegister = async () => {
       code, clientId: uid, status:'free', deviceId:null, createdAt:serverTimestamp()
     });
 
+    // Тепер вмикаємо onAuthStateChanged і входимо
+    isRegistering = false;
+    currentUser = cred.user;
+    clientData  = { id: uid, name: company, city, email, emoji: getEmoji(company), status:'trial', trialEnd: Timestamp.fromDate(trialEnd), licenseCount: 1 };
+    document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
+    renderTrialUI(TRIAL_DAYS);
+    showScreen('cabinet');
+    loadAll();
     showToast('✅ Акаунт створено! Тестовий період: 3 дні');
   } catch(e) {
+    isRegistering = false;
     showErr('reg', e.code==='auth/email-already-in-use' ? 'Цей email вже зареєстровано' : e.message);
   }
 };
