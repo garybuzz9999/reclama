@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen — Реклама там, де клієнт нікуди не дінеться</title>
+  <meta name="description" content="Рекламні монітори для таксі, кафе, спортзалів і клінік. Таргетинг по районах міста. Підключення за 5 хвилин.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0a0a0a;
+      --surface:  #131313;
+      --surface2: #1c1c1c;
+      --border:   #252525;
+      --accent:   #f5c842;
+      --accent2:  #ffd95a;
+      --text:     #f0f0f0;
+      --muted:    #888;
+      --hint:     #444;
+      --green:    #3ddc84;
+      --red:      #ff4d4d;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: .4;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5vw; height: 60px;
+      background: rgba(10,10,10,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 17px; font-weight: 900;
+      color: var(--text); text-decoration: none; letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex; align-items: center; gap: 28px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      background: var(--accent); color: #000 !important;
+      border-radius: 8px; padding: 8px 18px;
+      font-weight: 700 !important; font-size: 13px !important;
+      transition: opacity .2s !important;
+    }
+    .nav-cta:hover { opacity: .85; }
+    .nav-burger {
+      display: none; background: none; border: none;
+      color: var(--text); font-size: 22px; cursor: pointer;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 100px 5vw 60px;
+      position: relative; text-align: center;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,200,66,.08);
+      border: 1px solid rgba(245,200,66,.2);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 28px;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--accent);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: .5; transform: scale(1.4); }
+    }
+    .hero h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(32px, 6vw, 72px);
+      font-weight: 900; line-height: 1.05;
+      letter-spacing: -2px; margin-bottom: 24px;
+      max-width: 900px;
+    }
+    .hero h1 em {
+      font-style: normal; color: var(--accent);
+      position: relative;
+    }
+    .hero h1 em::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 3px; background: var(--accent);
+      border-radius: 2px; opacity: .4;
+    }
+    .hero-sub {
+      font-size: clamp(15px, 2vw, 18px);
+      color: var(--muted); max-width: 560px;
+      line-height: 1.7; margin-bottom: 40px;
+    }
+    .hero-actions {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      justify-content: center; margin-bottom: 60px;
+    }
+    .btn-hero {
+      background: var(--accent); color: #000;
+      border: none; border-radius: 10px;
+      padding: 14px 32px; font-size: 15px; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      transition: all .2s; display: inline-block;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-hero:hover { background: var(--accent2); transform: translateY(-1px); }
+    .btn-hero-ghost {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 14px 32px; font-size: 15px; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: all .2s; display: inline-block;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-hero-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── HERO SCREEN MOCKUP ── */
+    .hero-mockup {
+      width: 100%; max-width: 700px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.04);
+    }
+    .mockup-bar {
+      background: #0d0d0d; padding: 10px 16px;
+      display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-dots { display: flex; gap: 6px; }
+    .mockup-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .mockup-dot:nth-child(1) { background: #ff5f57; }
+    .mockup-dot:nth-child(2) { background: #febc2e; }
+    .mockup-dot:nth-child(3) { background: #28c840; }
+    .mockup-url {
+      flex: 1; background: var(--surface2);
+      border-radius: 6px; padding: 5px 12px;
+      font-size: 11px; color: var(--hint);
+      font-family: monospace;
+    }
+    .mockup-screen {
+      padding: 20px;
+      background: linear-gradient(135deg, #111 0%, #161616 100%);
+      min-height: 200px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+    .mockup-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px;
+    }
+    .mockup-card-label {
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--hint); margin-bottom: 6px;
+    }
+    .mockup-card-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 22px; font-weight: 900; color: var(--accent);
+    }
+    .mockup-card-sub { font-size: 9px; color: var(--hint); margin-top: 3px; }
+    .mockup-banner {
+      grid-column: 1 / -1;
+      background: linear-gradient(90deg, rgba(245,200,66,.15), rgba(245,200,66,.05));
+      border: 1px solid rgba(245,200,66,.2);
+      border-radius: 10px; padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .mockup-banner-text { font-size: 12px; font-weight: 600; color: var(--accent); }
+    .mockup-banner-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .mockup-live {
+      background: rgba(61,220,132,.15); border: 1px solid rgba(61,220,132,.3);
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 9px; font-weight: 700; color: var(--green);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .mockup-live::before {
+      content: ''; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--green);
+      animation: pulse 1.5s infinite;
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 80px 5vw; position: relative; }
+    .section-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .section-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(24px, 4vw, 42px);
+      font-weight: 900; letter-spacing: -1px;
+      line-height: 1.1; margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px; color: var(--muted);
+      line-height: 1.7; max-width: 540px;
+    }
+    .section-center { text-align: center; }
+    .section-center .section-sub { margin: 0 auto; }
+
+    /* ── HOW IT WORKS ── */
+    #how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2px; margin-top: 50px;
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .how-step {
+      background: var(--bg); padding: 32px 28px;
+      border-right: 1px solid var(--border);
+      transition: background .2s;
+    }
+    .how-step:last-child { border-right: none; }
+    .how-step:hover { background: var(--surface2); }
+    .how-step-num {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px; font-weight: 900;
+      color: var(--accent); letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .how-step-icon { font-size: 32px; margin-bottom: 14px; }
+    .how-step-title {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 8px; color: var(--text);
+    }
+    .how-step-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* ── MARKETS ── */
+    #markets { }
+    .markets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px; margin-top: 50px;
+    }
+    .market-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px 20px;
+      text-align: center; transition: all .25s; cursor: default;
+    }
+    .market-card:hover {
+      border-color: var(--accent);
+      background: rgba(245,200,66,.04);
+      transform: translateY(-3px);
+    }
+    .market-icon { font-size: 36px; margin-bottom: 12px; }
+    .market-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .market-time { font-size: 11px; color: var(--muted); }
+    .market-badge {
+      display: inline-block; margin-top: 8px;
+      font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      background: rgba(245,200,66,.1);
+      color: var(--accent); border: 1px solid rgba(245,200,66,.2);
+    }
+
+    /* ── ZONES ── */
+    #zones { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .zones-wrap {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 50px; align-items: center; margin-top: 50px;
+    }
+    .zone-map {
+      position: relative; aspect-ratio: 1;
+      max-width: 380px; margin: 0 auto;
+    }
+    .zone-map-bg {
+      width: 100%; height: 100%;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .zone-cross-h {
+      position: absolute; left: 0; right: 0; top: 50%;
+      height: 1px; background: var(--border);
+    }
+    .zone-cross-v {
+      position: absolute; top: 0; bottom: 0; left: 50%;
+      width: 1px; background: var(--border);
+    }
+    .zone-center-dot {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: rgba(245,200,66,.15);
+      border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: var(--accent);
+      letter-spacing: .5px; text-transform: uppercase;
+      z-index: 2; position: relative;
+    }
+    .zone-label {
+      position: absolute; font-size: 11px;
+      font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .zone-label.n { top: 12%; left: 50%; transform: translateX(-50%); }
+    .zone-label.s { bottom: 12%; left: 50%; transform: translateX(-50%); }
+    .zone-label.w { left: 8%; top: 50%; transform: translateY(-50%); }
+    .zone-label.e { right: 8%; top: 50%; transform: translateY(-50%); }
+    .zones-list { list-style: none; }
+    .zones-list li {
+      display: flex; gap: 14px; align-items: flex-start;
+      padding: 16px 0; border-bottom: 1px solid var(--border);
+    }
+    .zones-list li:last-child { border-bottom: none; }
+    .zones-list-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+    .zones-list-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+    .zones-list-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── DEVICES ── */
+    #devices { }
+    .devices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px; margin-top: 50px;
+    }
+    .device-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 24px;
+      transition: border-color .2s;
+    }
+    .device-card:hover { border-color: rgba(245,200,66,.3); }
+    .device-card-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+    }
+    .device-card-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--surface2); display: flex;
+      align-items: center; justify-content: center; font-size: 22px;
+    }
+    .device-card-name { font-size: 15px; font-weight: 700; }
+    .device-card-tag {
+      font-size: 10px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--muted); margin-top: 2px;
+    }
+    .device-card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 14px; }
+    .device-card-apps {
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .app-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 10px;
+      font-size: 11px; font-weight: 600; color: var(--muted);
+    }
+    .app-pill.rec {
+      background: rgba(245,200,66,.08);
+      border-color: rgba(245,200,66,.2); color: var(--accent);
+    }
+
+    /* ── PRICING ── */
+    #pricing { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px; margin-top: 50px;
+    }
+    .pricing-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px; position: relative;
+      transition: border-color .2s;
+    }
+    .pricing-card:hover { border-color: rgba(245,200,66,.3); }
+    .pricing-card.featured {
+      background: rgba(245,200,66,.04);
+      border-color: rgba(245,200,66,.3);
+    }
+    .pricing-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #000;
+      font-size: 10px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 20px; white-space: nowrap;
+    }
+    .pricing-name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px; font-weight: 900;
+      letter-spacing: .5px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 12px;
+    }
+    .pricing-price {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 36px; font-weight: 900;
+      letter-spacing: -2px; color: var(--text); margin-bottom: 4px;
+    }
+    .pricing-price span { font-size: 16px; color: var(--muted); font-weight: 400; }
+    .pricing-desc { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
+    .pricing-features { list-style: none; margin-bottom: 28px; }
+    .pricing-features li {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 13px; padding: 7px 0;
+      border-bottom: 1px solid var(--border); color: var(--text);
+    }
+    .pricing-features li:last-child { border-bottom: none; }
+    .pricing-features li::before {
+      content: '✓'; color: var(--green);
+      font-weight: 700; flex-shrink: 0;
+    }
+    .pricing-features li.no { color: var(--hint); }
+    .pricing-features li.no::before { content: '—'; color: var(--hint); }
+    .btn-pricing {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px; font-size: 14px; font-weight: 700;
+      color: var(--text); cursor: pointer; text-align: center;
+      text-decoration: none; display: block; transition: all .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-pricing:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-pricing.featured-btn {
+      background: var(--accent); border-color: var(--accent);
+      color: #000;
+    }
+    .btn-pricing.featured-btn:hover { background: var(--accent2); }
+
+    /* ── STATS ── */
+    #stats { }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 2px; margin-top: 50px;
+      border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
+    }
+    .stat-block {
+      background: var(--surface); padding: 32px 28px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-block-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 40px; font-weight: 900;
+      letter-spacing: -2px; color: var(--accent);
+      margin-bottom: 6px;
+    }
+    .stat-block-label { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── CTA ── */
+    #cta {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center; padding: 100px 5vw;
+    }
+    #cta .section-title { max-width: 600px; margin: 0 auto 16px; }
+    #cta .section-sub { margin: 0 auto 40px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #080808; border-top: 1px solid var(--border);
+      padding: 40px 5vw;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: gap; gap: 16px;
+    }
+    .footer-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 15px; font-weight: 900; color: var(--text);
+      text-decoration: none;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links {
+      display: flex; gap: 24px; list-style: none;
+    }
+    .footer-links a {
+      font-size: 12px; color: var(--hint);
+      text-decoration: none; transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--muted); }
+    .footer-copy { font-size: 12px; color: var(--hint); }
+
+    /* ── LOGIN MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(8px);
+      z-index: 200; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px;
+      width: 100%; max-width: 400px;
+      animation: modalIn .25s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.95) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .modal-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; margin-bottom: 24px;
+    }
+    .modal-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 20px; font-weight: 900; letter-spacing: -0.5px;
+    }
+    .modal-title span { color: var(--accent); }
+    .modal-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .btn-close {
+      background: none; border: none; color: var(--hint);
+      font-size: 24px; cursor: pointer; line-height: 1;
+      padding: 0 4px; transition: color .2s;
+    }
+    .btn-close:hover { color: var(--text); }
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 600;
+      letter-spacing: .5px; text-transform: uppercase;
+      color: var(--hint); margin-bottom: 6px;
+    }
+    .inp {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; font-size: 14px; color: var(--text);
+      outline: none; transition: border-color .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .inp:focus { border-color: var(--accent); }
+    .inp::placeholder { color: var(--hint); }
+    .btn-login-submit {
+      width: 100%; background: var(--accent); color: #000;
+      border: none; border-radius: 10px; padding: 13px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      margin-top: 6px; transition: opacity .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-login-submit:hover { opacity: .88; }
+    .login-err {
+      color: var(--red); font-size: 12px;
+      text-align: center; margin-top: 10px; min-height: 18px;
+    }
+    .login-tabs {
+      display: flex; background: var(--surface2);
+      border-radius: 10px; padding: 4px;
+      margin-bottom: 24px; gap: 4px;
+    }
+    .login-tab {
+      flex: 1; background: none; border: none;
+      border-radius: 7px; padding: 8px;
+      font-size: 13px; font-weight: 600;
+      color: var(--muted); cursor: pointer; transition: all .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .login-tab.on { background: var(--surface); color: var(--text); }
+    .login-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 16px 0; color: var(--hint); font-size: 12px;
+    }
+    .login-divider::before, .login-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .btn-register-link {
+      display: block; text-align: center;
+      font-size: 13px; color: var(--muted); margin-top: 14px;
+    }
+    .btn-register-link a { color: var(--accent); text-decoration: none; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 20px;
+      font-size: 13px; color: var(--text); z-index: 999;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+      white-space: nowrap; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-burger { display: block; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 60px; left: 0; right: 0;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        padding: 20px; gap: 16px; z-index: 99;
+      }
+      .zones-wrap { grid-template-columns: 1fr; }
+      .zone-map { max-width: 260px; }
+      .how-grid { grid-template-columns: 1fr; }
+      .how-step { border-right: none; border-bottom: 1px solid var(--border); }
+      .how-step:last-child { border-bottom: none; }
+      footer { flex-direction: column; text-align: center; }
+      .stat-block { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-block:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="#" class="nav-logo">Ad<span>Screen</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#how">Як працює</a></li>
+    <li><a href="#markets">Для кого</a></li>
+    <li><a href="#devices">Пристрої</a></li>
+    <li><a href="#pricing">Тарифи</a></li>
+    <li><a href="#" class="nav-cta" onclick="openLogin(event)">Увійти</a></li>
+  </ul>
+  <button class="nav-burger" onclick="toggleMenu()">☰</button>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-eyebrow">Captive Audience Advertising</div>
+  <h1>Реклама там, де клієнт <em>нікуди не дінеться</em></h1>
+  <p class="hero-sub">Планшет у таксі, екран у спортзалі, монітор у кав'ярні — ваш банер побачать від початку до кінця. Без пропусків. Без блокувальників.</p>
+  <div class="hero-actions">
+    <a href="#" class="btn-hero" onclick="openLogin(event)">Підключити рекламу</a>
+    <a href="#how" class="btn-hero-ghost">Дізнатись більше</a>
+  </div>
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <div class="mockup-dots">
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+      </div>
+      <div class="mockup-url">adscreen.ua/cabinet</div>
+      <div class="mockup-live">Live</div>
+    </div>
+    <div class="mockup-screen">
+      <div class="mockup-card">
+        <div class="mockup-card-label">Пристрої</div>
+        <div class="mockup-card-val">12</div>
+        <div class="mockup-card-sub">онлайн зараз</div>
+      </div>
+      <div class="mockup-card">
+        <div class="mockup-card-label">Покази</div>
+        <div class="mockup-card-val">847</div>
+        <div class="mockup-card-sub">за сьогодні</div>
+      </div>
+      <div class="mockup-card">
+        <div class="mockup-card-label">QR-сканів</div>
+        <div class="mockup-card-val" style="color:var(--green)">34</div>
+        <div class="mockup-card-sub">переходів</div>
+      </div>
+      <div class="mockup-banner">
+        <div>
+          <div class="mockup-banner-text">🍕 Піца за 20 хв — замовте по QR прямо зараз</div>
+          <div class="mockup-banner-sub">Центр міста · 30 сек · Активний</div>
+        </div>
+        <div style="background:rgba(61,220,132,.15);border:1px solid rgba(61,220,132,.3);border-radius:8px;padding:8px 14px;font-size:11px;font-weight:700;color:var(--green);">● Live</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section id="how">
+  <div class="section-eyebrow section-center">Як це працює</div>
+  <div class="section-title section-center">Від реєстрації до першого показу — 15 хвилин</div>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-step-num">КРОК 01</div>
+      <div class="how-step-icon">🔑</div>
+      <div class="how-step-title">Реєстрація і ліцензія</div>
+      <div class="how-step-desc">Оберіть тариф, отримайте ліцензійні коди для своїх пристроїв. Кожен код — один екран.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">КРОК 02</div>
+      <div class="how-step-icon">📱</div>
+      <div class="how-step-title">Підключіть пристрій</div>
+      <div class="how-step-desc">Відкрийте плеєр на планшеті або телевізорі, введіть код, оберіть зону міста — готово.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">КРОК 03</div>
+      <div class="how-step-icon">🖼</div>
+      <div class="how-step-title">Завантажте банер</div>
+      <div class="how-step-desc">Завантажте зображення, оберіть зони показу і тривалість. Банер з'явиться на екранах миттєво.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">КРОК 04</div>
+      <div class="how-step-icon">📈</div>
+      <div class="how-step-title">Дивіться статистику</div>
+      <div class="how-step-desc">Покази, QR-сканування, конверсія по зонах і банерах — у реальному часі в особистому кабінеті.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MARKETS ── -->
+<section id="markets">
+  <div class="section-eyebrow">Для кого</div>
+  <div class="section-title">Де працює AdScreen</div>
+  <p class="section-sub">Будь-яке місце, де людина проводить час і не може піти — ідеальний майданчик для реклами.</p>
+  <div class="markets-grid">
+    <div class="market-card">
+      <div class="market-icon">🚕</div>
+      <div class="market-name">Таксі</div>
+      <div class="market-time">10–30 хв поїздки</div>
+      <div class="market-badge">Таргетинг по зоні</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">💪</div>
+      <div class="market-name">Спортзал</div>
+      <div class="market-time">30–60 хв на тренажері</div>
+      <div class="market-badge">Найдовший контакт</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">☕</div>
+      <div class="market-name">Кав'ярня</div>
+      <div class="market-time">20–40 хв відпочинку</div>
+      <div class="market-badge">Локальна аудиторія</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">✂️</div>
+      <div class="market-name">Перукарня</div>
+      <div class="market-time">30–60 хв в кріслі</div>
+      <div class="market-badge">Висока залученість</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">🏥</div>
+      <div class="market-name">Клініка</div>
+      <div class="market-time">15–60 хв очікування</div>
+      <div class="market-badge">Платоспроможна ЦА</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">🚗</div>
+      <div class="market-name">Автомийка</div>
+      <div class="market-time">15–30 хв очікування</div>
+      <div class="market-badge">Постійні клієнти</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">🏨</div>
+      <div class="market-name">Готель</div>
+      <div class="market-time">Лобі та ліфти</div>
+      <div class="market-badge">Преміум аудиторія</div>
+    </div>
+    <div class="market-card">
+      <div class="market-icon">📱</div>
+      <div class="market-name">Магазин гаджетів</div>
+      <div class="market-time">Демо-зони</div>
+      <div class="market-badge">Корпоративний план</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ZONES ── -->
+<section id="zones">
+  <div class="zones-wrap">
+    <div>
+      <div class="section-eyebrow">Таргетинг</div>
+      <div class="section-title">Реклама тільки для потрібного району</div>
+      <ul class="zones-list">
+        <li>
+          <div class="zones-list-icon">🏙</div>
+          <div>
+            <div class="zones-list-title">Система 5 зон</div>
+            <div class="zones-list-desc">Центр, Північ, Південь, Захід, Схід — система автоматично визначає центр вашого міста і будує зони навколо нього.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">🍕</div>
+          <div>
+            <div class="zones-list-title">Піца по дорозі додому</div>
+            <div class="zones-list-desc">Таксі їде на Північ → пасажир бачить рекламу доставки на Північ → сканує QR → замовляє. Піца і пасажир приїжджають одночасно.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">💰</div>
+          <div>
+            <div class="zones-list-title">Платіть тільки за свої зони</div>
+            <div class="zones-list-desc">Ресторан біля центру платить тільки за показ у центрі. Не витрачаєте бюджет на нерелевантну аудиторію.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">📍</div>
+          <div>
+            <div class="zones-list-title">Без GPS і геолокації</div>
+            <div class="zones-list-desc">Водій або адміністратор локації вибирає зону вручну. Просто і надійно — без дозволів і складних налаштувань.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="zone-map">
+      <div class="zone-map-bg">
+        <div class="zone-cross-h"></div>
+        <div class="zone-cross-v"></div>
+        <div class="zone-label n">Північ</div>
+        <div class="zone-label s">Південь</div>
+        <div class="zone-label w">Захід</div>
+        <div class="zone-label e">Схід</div>
+        <div class="zone-center-dot">Центр</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DEVICES ── -->
+<section id="devices">
+  <div class="section-eyebrow">Пристрої і шели</div>
+  <div class="section-title">Підключається до будь-якого екрана</div>
+  <p class="section-sub">Планшет, смартфон, телевізор — якщо є браузер або HDMI-вхід, AdScreen вже працює.</p>
+  <div class="devices-grid">
+
+    <div class="device-card">
+      <div class="device-card-header">
+        <div class="device-card-icon">🤖</div>
+        <div>
+          <div class="device-card-name">Android планшет / телефон</div>
+          <div class="device-card-tag">Рекомендовано</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Найкращий варіант. Кіоск-шел блокує всі зайві кнопки, автозапуск після перезавантаження, дистанційне керування через адмінку.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">✓ Fully Kiosk Browser</span>
+        <span class="app-pill">Kiosk Browser Lockdown</span>
+        <span class="app-pill">SureLock</span>
+      </div>
+    </div>
+
+    <div class="device-card">
+      <div class="device-card-header">
+        <div class="device-card-icon">🍎</div>
+        <div>
+          <div class="device-card-name">iPad / iPhone</div>
+          <div class="device-card-tag">iOS 14+</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Режим Guided Access вбудований в iOS — безкоштовно. Або спеціалізований кіоск-браузер з App Store.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">✓ Guided Access (вбудовано)</span>
+        <span class="app-pill">Kiosk Pro</span>
+        <span class="app-pill">ManageXR</span>
+      </div>
+    </div>
+
+    <div class="device-card">
+      <div class="device-card-header">
+        <div class="device-card-icon">📺</div>
+        <div>
+          <div class="device-card-name">Smart TV / Android TV</div>
+          <div class="device-card-tag">Будь-який рік</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Відкрити вбудований браузер, ввести URL плеєра. Для старих телевізорів — підключити HDMI-донгл.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">✓ Вбудований браузер</span>
+        <span class="app-pill">Amazon Fire Stick</span>
+        <span class="app-pill">Chromecast</span>
+      </div>
+    </div>
+
+    <div class="device-card">
+      <div class="device-card-header">
+        <div class="device-card-icon">🔌</div>
+        <div>
+          <div class="device-card-name">Звичайний телевізор</div>
+          <div class="device-card-tag">Через донгл $15–40</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Будь-який телевізор з HDMI стає Smart TV. Chromecast або Miracast — і плеєр вже на великому екрані.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">✓ Chromecast ($30)</span>
+        <span class="app-pill rec">✓ Miracast ($15)</span>
+        <span class="app-pill">Fire TV Stick</span>
+      </div>
+    </div>
+
+    <div class="device-card">
+      <div class="device-card-header">
+        <div class="device-card-icon">💻</div>
+        <div>
+          <div class="device-card-name">Windows / Mac / Linux</div>
+          <div class="device-card-tag">Для стаціонарних точок</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Браузер Chrome або Edge у повноекранному режимі (F11). Для кіоску — KioskSimple або SiteKiosk.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">✓ Chrome F11</span>
+        <span class="app-pill">KioskSimple</span>
+        <span class="app-pill">SiteKiosk</span>
+      </div>
+    </div>
+
+    <div class="device-card" style="border-style: dashed;">
+      <div class="device-card-header">
+        <div class="device-card-icon">⚙️</div>
+        <div>
+          <div class="device-card-name">Рекомендована конфігурація</div>
+          <div class="device-card-tag">Для таксі / кафе</div>
+        </div>
+      </div>
+      <div class="device-card-desc">Android планшет 9" ($50) + Fully Kiosk Browser ($14 одноразово) + кріплення на підголівник ($10). Загалом: ~$74 на один пристрій.</div>
+      <div class="device-card-apps">
+        <span class="app-pill rec">Загальна вартість ~$74</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+<section id="stats">
+  <div class="section-eyebrow section-center">Чому це працює</div>
+  <div class="section-title section-center">Цифри які говорять самі за себе</div>
+  <div class="stats-row">
+    <div class="stat-block">
+      <div class="stat-block-val">3×</div>
+      <div class="stat-block-label">Вища конверсія ніж онлайн-реклама. Людина нікуди не дінеться.</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-block-val">100%</div>
+      <div class="stat-block-label">Переглядів до кінця. Немає кнопки "Пропустити".</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-block-val">20 хв</div>
+      <div class="stat-block-label">Середній час контакту з рекламою за одну поїздку в таксі.</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-block-val">$0</div>
+      <div class="stat-block-label">Вартість хостингу і бази даних на старті. MVP без витрат.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PRICING ── -->
+<section id="pricing">
+  <div class="section-eyebrow section-center">Тарифи</div>
+  <div class="section-title section-center">Прозора ціна без прихованих платежів</div>
+  <p class="section-sub section-center">Для рекламодавців які хочуть розмістити рекламу на вже підключених екранах</p>
+  <div class="pricing-grid">
+
+    <div class="pricing-card">
+      <div class="pricing-name">Старт</div>
+      <div class="pricing-price">500 <span>грн/міс</span></div>
+      <div class="pricing-desc">1 зона · Ідеально для локального бізнесу</div>
+      <ul class="pricing-features">
+        <li>1 активна зона показу</li>
+        <li>До 3 банерів одночасно</li>
+        <li>Статистика показів</li>
+        <li>QR-посилання на банері</li>
+        <li class="no">Пріоритетний показ</li>
+        <li class="no">Відеобанери</li>
+      </ul>
+      <a href="#" class="btn-pricing" onclick="openLogin(event)">Спробувати</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Популярний</div>
+      <div class="pricing-name">Стандарт</div>
+      <div class="pricing-price">1200 <span>грн/міс</span></div>
+      <div class="pricing-desc">3 зони · Для мереж і активного просування</div>
+      <ul class="pricing-features">
+        <li>3 зони показу на вибір</li>
+        <li>До 10 банерів одночасно</li>
+        <li>Детальна статистика + QR-аналітика</li>
+        <li>QR-посилання на банері</li>
+        <li>Пріоритетний показ</li>
+        <li class="no">Відеобанери</li>
+      </ul>
+      <a href="#" class="btn-pricing featured-btn" onclick="openLogin(event)">Підключитись</a>
+    </div>
+
+    <div class="pricing-card">
+      <div class="pricing-name">Місто</div>
+      <div class="pricing-price">2000 <span>грн/міс</span></div>
+      <div class="pricing-desc">Всі 5 зон · Максимальне охоплення</div>
+      <ul class="pricing-features">
+        <li>Всі 5 зон міста</li>
+        <li>Необмежена кількість банерів</li>
+        <li>Повна аналітика в реальному часі</li>
+        <li>QR + відстеження конверсій</li>
+        <li>Пріоритетний показ</li>
+        <li>Відеобанери (mp4)</li>
+      </ul>
+      <a href="#" class="btn-pricing" onclick="openLogin(event)">Підключитись</a>
+    </div>
+
+  </div>
+  <p style="text-align:center;font-size:12px;color:var(--hint);margin-top:20px;">
+    Хочете підключити власні пристрої (таксі / кафе / спортзал)?
+    <a href="mailto:admin@adscreen.ua" style="color:var(--accent);text-decoration:none;">Напишіть нам →</a>
+  </p>
+</section>
+
+<!-- ── CTA ── -->
+<section id="cta">
+  <div class="section-eyebrow section-center">Почніть сьогодні</div>
+  <div class="section-title section-center">Перший банер за 15 хвилин</div>
+  <p class="section-sub section-center">Реєструйтесь, завантажте банер, оберіть зону — і ваша реклама вже на екранах у вашому районі міста.</p>
+  <div class="hero-actions" style="margin-bottom:0;">
+    <a href="#" class="btn-hero" onclick="openLogin(event)">Почати безкоштовно</a>
+    <a href="mailto:admin@adscreen.ua" class="btn-hero-ghost">Написати нам</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <a href="#" class="footer-logo">Ad<span>Screen</span></a>
+  <ul class="footer-links">
+    <li><a href="#how">Як працює</a></li>
+    <li><a href="#pricing">Тарифи</a></li>
+    <li><a href="#devices">Пристрої</a></li>
+    <li><a href="mailto:admin@adscreen.ua">Контакти</a></li>
+  </ul>
+  <div class="footer-copy">© 2024 AdScreen</div>
+</footer>
+
+<!-- ── LOGIN MODAL ── -->
+<div class="modal-overlay" id="modal-login">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Ad<span>Screen</span></div>
+        <div class="modal-sub">Кабінет рекламодавця</div>
+      </div>
+      <button class="btn-close" onclick="closeLogin()">×</button>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab on" onclick="switchTab('login',this)">Увійти</button>
+      <button class="login-tab" onclick="switchTab('register',this)">Реєстрація</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div id="tab-login">
+      <div class="field">
+        <label>Email</label>
+        <input class="inp" id="login-email" type="email" placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input class="inp" id="login-password" type="password" placeholder="••••••••">
+      </div>
+      <button class="btn-login-submit" onclick="doLogin()">Увійти в кабінет</button>
+      <div class="login-err" id="login-err"></div>
+      <div class="login-divider">або</div>
+      <div class="btn-register-link">Немає акаунта? <a href="#" onclick="switchTabDirect('register')">Зареєструватись</a></div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="tab-register" style="display:none;">
+      <div class="field">
+        <label>Назва компанії</label>
+        <input class="inp" id="reg-company" placeholder="Піцерія Центр">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input class="inp" id="reg-email" type="email" placeholder="your@email.com">
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input class="inp" id="reg-password" type="password" placeholder="Мінімум 6 символів">
+      </div>
+      <button class="btn-login-submit" onclick="doRegister()">Створити акаунт</button>
+      <div class="login-err" id="reg-err"></div>
+      <div class="btn-register-link" style="margin-top:14px;">Вже є акаунт? <a href="#" onclick="switchTabDirect('login')">Увійти</a></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ── NAV ──
+  function toggleMenu() {
+    document.getElementById('nav-links').classList.toggle('open');
+  }
+
+  // ── MODAL ──
+  function openLogin(e) {
+    if (e) e.preventDefault();
+    document.getElementById('modal-login').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLogin() {
+    document.getElementById('modal-login').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('modal-login').addEventListener('click', function(e) {
+    if (e.target === this) closeLogin();
+  });
+
+  // ── TABS ──
+  function switchTab(name, btn) {
+    document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('tab-login').style.display = name === 'login' ? 'block' : 'none';
+    document.getElementById('tab-register').style.display = name === 'register' ? 'block' : 'none';
+  }
+  function switchTabDirect(name) {
+    const tabs = document.querySelectorAll('.login-tab');
+    tabs.forEach(t => t.classList.remove('on'));
+    tabs[name === 'login' ? 0 : 1].classList.add('on');
+    document.getElementById('tab-login').style.display = name === 'login' ? 'block' : 'none';
+    document.getElementById('tab-register').style.display = name === 'register' ? 'block' : 'none';
+    return false;
+  }
+
+  // ── AUTH (demo — замінити на Firebase) ──
+  const DEMO = { email: 'pizza@center.ua', password: '1234' };
+  const ADMIN = { email: 'admin@adscreen.ua', password: 'adscreen2024' };
+
+  function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const pass  = document.getElementById('login-password').value;
+    const err   = document.getElementById('login-err');
+    err.textContent = '';
+
+    if (!email || !pass) { err.textContent = 'Заповніть всі поля'; return; }
+
+    if (email === ADMIN.email && pass === ADMIN.password) {
+      window.location.href = './admin/index.html';
+      return;
+    }
+    if (email === DEMO.email && pass === DEMO.password) {
+      window.location.href = './client/index.html';
+      return;
+    }
+    err.textContent = 'Невірний email або пароль';
+  }
+
+  function doRegister() {
+    const company = document.getElementById('reg-company').value.trim();
+    const email   = document.getElementById('reg-email').value.trim();
+    const pass    = document.getElementById('reg-password').value;
+    const err     = document.getElementById('reg-err');
+    err.textContent = '';
+
+    if (!company || !email || !pass) { err.textContent = 'Заповніть всі поля'; return; }
+    if (pass.length < 6) { err.textContent = 'Пароль мінімум 6 символів'; return; }
+    if (!email.includes('@')) { err.textContent = 'Невірний формат email'; return; }
+
+    // TODO: Firebase Auth createUserWithEmailAndPassword
+    showToast('✅ Акаунт створено! Очікуйте підтвердження від адміністратора.');
+    closeLogin();
+  }
+
+  // ── KEYBOARD ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeLogin();
+    if (e.key === 'Enter') {
+      const overlay = document.getElementById('modal-login');
+      if (overlay.classList.contains('active')) {
+        const loginVisible = document.getElementById('tab-login').style.display !== 'none';
+        loginVisible ? doLogin() : doRegister();
+      }
+    }
+  });
+
+  // ── TOAST ──
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── SCROLL ANIMATION ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.how-step, .market-card, .device-card, .pricing-card, .stat-block').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
+  });
+</script>
+</body>
+</html>
