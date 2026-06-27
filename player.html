@@ -197,11 +197,11 @@
   <div class="music-bar">
     <div class="music-now" id="music-now">♪ <span>Оберіть жанр</span></div>
     <div class="genre-btns">
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/0r0xa792kwzuv" onclick="playGenre(this,'Поп')">Поп</button>
-      <button class="genre-btn" data-stream="https://streaming.radio.co/s3f6ae1cd6/listen" onclick="playGenre(this,'Джаз')">Джаз</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/vhetyvnqq28uv" onclick="playGenre(this,'Рок')">Рок</button>
-      <button class="genre-btn" data-stream="https://live.musopen.org:8085/streamvbr0" onclick="playGenre(this,'Класика')">Класика</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/2mv0fmzt754uv" onclick="playGenre(this,'Лаунж')">Лаунж</button>
+      <button class="genre-btn" data-tag="pop"       onclick="playTag(this,'Поп')">Поп</button>
+      <button class="genre-btn" data-tag="jazz"      onclick="playTag(this,'Джаз')">Джаз</button>
+      <button class="genre-btn" data-tag="rock"      onclick="playTag(this,'Рок')">Рок</button>
+      <button class="genre-btn" data-tag="classical" onclick="playTag(this,'Класика')">Класика</button>
+      <button class="genre-btn" data-tag="lounge"    onclick="playTag(this,'Лаунж')">Лаунж</button>
       <button class="genre-btn mute" onclick="toggleMute(this)">🔇 Тихо</button>
     </div>
   </div>
@@ -391,20 +391,57 @@ function updateClock() {
 }
 
 // ── MUSIC ──
-window.playGenre = (btn, name) => {
+window.playTag = async (btn, name) => {
   document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.genre-btn.mute').classList.remove('active');
   btn.classList.add('active');
   currentGenre = name;
-
-  const radio = document.getElementById('radio');
-  radio.src = btn.dataset.stream;
-  radio.volume = isMuted ? 0 : 1;
-  radio.play().catch(()=>{});
-
-  document.getElementById('music-now').innerHTML = `♪ <span>${name}</span>`;
   isMuted = false;
+  document.getElementById('music-now').innerHTML = `⏳ <span>Завантаження ${name}...</span>`;
+
+  try {
+    // Radio Browser API — безкоштовний, без ключа
+    const tag = btn.dataset.tag;
+    const res = await fetch(
+      `https://de1.api.radio-browser.info/json/stations/bytag/${tag}?limit=20&hidebroken=true&order=clickcount&reverse=true&codec=MP3`
+    );
+    const stations = await res.json();
+
+    // Фільтруємо тільки https
+    const https_stations = stations.filter(s => s.url_resolved && s.url_resolved.startsWith('https'));
+    const list = https_stations.length > 0 ? https_stations : stations;
+
+    if (!list.length) {
+      document.getElementById('music-now').innerHTML = `❌ <span>Немає станцій</span>`;
+      return;
+    }
+
+    // Беремо випадкову з топ-10
+    const pick = list[Math.floor(Math.random() * Math.min(10, list.length))];
+    const streamUrl = pick.url_resolved || pick.url;
+
+    const radio = document.getElementById('radio');
+    radio.src = '';
+    radio.load();
+    radio.src = streamUrl;
+    radio.volume = 1;
+    radio.play().catch(() => {
+      // Якщо не грає — беремо наступну
+      setTimeout(() => {
+        const pick2 = list[Math.floor(Math.random() * Math.min(10, list.length))];
+        radio.src = pick2.url_resolved || pick2.url;
+        radio.play().catch(()=>{});
+      }, 1500);
+    });
+
+    document.getElementById('music-now').innerHTML = `♪ <span>${pick.name} — ${name}</span>`;
+  } catch(e) {
+    document.getElementById('music-now').innerHTML = `❌ <span>Помилка завантаження</span>`;
+  }
 };
+
+// Залишаємо для сумісності
+window.playGenre = window.playTag;
 
 window.toggleMute = btn => {
   const radio = document.getElementById('radio');
