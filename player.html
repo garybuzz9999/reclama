@@ -352,23 +352,51 @@ function showIdle() {
 }
 
 // ── TTS ──
-function speak(text) {
-  if (!text || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
+let currentUtterance = null;
+
+function speak(text, onComplete) {
+  if (!text || !window.speechSynthesis) {
+    if (onComplete) onComplete();
+    return;
+  }
+  if (currentUtterance) window.speechSynthesis.cancel();
+
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'uk-UA';
   utt.rate = 0.9;
-  utt.pitch = 1;
+  utt.pitch = 1.0;
   utt.volume = 1;
 
-  // Знижуємо музику під час озвучки
-  const radio = document.getElementById('radio');
-  const prevVolume = radio.volume;
-  radio.volume = 0.15;
-  utt.onend = () => { radio.volume = prevVolume; };
-  utt.onerror = () => { radio.volume = prevVolume; };
+  // Вибираємо український голос
+  const trySpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const ukVoice = voices.find(v => v.lang.startsWith('uk'));
+    if (ukVoice) utt.voice = ukVoice;
+    currentUtterance = utt;
 
-  window.speechSynthesis.speak(utt);
+    const radio = document.getElementById('radio');
+    const prevVolume = radio.volume;
+    radio.volume = 0.15;
+
+    utt.onend = () => {
+      currentUtterance = null;
+      radio.volume = prevVolume;
+      if (onComplete) onComplete();
+    };
+    utt.onerror = () => {
+      currentUtterance = null;
+      radio.volume = prevVolume;
+      if (onComplete) onComplete();
+    };
+    window.speechSynthesis.speak(utt);
+  };
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) {
+    window.speechSynthesis.onvoiceschanged = () => trySpeak();
+  } else {
+    trySpeak();
+  }
 }
 
 function showBanner(banner) {
@@ -390,7 +418,7 @@ function showBanner(banner) {
       progress.style.width = '100%';
     }));
     try { updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 }); } catch(e){}
-    if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 1000);
+    if (banner.voiceText) setTimeout(() => speak(banner.voiceText, null), 1000);
     setTimeout(() => { window.speechSynthesis?.cancel(); scheduleNext(); }, dur);
   };
 
