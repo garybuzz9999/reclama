@@ -699,7 +699,11 @@ window.addBanner = async () => {
       // data.data.url — пряме посилання на зображення
       // data.data.display_url — теж пряме але без розширення
       // data.data.image.url — найнадійніше
-      imageUrl = data.data.image?.url || data.data.url;
+      // ImgBB структура: { data: { url, display_url, image: { url, mime, size }, thumb: { url } } }
+      // display_url = пряме посилання на зображення без watermark
+      imageUrl = data.data.display_url;
+      if (!imageUrl) imageUrl = data.data.image?.url;
+      if (!imageUrl) imageUrl = data.data.url;
       storagePath = data.data.delete_url || null;
     }
 
