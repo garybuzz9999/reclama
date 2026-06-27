@@ -351,6 +351,26 @@ function showIdle() {
   document.getElementById('banner-progress').style.width = '0%';
 }
 
+// ── TTS ──
+function speak(text) {
+  if (!text || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'uk-UA';
+  utt.rate = 0.9;
+  utt.pitch = 1;
+  utt.volume = 1;
+
+  // Знижуємо музику під час озвучки
+  const radio = document.getElementById('radio');
+  const prevVolume = radio.volume;
+  radio.volume = 0.15;
+  utt.onend = () => { radio.volume = prevVolume; };
+  utt.onerror = () => { radio.volume = prevVolume; };
+
+  window.speechSynthesis.speak(utt);
+}
+
 function showBanner(banner) {
   if (!banner) { scheduleNext(); return; }
 
