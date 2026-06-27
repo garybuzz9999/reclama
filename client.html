@@ -221,9 +221,9 @@
         <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="ov-qr">—</div><div class="stat-sub">переходів</div></div>
       </div>
       <div class="sec-title">Мої ліцензії</div>
-      <div class="card" id="ov-licenses"><div class="loading">Завантаження...</div></div>
+      <div class="card" id="ov-licenses"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
       <div class="sec-title">Активні банери</div>
-      <div class="card" id="ov-active-banners"><div class="loading">Завантаження...</div></div>
+      <div class="card" id="ov-active-banners"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
     <!-- DEVICES -->
@@ -251,7 +251,7 @@
         </div>
       </div>
       <div class="sec-title">Мої пристрої</div>
-      <div class="card" id="devices-list"><div class="loading">Завантаження...</div></div>
+      <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
     <!-- BANNERS -->
@@ -291,7 +291,7 @@
         </div>
       </div>
       <div class="sec-title">Мої банери</div>
-      <div id="banners-grid"><div class="loading">Завантаження...</div></div>
+      <div id="banners-grid"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
     <!-- STATS -->
@@ -500,12 +500,20 @@ async function loadAll() {
   const [lics, devs, bans] = await Promise.all([
     getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid))),
     getDocs(query(collection(db,'devices'),  where('clientId','==',currentUser.uid))),
-    getDocs(query(collection(db,'banners'),  where('clientId','==',currentUser.uid), orderBy('createdAt','desc')))
+    getDocs(query(collection(db,'banners'),  where('clientId','==',currentUser.uid)))
   ]);
   let licenses = lics.docs.map(d=>({id:d.id,...d.data()}));
 
-  // Якщо ліцензій немає — створюємо автоматично
+  // Якщо ліцензій немає — створюємо автоматично з правильним clientId
   if (licenses.length === 0) {
+    // Видаляємо старі ліцензії з неправильним clientId якщо є
+    const allLics = await getDocs(collection(db,'licenses'));
+    for (const l of allLics.docs) {
+      if (l.data().clientId !== currentUser.uid && 
+          l.data().code && l.data().code.includes(currentUser.uid.slice(-4).toUpperCase())) {
+        await deleteDoc(l.ref);
+      }
+    }
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let part = '';
     for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
