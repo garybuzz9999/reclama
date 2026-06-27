@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen Player</title>
+  <style>
+    :root {
+      --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#222;
+      --accent:#f5c842;--text:#f0f0f0;--muted:#666;--green:#3ddc84;--red:#ff4d4d;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+
+    /* ── SETUP SCREEN ── */
+    #screen-setup{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      min-height:100vh;padding:32px 24px;
+    }
+    .setup-logo{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:8px;}
+    .setup-logo span{color:var(--accent);}
+    .setup-sub{font-size:14px;color:var(--muted);margin-bottom:40px;}
+    .setup-card{background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:32px;width:100%;max-width:420px;}
+    .setup-label{font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .setup-code-inp{
+      width:100%;background:var(--surface2);border:1px solid var(--border);
+      border-radius:12px;padding:16px;font-size:18px;color:var(--accent);
+      letter-spacing:3px;text-align:center;text-transform:uppercase;
+      outline:none;font-family:'SF Mono','Fira Code',monospace;
+      transition:border-color .2s;margin-bottom:16px;
+    }
+    .setup-code-inp:focus{border-color:var(--accent);}
+    .setup-code-inp::placeholder{color:var(--muted);letter-spacing:1px;font-size:14px;}
+    .setup-zone-label{font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+    .zone-opt{background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;padding:12px;text-align:center;cursor:pointer;
+      font-size:13px;font-weight:600;color:var(--muted);transition:all .2s;}
+    .zone-opt:hover{border-color:var(--accent);color:var(--text);}
+    .zone-opt.selected{background:rgba(245,200,66,.08);border-color:var(--accent);color:var(--accent);}
+    .zone-opt.full{grid-column:1/-1;}
+    .btn-start{width:100%;background:var(--accent);color:#000;border:none;
+      border-radius:12px;padding:16px;font-size:16px;font-weight:800;
+      cursor:pointer;transition:opacity .2s;letter-spacing:.3px;}
+    .btn-start:hover{opacity:.88;}
+    .setup-err{color:var(--red);font-size:13px;text-align:center;
+      margin-top:12px;min-height:20px;}
+
+    /* ── PLAYER SCREEN ── */
+    #screen-player{
+      display:none;position:fixed;inset:0;
+      flex-direction:column;background:#000;
+    }
+
+    /* Медіа зона */
+    .media-zone{
+      flex:1;position:relative;overflow:hidden;
+      display:flex;align-items:center;justify-content:center;
+    }
+
+    /* Банер */
+    .banner-frame{
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;transition:opacity .8s;
+    }
+    .banner-frame.active{opacity:1;}
+    .banner-frame img{width:100%;height:100%;object-fit:contain;}
+
+    /* Заставка між рекламою */
+    .idle-frame{
+      position:absolute;inset:0;
+      display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      background:#000;opacity:0;transition:opacity .8s;
+    }
+    .idle-frame.active{opacity:1;}
+    .idle-logo{font-size:clamp(24px,6vw,48px);font-weight:900;
+      letter-spacing:-2px;margin-bottom:8px;}
+    .idle-logo span{color:var(--accent);}
+    .idle-clock{font-size:clamp(48px,12vw,96px);font-weight:200;
+      color:var(--muted);letter-spacing:-4px;font-variant-numeric:tabular-nums;}
+    .idle-zone{font-size:12px;color:var(--muted);margin-top:8px;
+      text-transform:uppercase;letter-spacing:2px;}
+
+    /* Прогрес банера */
+    .banner-progress{
+      position:absolute;bottom:0;left:0;right:0;height:3px;
+      background:rgba(255,255,255,.1);
+    }
+    .banner-progress-fill{
+      height:100%;background:var(--accent);width:0%;
+      transition:width linear;
+    }
+
+    /* ── MUSIC BAR ── */
+    .music-bar{
+      background:rgba(0,0,0,.9);border-top:1px solid var(--border);
+      padding:10px 16px;display:flex;align-items:center;gap:10px;
+      flex-shrink:0;
+    }
+    .music-now{font-size:11px;color:var(--muted);flex:1;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .music-now span{color:var(--accent);}
+    .genre-btns{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
+    .genre-btns::-webkit-scrollbar{display:none;}
+    .genre-btn{background:var(--surface2);border:1px solid var(--border);
+      border-radius:20px;padding:6px 12px;font-size:11px;font-weight:600;
+      color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
+    .genre-btn:hover{border-color:var(--accent);color:var(--text);}
+    .genre-btn.active{background:rgba(245,200,66,.1);border-color:var(--accent);color:var(--accent);}
+    .genre-btn.mute{border-color:var(--red);color:var(--red);}
+    .genre-btn.mute.active{background:rgba(255,77,77,.1);}
+
+    /* ── STATUS BAR ── */
+    .status-bar{
+      position:absolute;top:0;left:0;right:0;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:8px 16px;
+      background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);
+      pointer-events:none;
+    }
+    .status-zone{font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:rgba(255,255,255,.4);}
+    .status-time{font-size:11px;color:rgba(255,255,255,.3);
+      font-variant-numeric:tabular-nums;}
+
+    /* Toast */
+    .toast{position:fixed;bottom:80px;left:50%;
+      transform:translateX(-50%) translateY(60px);
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;padding:10px 18px;font-size:13px;
+      color:var(--text);z-index:999;
+      transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+      white-space:nowrap;pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<!-- ── SETUP ── -->
+<div id="screen-setup">
+  <div class="setup-logo">Ad<span>Screen</span></div>
+  <div class="setup-sub">Рекламний плеєр</div>
+  <div class="setup-card">
+    <div class="setup-label">Ліцензійний код пристрою</div>
+    <input class="setup-code-inp" id="setup-code"
+      placeholder="ADS-XXXX-XXXX-001" maxlength="20"
+      oninput="formatCode(this)">
+
+    <div class="setup-zone-label">Зона показу</div>
+    <div class="zone-grid">
+      <div class="zone-opt" data-zone="north" onclick="selectZone(this)">⬆️ Північ</div>
+      <div class="zone-opt" data-zone="east"  onclick="selectZone(this)">➡️ Схід</div>
+      <div class="zone-opt" data-zone="west"  onclick="selectZone(this)">⬅️ Захід</div>
+      <div class="zone-opt" data-zone="south" onclick="selectZone(this)">⬇️ Південь</div>
+      <div class="zone-opt full selected" data-zone="center" onclick="selectZone(this)">🏙 Центр</div>
+    </div>
+
+    <button class="btn-start" onclick="startPlayer()">▶ Запустити плеєр</button>
+    <div class="setup-err" id="setup-err"></div>
+  </div>
+</div>
+
+<!-- ── PLAYER ── -->
+<div id="screen-player">
+
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-zone" id="status-zone">—</div>
+    <div class="status-time" id="status-time">—</div>
+  </div>
+
+  <!-- Media -->
+  <div class="media-zone" id="media-zone">
+    <!-- Заставка -->
+    <div class="idle-frame active" id="idle-frame">
+      <div class="idle-logo">Ad<span>Screen</span></div>
+      <div class="idle-clock" id="idle-clock">00:00</div>
+      <div class="idle-zone" id="idle-zone-label">—</div>
+    </div>
+    <!-- Банер -->
+    <div class="banner-frame" id="banner-frame">
+      <img id="banner-img" src="" alt="">
+      <div class="banner-progress">
+        <div class="banner-progress-fill" id="banner-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Music bar -->
+  <div class="music-bar">
+    <div class="music-now" id="music-now">♪ <span>Оберіть жанр</span></div>
+    <div class="genre-btns">
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/0r0xa792kwzuv" onclick="playGenre(this,'Поп')">Поп</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/4d5ge5ygkqzuv" onclick="playGenre(this,'Джаз')">Джаз</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/yn65m44htwzuv" onclick="playGenre(this,'Рок')">Рок</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/fgvxmz5ptwzuv" onclick="playGenre(this,'Класика')">Класика</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/fsrhmvqhtwzuv" onclick="playGenre(this,'Лаунж')">Лаунж</button>
+      <button class="genre-btn mute" onclick="toggleMute(this)">🔇 Тихо</button>
+    </div>
+  </div>
+
+</div>
+
+<audio id="radio" preload="none"></audio>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, getDocs, collection, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
+  authDomain: "reklama-7ed3d.firebaseapp.com",
+  projectId: "reklama-7ed3d",
+  storageBucket: "reklama-7ed3d.firebasestorage.app",
+  messagingSenderId: "992657806561",
+  appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
+const PAUSE_BETWEEN = 5 * 60 * 1000; // 5 хвилин між банерами
+const RELOAD_INTERVAL = 10 * 60 * 1000; // оновлювати банери кожні 10 хв
+
+let currentZone = 'center';
+let banners = [];
+let bannerIndex = 0;
+let playerInterval = null;
+let reloadInterval = null;
+let isMuted = false;
+let currentGenre = null;
+
+// ── FORMAT CODE ──
+window.formatCode = inp => {
+  let v = inp.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if (v.length > 3)  v = v.slice(0,3) + '-' + v.slice(3);
+  if (v.length > 8)  v = v.slice(0,8) + '-' + v.slice(8);
+  if (v.length > 13) v = v.slice(0,13) + '-' + v.slice(13);
+  inp.value = v.slice(0,20);
+};
+
+window.selectZone = btn => {
+  document.querySelectorAll('.zone-opt').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentZone = btn.dataset.zone;
+};
+
+// ── START PLAYER ──
+window.startPlayer = async () => {
+  const code = document.getElementById('setup-code').value.trim().toUpperCase();
+  const err  = document.getElementById('setup-err');
+  err.textContent = '';
+
+  if (code.length < 10) { err.textContent = 'Введіть ліцензійний код'; return; }
+
+  err.textContent = 'Перевірка коду...';
+
+  try {
+    // Перевіряємо ліцензію
+    const snap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
+    if (snap.empty) { err.textContent = '❌ Код не знайдено'; return; }
+
+    const licDoc = snap.docs[0];
+    const lic = licDoc.data();
+    if (lic.status === 'used' && !lic.deviceId) {
+      // ok — вже активована через кабінет
+    }
+
+    // Зберігаємо в localStorage
+    localStorage.setItem('ads_code', code);
+    localStorage.setItem('ads_zone', currentZone);
+    localStorage.setItem('ads_lic_id', licDoc.id);
+
+    showScreen('player');
+    initPlayer(currentZone, licDoc.id);
+
+  } catch(e) {
+    err.textContent = '❌ Помилка: ' + e.message;
+  }
+};
+
+// ── INIT PLAYER ──
+async function initPlayer(zone, licId) {
+  document.getElementById('status-zone').textContent = ZONES[zone] || zone;
+  document.getElementById('idle-zone-label').textContent = ZONES[zone] || zone;
+
+  // Годинник
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Завантажуємо банери
+  await loadBanners(zone);
+
+  // Запускаємо показ
+  scheduleNext();
+
+  // Оновлюємо банери кожні 10 хв
+  reloadInterval = setInterval(async () => {
+    await loadBanners(zone);
+  }, RELOAD_INTERVAL);
+}
+
+async function loadBanners(zone) {
+  try {
+    const snap = await getDocs(query(
+      collection(db,'banners'),
+      where('status','==','active')
+    ));
+    banners = snap.docs
+      .map(d=>({id:d.id,...d.data()}))
+      .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
+    bannerIndex = 0;
+  } catch(e) {
+    banners = [];
+  }
+}
+
+function scheduleNext() {
+  if (!banners.length) {
+    showIdle();
+    setTimeout(scheduleNext, PAUSE_BETWEEN);
+    return;
+  }
+  showIdle();
+  setTimeout(() => {
+    showBanner(banners[bannerIndex]);
+    bannerIndex = (bannerIndex + 1) % banners.length;
+  }, PAUSE_BETWEEN);
+}
+
+function showIdle() {
+  document.getElementById('idle-frame').classList.add('active');
+  document.getElementById('banner-frame').classList.remove('active');
+  document.getElementById('banner-progress').style.transition = 'none';
+  document.getElementById('banner-progress').style.width = '0%';
+}
+
+function showBanner(banner) {
+  if (!banner) { scheduleNext(); return; }
+
+  const img = document.getElementById('banner-img');
+  const frame = document.getElementById('banner-frame');
+  const progress = document.getElementById('banner-progress');
+
+  img.src = banner.imageUrl || '';
+  img.onload = () => {
+    document.getElementById('idle-frame').classList.remove('active');
+    frame.classList.add('active');
+
+    // Прогрес бар
+    const dur = (banner.duration || 30) * 1000;
+    progress.style.transition = 'none';
+    progress.style.width = '0%';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progress.style.transition = `width ${dur}ms linear`;
+        progress.style.width = '100%';
+      });
+    });
+
+    // Інкремент показів
+    try {
+      updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 });
+    } catch(e){}
+
+    // Після закінчення — наступний цикл
+    setTimeout(() => scheduleNext(), dur);
+  };
+  img.onerror = () => scheduleNext();
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('idle-clock').textContent = `${h}:${m}`;
+  document.getElementById('status-time').textContent = `${h}:${m}`;
+}
+
+// ── MUSIC ──
+window.playGenre = (btn, name) => {
+  document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector('.genre-btn.mute').classList.remove('active');
+  btn.classList.add('active');
+  currentGenre = name;
+
+  const radio = document.getElementById('radio');
+  radio.src = btn.dataset.stream;
+  radio.volume = isMuted ? 0 : 1;
+  radio.play().catch(()=>{});
+
+  document.getElementById('music-now').innerHTML = `♪ <span>${name}</span>`;
+  isMuted = false;
+};
+
+window.toggleMute = btn => {
+  const radio = document.getElementById('radio');
+  isMuted = !isMuted;
+  radio.volume = isMuted ? 0 : 1;
+  btn.classList.toggle('active', isMuted);
+  document.getElementById('music-now').innerHTML = isMuted
+    ? '🔇 <span>Звук вимкнено</span>'
+    : `♪ <span>${currentGenre || 'Оберіть жанр'}</span>`;
+};
+
+// ── SCREENS ──
+function showScreen(name) {
+  document.getElementById('screen-setup').style.display  = name==='setup'  ? 'flex' : 'none';
+  document.getElementById('screen-player').style.display = name==='player' ? 'flex' : 'none';
+}
+
+// ── AUTO RESTORE ──
+const savedCode = localStorage.getItem('ads_code');
+const savedZone = localStorage.getItem('ads_zone');
+const savedLic  = localStorage.getItem('ads_lic_id');
+if (savedCode && savedZone) {
+  document.getElementById('setup-code').value = savedCode;
+  currentZone = savedZone;
+  document.querySelectorAll('.zone-opt').forEach(b=>{
+    b.classList.toggle('selected', b.dataset.zone === savedZone);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
