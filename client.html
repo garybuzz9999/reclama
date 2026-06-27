@@ -695,9 +695,12 @@ window.addBanner = async () => {
         body: formData
       });
       const data = await res.json();
-      if (!data.success) throw new Error('ImgBB upload failed');
-      imageUrl = data.data.url;
-      storagePath = data.data.delete_url;
+      if (!data.success) throw new Error('ImgBB upload failed: ' + JSON.stringify(data));
+      // data.data.url — пряме посилання на зображення
+      // data.data.display_url — теж пряме але без розширення
+      // data.data.image.url — найнадійніше
+      imageUrl = data.data.image?.url || data.data.url;
+      storagePath = data.data.delete_url || null;
     }
 
     await addDoc(collection(db,'banners'),{
