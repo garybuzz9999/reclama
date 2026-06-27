@@ -279,11 +279,11 @@
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
             </div>
           </div>
-          <div class="field"><label>Зображення (JPG/PNG 16:9)</label>
+          <div class="field"><label>Зображення або відео (JPG/PNG/MP4 16:9)</label>
             <div class="file-drop" id="file-drop">
-              <input type="file" id="bn-image" accept="image/*" onchange="previewImage(this)">
+              <input type="file" id="bn-image" accept="image/*,video/*" onchange="previewImage(this)">
               <div class="file-drop-icon" id="drop-icon">🖼</div>
-              <div class="file-drop-text" id="drop-text">Перетягніть або <span>оберіть файл</span></div>
+              <div class="file-drop-text" id="drop-text">Фото або відео — <span>оберіть файл</span></div>
             </div>
             <img class="file-preview" id="file-preview" src="" alt="">
           </div>
@@ -629,12 +629,12 @@ function getSelectedZones() {
 
 window.previewImage = input => {
   const file = input.files[0]; if (!file) return;
+  document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
+  document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
   const reader = new FileReader();
   reader.onload = e => {
     const p = document.getElementById('file-preview');
     p.src = e.target.result; p.style.display='block';
-    document.getElementById('drop-icon').textContent='✅';
-    document.getElementById('drop-text').innerHTML=`<span>${file.name}</span>`;
   };
   reader.readAsDataURL(file);
 };
@@ -665,9 +665,11 @@ window.addBanner = async () => {
     const storageRef = ref(storage, path);
     await uploadBytes(storageRef, imageFile);
     const imageUrl = await getDownloadURL(storageRef);
+    const isVideo = imageFile.type.startsWith('video/');
     await addDoc(collection(db,'banners'),{
       clientId:currentUser.uid, title, duration, zones,
       imageUrl, storagePath:path,
+      type: isVideo ? 'video' : 'image',
       status:'active', shows:0, qrScans:0,
       createdAt:serverTimestamp()
     });
@@ -688,7 +690,7 @@ function renderBanners(banners) {
   if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
   el.innerHTML=`<div class="banner-grid">${banners.map(b=>`
     <div class="banner-card">
-      ${b.imageUrl?`<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`:'<div class="banner-img-ph">🖼</div>'}
+      ${b.imageUrl ? (b.type==='video' ? `<video class="banner-img" src="${b.imageUrl}" muted autoplay loop></video>` : `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`) : '<div class="banner-img-ph">🖼</div>'}
       <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
       <div class="banner-info">
         <div class="banner-title">${b.title}</div>
@@ -698,7 +700,7 @@ function renderBanners(banners) {
           <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
             ${b.status==='active'?'⏸ Пауза':'▶️ Старт'}
           </button>
-          <button class="btn-sm" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️</button>
+          <button class="btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️ Видалити</button>
         </div>
       </div>
     </div>`).join('')}</div>`;
