@@ -390,7 +390,8 @@ function showBanner(banner) {
       progress.style.width = '100%';
     }));
     try { updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 }); } catch(e){}
-    setTimeout(() => scheduleNext(), dur);
+    if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 1000);
+    setTimeout(() => { window.speechSynthesis?.cancel(); scheduleNext(); }, dur);
   };
 
   if (banner.type === 'video') {
