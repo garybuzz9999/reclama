@@ -269,6 +269,10 @@
               </select>
             </div>
           </div>
+          <div class="field">
+            <label>Текст озвучки (необов'язково)</label>
+            <input class="inp" id="bn-voice" placeholder="Увага! Піца зі знижкою 20% тільки сьогодні! Телефонуйте зараз!">
+          </div>
           <div class="field"><label>Зони показу</label>
             <div class="zones-picker" id="zones-picker">
               <button class="zone-btn" data-zone="center" onclick="toggleZone(this)">🏙 Центр</button>
@@ -713,16 +717,19 @@ window.addBanner = async () => {
       storagePath = data.data.delete_url || null;
     }
 
+    const voiceText = document.getElementById('bn-voice').value.trim();
     await addDoc(collection(db,'banners'),{
       clientId:currentUser.uid, title, duration, zones,
       imageUrl, storagePath,
       type: isVideo ? 'video' : 'image',
+      voiceText: voiceText || '',
       status:'active', shows:0, qrScans:0,
       createdAt:serverTimestamp()
     });
     document.getElementById('bn-title').value='';
     document.getElementById('bn-image').value='';
     document.getElementById('bn-url').value='';
+    document.getElementById('bn-voice').value='';
     const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
     document.getElementById('drop-icon').textContent='🖼';
     document.getElementById('drop-text').innerHTML='Перетягніть або <span>оберіть файл</span>';
