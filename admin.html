@@ -3,659 +3,182 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>AdScreen — Головна адмінка</title>
+  <title>AdScreen — Супер Адмін</title>
   <style>
     :root {
-      --bg: #0d0d0d;
-      --surface: #161616;
-      --surface2: #1f1f1f;
-      --surface3: #282828;
-      --border: #2a2a2a;
-      --accent: #f5c842;
-      --accent2: #e8b800;
-      --accent-dim: rgba(245,200,66,0.08);
-      --text: #f0f0f0;
-      --muted: #888;
-      --hint: #555;
-      --green: #3ddc84;
-      --red: #ff4d4d;
-      --blue: #4d9fff;
+      --bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;
+      --border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;
+      --accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);
+      --text:#f0f0f0;--muted:#888;--hint:#555;
+      --green:#3ddc84;--green-dim:rgba(61,220,132,.08);--green-border:rgba(61,220,132,.2);
+      --red:#ff4d4d;--red-dim:rgba(255,77,77,.08);--blue:#4d9fff;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ===== SCREENS ===== */
-    .screen { display: none; min-height: 100vh; }
-    .screen.active { display: flex; flex-direction: column; }
-
-    /* ===== LOGIN ===== */
-    #screen-login {
-      align-items: center;
-      justify-content: center;
-      background: var(--bg);
-    }
-    .login-wrap {
-      width: 100%;
-      max-width: 360px;
-      padding: 24px;
-    }
-    .logo {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .logo-mark {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-    .logo-name {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.5px;
-    }
-    .logo-name span { color: var(--accent); }
-    .login-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-    }
-    .login-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-    .login-sub {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 24px;
-    }
-    .field { margin-bottom: 14px; }
-    .field label {
-      display: block;
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      color: var(--hint);
-      margin-bottom: 6px;
-    }
-    .inp {
-      width: 100%;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px 14px;
-      font-size: 14px;
-      color: var(--text);
-      outline: none;
-      transition: border-color .2s;
-    }
-    .inp:focus { border-color: var(--accent2); }
-    .inp::placeholder { color: var(--hint); }
-    .btn-primary {
-      width: 100%;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 13px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      margin-top: 6px;
-      transition: opacity .2s;
-      letter-spacing: .2px;
-    }
-    .btn-primary:hover { opacity: .88; }
-    .err-msg {
-      color: var(--red);
-      font-size: 12px;
-      text-align: center;
-      margin-top: 10px;
-      min-height: 18px;
-    }
-
-    /* ===== TOPBAR ===== */
-    .topbar {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 20px;
-      height: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    .topbar-logo {
-      font-size: 15px;
-      font-weight: 800;
-      letter-spacing: -.3px;
-    }
-    .topbar-logo span { color: var(--accent); }
-    .topbar-badge {
-      background: var(--accent-dim);
-      border: 1px solid rgba(245,200,66,.2);
-      color: var(--accent);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 20px;
-      margin-left: 8px;
-    }
-    .topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .topbar-user {
-      font-size: 13px;
-      color: var(--muted);
-    }
-    .btn-logout {
-      background: none;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 6px 12px;
-      color: var(--muted);
-      font-size: 12px;
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .btn-logout:hover { border-color: var(--red); color: var(--red); }
-
-    /* ===== TABS ===== */
-    .tabs {
-      display: flex;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      scrollbar-width: none;
-      flex-shrink: 0;
-    }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab {
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      padding: 14px 20px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--muted);
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all .2s;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.on {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-
-    /* ===== CONTENT ===== */
-    .content {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      max-width: 860px;
-      width: 100%;
-      margin: 0 auto;
-    }
-    .page { display: none; }
-    .page.active { display: block; }
-
-    /* ===== STATS CARDS ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-    }
-    .stat-label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      color: var(--hint);
-      margin-bottom: 8px;
-    }
-    .stat-value {
-      font-size: 28px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -1px;
-    }
-    .stat-value.accent { color: var(--accent); }
-    .stat-value.green { color: var(--green); }
-    .stat-sub {
-      font-size: 11px;
-      color: var(--hint);
-      margin-top: 4px;
-    }
-
-    /* ===== SECTION ===== */
-    .section-title {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .8px;
-      color: var(--hint);
-      margin-bottom: 10px;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-
-    /* ===== ADD CLIENT FORM ===== */
-    .form-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      flex-wrap: wrap;
-    }
-    .form-row .field { margin-bottom: 0; flex: 1; min-width: 160px; }
-    .btn-add {
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 11px 20px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity .2s;
-    }
-    .btn-add:hover { opacity: .85; }
-
-    /* ===== CLIENT LIST ===== */
-    .client-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .client-item:last-child { border-bottom: none; }
-    .client-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--surface3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      flex-shrink: 0;
-    }
-    .client-info { flex: 1; min-width: 0; }
-    .client-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .client-meta {
-      font-size: 11px;
-      color: var(--muted);
-      margin-top: 2px;
-    }
-    .client-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-    .badge {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: .5px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 20px;
-    }
-    .badge-active {
-      background: rgba(61,220,132,.1);
-      color: var(--green);
-      border: 1px solid rgba(61,220,132,.2);
-    }
-    .badge-blocked {
-      background: rgba(255,77,77,.1);
-      color: var(--red);
-      border: 1px solid rgba(255,77,77,.2);
-    }
-    .badge-license {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border: 1px solid rgba(245,200,66,.2);
-    }
-    .btn-icon {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      width: 32px;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all .2s;
-      color: var(--muted);
-    }
-    .btn-icon:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-icon.danger:hover { border-color: var(--red); color: var(--red); }
-
-    /* ===== LICENSE MODAL ===== */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.7);
-      z-index: 200;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .modal-title {
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .btn-close {
-      background: none;
-      border: none;
-      color: var(--muted);
-      font-size: 20px;
-      cursor: pointer;
-      line-height: 1;
-    }
-    .license-code {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .license-code-text {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 13px;
-      color: var(--accent);
-      letter-spacing: 1px;
-      flex: 1;
-    }
-    .license-status {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
-    .license-status.used { color: var(--muted); }
-    .license-status.free { color: var(--green); }
-    .btn-copy {
-      background: none;
-      border: none;
-      color: var(--hint);
-      cursor: pointer;
-      font-size: 14px;
-      padding: 4px;
-      transition: color .2s;
-    }
-    .btn-copy:hover { color: var(--accent); }
-    .modal-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-    }
-    .btn-secondary {
-      flex: 1;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 11px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-      transition: all .2s;
-    }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-    .btn-gen {
-      flex: 1;
-      background: var(--accent);
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      padding: 11px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity .2s;
-    }
-    .btn-gen:hover { opacity: .85; }
-
-    /* ===== EMPTY ===== */
-    .empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--hint);
-      font-size: 13px;
-    }
-    .empty-icon { font-size: 32px; margin-bottom: 10px; }
-
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 10px 18px;
-      font-size: 13px;
-      color: var(--text);
-      z-index: 999;
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-      white-space: nowrap;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ===== SELECT ===== */
-    select.inp {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 32px;
-    }
-    select.inp option { background: var(--surface2); }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    .screen{display:none;min-height:100vh;}
+    .screen.active{display:flex;flex-direction:column;}
+    #screen-login{align-items:center;justify-content:center;}
+    .login-wrap{width:100%;max-width:360px;padding:24px;}
+    .logo{text-align:center;margin-bottom:32px;}
+    .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+    .logo-name{font-size:28px;font-weight:800;letter-spacing:-1px;}
+    .logo-name span{color:var(--accent);}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
+    .login-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+    .login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:6px;}
+    .inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
+    .inp:focus{border-color:var(--accent2);}
+    .inp::placeholder{color:var(--hint);}
+    select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+    select.inp option{background:var(--surface2);}
+    .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.88;}
+    .err-msg{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+    .topbar-logo{font-size:15px;font-weight:800;}
+    .topbar-logo span{color:var(--accent);}
+    .topbar-badge{background:var(--accent-dim);border:1px solid var(--accent-border);color:var(--accent);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-left:8px;}
+    .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);}
+    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{background:none;border:none;border-bottom:2px solid transparent;padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;}
+    .tab:hover{color:var(--text);}
+    .tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+    .content{flex:1;overflow-y:auto;padding:20px;max-width:860px;width:100%;margin:0 auto;}
+    .page{display:none;}
+    .page.active{display:block;}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--hint);margin-bottom:8px;}
+    .stat-value{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;}
+    .stat-value.accent{color:var(--accent);}
+    .stat-value.green{color:var(--green);}
+    .stat-sub{font-size:11px;color:var(--hint);margin-top:3px;}
+    .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--hint);margin-bottom:10px;}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+    .form-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;}
+    .form-row .field{margin-bottom:0;flex:1;min-width:160px;}
+    .btn-add{background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity .2s;}
+    .btn-add:hover{opacity:.85;}
+    .client-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .client-item:last-child{border-bottom:none;}
+    .client-avatar{width:38px;height:38px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .client-info{flex:1;min-width:0;}
+    .client-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .client-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+    .client-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+    .badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+    .badge-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+    .badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,77,77,.2);}
+    .badge-accent{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+    .btn-icon{background:var(--surface2);border:1px solid var(--border);border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all .2s;color:var(--muted);}
+    .btn-icon:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-icon.danger:hover{border-color:var(--red);color:var(--red);}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center;padding:20px;}
+    .modal-overlay.active{display:flex;}
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+    .modal-title{font-size:16px;font-weight:700;}
+    .btn-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;}
+    .license-code{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .license-code-text{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--accent);letter-spacing:1px;flex:1;}
+    .license-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+    .license-status.used{color:var(--muted);}
+    .license-status.free{color:var(--green);}
+    .btn-copy{background:none;border:none;color:var(--hint);cursor:pointer;font-size:14px;padding:4px;transition:color .2s;}
+    .btn-copy:hover{color:var(--accent);}
+    .modal-actions{display:flex;gap:10px;margin-top:16px;}
+    .btn-secondary{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;transition:all .2s;}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+    .btn-gen{flex:1;background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;}
+    .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
+    .empty-icon{font-size:32px;margin-bottom:10px;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+    .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
   </style>
 </head>
 <body>
 
-<!-- ===== LOGIN ===== -->
 <div class="screen active" id="screen-login">
   <div class="login-wrap">
     <div class="logo">
-      <div class="logo-mark">Platform</div>
+      <div class="logo-mark">Super Admin</div>
       <div class="logo-name">Ad<span>Screen</span></div>
     </div>
     <div class="login-card">
       <div class="login-title">Вхід для адміністратора</div>
       <div class="login-sub">Головна панель керування</div>
-      <div class="field">
-        <label>Email</label>
-        <input class="inp" id="login-email" type="email" placeholder="admin@adscreen.ua">
-      </div>
-      <div class="field">
-        <label>Пароль</label>
-        <input class="inp" id="login-password" type="password" placeholder="••••••••">
-      </div>
+      <div class="field"><label>Email</label><input class="inp" id="login-email" type="email" placeholder="admin@adscreen.ua"></div>
+      <div class="field"><label>Пароль</label><input class="inp" id="login-password" type="password" placeholder="••••••••"></div>
       <button class="btn-primary" id="btn-login">Увійти</button>
       <div class="err-msg" id="login-err"></div>
     </div>
   </div>
 </div>
 
-<!-- ===== ADMIN ===== -->
 <div class="screen" id="screen-admin">
-  <!-- Topbar -->
   <div class="topbar">
     <div style="display:flex;align-items:center;">
       <div class="topbar-logo">Ad<span>Screen</span></div>
       <div class="topbar-badge">Super Admin</div>
     </div>
-    <div class="topbar-right">
-      <div class="topbar-user" id="topbar-user">admin</div>
-      <button class="btn-logout" onclick="logout()">Вийти</button>
-    </div>
+    <button class="btn-logout" onclick="doLogout()">Вийти</button>
   </div>
-
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab on" onclick="showTab('dashboard',this)">Огляд</button>
     <button class="tab" onclick="showTab('clients',this)">Клієнти</button>
     <button class="tab" onclick="showTab('licenses',this)">Ліцензії</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
   </div>
-
-  <!-- Content -->
   <div class="content">
-
-    <!-- DASHBOARD -->
     <div class="page active" id="page-dashboard">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Клієнти</div>
-          <div class="stat-value accent" id="stat-clients">0</div>
-          <div class="stat-sub">активних</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Ліцензії</div>
-          <div class="stat-value" id="stat-licenses">0</div>
-          <div class="stat-sub">видано всього</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Пристрої</div>
-          <div class="stat-value green" id="stat-devices">0</div>
-          <div class="stat-sub">онлайн зараз</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Покази</div>
-          <div class="stat-value" id="stat-shows">0</div>
-          <div class="stat-sub">за сьогодні</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Клієнти</div><div class="stat-value accent" id="stat-clients">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Ліцензії</div><div class="stat-value" id="stat-licenses">—</div><div class="stat-sub">видано</div></div>
+        <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="stat-devices">—</div><div class="stat-sub">активовано</div></div>
+        <div class="stat-card"><div class="stat-label">Банери</div><div class="stat-value" id="stat-banners">—</div><div class="stat-sub">всього</div></div>
       </div>
-
-      <div class="section-title">Останні клієнти</div>
-      <div class="card" id="dashboard-recent">
-        <div class="empty"><div class="empty-icon">👥</div>Клієнтів ще немає</div>
-      </div>
+      <div class="sec-title">Останні клієнти</div>
+      <div class="card" id="dashboard-recent"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- CLIENTS -->
     <div class="page" id="page-clients">
-      <div class="section-title">Додати клієнта</div>
+      <div class="sec-title">Додати клієнта</div>
       <div class="card" style="margin-bottom:20px;">
         <div class="form-row">
-          <div class="field">
-            <label>Назва компанії</label>
-            <input class="inp" id="new-client-name" placeholder="Піцерія Центр">
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input class="inp" id="new-client-email" type="email" placeholder="client@email.com">
-          </div>
-          <div class="field" style="max-width:130px;">
-            <label>Ліцензій</label>
+          <div class="field"><label>Компанія</label><input class="inp" id="new-client-name" placeholder="Піцерія Центр"></div>
+          <div class="field"><label>Email</label><input class="inp" id="new-client-email" type="email" placeholder="client@email.com"></div>
+          <div class="field"><label>Пароль</label><input class="inp" id="new-client-pass" type="password" placeholder="Мін. 6 символів"></div>
+          <div class="field" style="max-width:130px;"><label>Ліцензій</label>
             <select class="inp" id="new-client-licenses">
-              <option value="1">1 пристрій</option>
-              <option value="3">3 пристрої</option>
-              <option value="5">5 пристроїв</option>
-              <option value="10">10 пристроїв</option>
-              <option value="25">25 пристроїв</option>
-              <option value="50">50 пристроїв</option>
+              <option value="1">1</option><option value="3">3</option>
+              <option value="5">5</option><option value="10">10</option>
+              <option value="25">25</option><option value="50">50</option>
             </select>
           </div>
           <button class="btn-add" onclick="addClient()">+ Додати</button>
         </div>
       </div>
-
-      <div class="section-title">Список клієнтів</div>
-      <div class="card" id="clients-list">
-        <div class="empty"><div class="empty-icon">👥</div>Клієнтів ще немає<br>Додайте першого клієнта вище</div>
-      </div>
+      <div class="sec-title">Список клієнтів</div>
+      <div class="card" id="clients-list"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- LICENSES -->
     <div class="page" id="page-licenses">
-      <div class="section-title">Всі ліцензійні коди</div>
-      <div class="card" id="licenses-list">
-        <div class="empty"><div class="empty-icon">🔑</div>Ліцензій ще немає</div>
-      </div>
+      <div class="sec-title">Всі ліцензійні коди</div>
+      <div class="card" id="licenses-list"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- DEVICES -->
     <div class="page" id="page-devices">
-      <div class="section-title">Активні пристрої</div>
-      <div class="card" id="devices-list">
-        <div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>
-      </div>
+      <div class="sec-title">Активні пристрої</div>
+      <div class="card" id="devices-list"><div class="loading">Завантаження...</div></div>
     </div>
-
   </div>
 </div>
 
-<!-- ===== LICENSE MODAL ===== -->
 <div class="modal-overlay" id="modal-licenses">
   <div class="modal">
     <div class="modal-header">
@@ -671,340 +194,281 @@
   </div>
 </div>
 
-<!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
-<script>
-// ===== STATE =====
-const ADMIN_EMAIL = 'admin@adscreen.ua';
-const ADMIN_PASS = 'adscreen2024';
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, getDocs, collection, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-let state = {
-  clients: [],
-  licenses: [],
-  devices: [],
-  currentModal: null
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
+  authDomain: "reklama-7ed3d.firebaseapp.com",
+  projectId: "reklama-7ed3d",
+  storageBucket: "reklama-7ed3d.firebasestorage.app",
+  messagingSenderId: "992657806561",
+  appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
 };
 
-// Load from localStorage
-function loadState() {
-  const saved = localStorage.getItem('adscreen_state');
-  if (saved) {
-    try { state = { ...state, ...JSON.parse(saved) }; } catch(e) {}
-  }
-}
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const SUPER_ADMIN = "admin@adscreen.ua";
 
-function saveState() {
-  localStorage.setItem('adscreen_state', JSON.stringify(state));
-}
+let currentModal = null;
 
-// ===== AUTH =====
-document.getElementById('btn-login').onclick = () => {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-password').value;
-  const err = document.getElementById('login-err');
-
-  if (email === ADMIN_EMAIL && pass === ADMIN_PASS) {
-    err.textContent = '';
+// ── AUTH ──
+onAuthStateChanged(auth, async user => {
+  if (user && user.email === SUPER_ADMIN) {
     showScreen('admin');
-    renderAll();
-  } else {
-    err.textContent = 'Невірний email або пароль';
+    loadAll();
+  } else if (user) {
+    await signOut(auth);
+    showErr('Немає прав адміністратора');
   }
-};
-
-document.getElementById('login-password').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btn-login').click();
 });
 
-function logout() {
-  showScreen('login');
+document.getElementById('btn-login').onclick = doLogin;
+document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  showErr('');
+  if (!email || !pass) { showErr('Заповніть всі поля'); return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showErr('Невірний email або пароль');
+  }
 }
 
-// ===== SCREENS =====
+window.doLogout = async () => {
+  await signOut(auth);
+  showScreen('login');
+};
+
+// ── SCREENS / TABS ──
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + name).classList.add('active');
 }
-
-// ===== TABS =====
-function showTab(name, btn) {
+window.showTab = (name, btn) => {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   btn.classList.add('on');
   document.getElementById('page-' + name).classList.add('active');
-  if (name === 'licenses') renderLicensesPage();
-  if (name === 'devices') renderDevicesPage();
+  if (name === 'licenses') loadLicenses();
+  if (name === 'devices') loadDevices();
+};
+
+// ── LOAD ALL ──
+async function loadAll() {
+  const [clients, licenses, devices, banners] = await Promise.all([
+    getDocs(collection(db, 'clients')),
+    getDocs(collection(db, 'licenses')),
+    getDocs(collection(db, 'devices')),
+    getDocs(collection(db, 'banners'))
+  ]);
+  document.getElementById('stat-clients').textContent = clients.size;
+  document.getElementById('stat-licenses').textContent = licenses.size;
+  document.getElementById('stat-devices').textContent = devices.size;
+  document.getElementById('stat-banners').textContent = banners.size;
+
+  const cl = clients.docs.map(d => ({id:d.id,...d.data()}));
+  renderClientList(cl, 'dashboard-recent', 3);
+  renderClientList(cl, 'clients-list');
 }
 
-// ===== GENERATE CODE =====
-function generateCode(clientId, index) {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let part = '';
-  for (let i = 0; i < 4; i++) part += chars[Math.floor(Math.random() * chars.length)];
-  const num = String(index + 1).padStart(3, '0');
-  return `ADS-${clientId.slice(-4).toUpperCase()}-${part}-${num}`;
-}
-
-// ===== ADD CLIENT =====
-function addClient() {
-  const name = document.getElementById('new-client-name').value.trim();
+// ── ADD CLIENT ──
+window.addClient = async () => {
+  const name  = document.getElementById('new-client-name').value.trim();
   const email = document.getElementById('new-client-email').value.trim();
+  const pass  = document.getElementById('new-client-pass').value;
   const count = parseInt(document.getElementById('new-client-licenses').value);
+  if (!name || !email || !pass) { showToast('⚠️ Заповніть всі поля'); return; }
+  if (pass.length < 6) { showToast('⚠️ Пароль мін. 6 символів'); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid  = cred.user.uid;
+    await setDoc(doc(db, 'clients', uid), {
+      name, email, licenseCount: count,
+      status: 'active', emoji: getEmoji(name),
+      createdAt: serverTimestamp()
+    });
+    await createLicenses(uid, count);
+    document.getElementById('new-client-name').value = '';
+    document.getElementById('new-client-email').value = '';
+    document.getElementById('new-client-pass').value = '';
+    showToast(`✅ Клієнт доданий, ${count} ліцензій створено`);
+    loadAll();
+  } catch(e) {
+    showToast('❌ ' + (e.message || 'Помилка'));
+  }
+};
 
-  if (!name || !email) { showToast('⚠️ Заповніть всі поля'); return; }
-  if (state.clients.find(c => c.email === email)) { showToast('⚠️ Клієнт вже існує'); return; }
-
-  const clientId = Date.now().toString(36);
-  const client = {
-    id: clientId,
-    name,
-    email,
-    licenseCount: count,
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    emoji: getEmoji(name)
-  };
-
-  // Generate licenses
-  const newLicenses = [];
+async function createLicenses(clientId, count) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   for (let i = 0; i < count; i++) {
-    newLicenses.push({
-      code: generateCode(clientId, state.licenses.filter(l => l.clientId === clientId).length + i),
-      clientId,
-      status: 'free',
-      deviceId: null,
-      createdAt: new Date().toISOString()
+    let part = '';
+    for (let j = 0; j < 4; j++) part += chars[Math.floor(Math.random() * chars.length)];
+    const code = `ADS-${clientId.slice(-4).toUpperCase()}-${part}-${String(i+1).padStart(3,'0')}`;
+    await addDoc(collection(db, 'licenses'), {
+      code, clientId, status: 'free', deviceId: null, createdAt: serverTimestamp()
     });
   }
+}
 
-  state.clients.unshift(client);
-  state.licenses.push(...newLicenses);
-  saveState();
+// ── TOGGLE / DELETE ──
+window.toggleClient = async (id, current) => {
+  const newStatus = current === 'active' ? 'blocked' : 'active';
+  await updateDoc(doc(db, 'clients', id), { status: newStatus });
+  showToast(newStatus === 'active' ? '✅ Активовано' : '🚫 Заблоковано');
+  loadAll();
+};
 
-  document.getElementById('new-client-name').value = '';
-  document.getElementById('new-client-email').value = '';
+window.deleteClient = async (id) => {
+  if (!confirm('Видалити клієнта та всі ліцензії?')) return;
+  const lics = await getDocs(query(collection(db,'licenses'), where('clientId','==',id)));
+  for (const l of lics.docs) await deleteDoc(l.ref);
+  await deleteDoc(doc(db, 'clients', id));
+  showToast('🗑️ Видалено');
+  loadAll();
+};
 
-  renderAll();
-  showToast(`✅ Клієнт доданий, ${count} ліцензій згенеровано`);
+// ── LICENSES MODAL ──
+window.showLicenses = async (clientId, clientName) => {
+  currentModal = clientId;
+  document.getElementById('modal-client-name').textContent = clientName;
+  await renderModalCodes(clientId);
+  document.getElementById('modal-licenses').classList.add('active');
+};
+
+async function renderModalCodes(clientId) {
+  const snap = await getDocs(query(collection(db,'licenses'), where('clientId','==',clientId)));
+  const codes = snap.docs.map(d => ({id:d.id,...d.data()}));
+  const el = document.getElementById('modal-codes-list');
+  el.innerHTML = codes.map(l => `
+    <div class="license-code">
+      <div class="license-code-text">${l.code}</div>
+      <div class="license-status ${l.status}">${l.status === 'used' ? '● Активовано' : '● Вільна'}</div>
+      <button class="btn-copy" onclick="copyCode('${l.code}')">📋</button>
+    </div>`).join('') || '<div class="empty">Кодів немає</div>';
+}
+
+window.closeModal = () => {
+  document.getElementById('modal-licenses').classList.remove('active');
+  currentModal = null;
+};
+
+window.copyCode = code => {
+  navigator.clipboard.writeText(code).then(() => showToast('📋 ' + code));
+};
+
+window.copyAllCodes = async () => {
+  if (!currentModal) return;
+  const snap = await getDocs(query(collection(db,'licenses'), where('clientId','==',currentModal)));
+  const text = snap.docs.map(d => d.data().code).join('\n');
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Всі коди скопійовано'));
+};
+
+window.generateMoreCodes = async () => {
+  if (!currentModal) return;
+  await createLicenses(currentModal, 1);
+  await renderModalCodes(currentModal);
+  showToast('✅ Нову ліцензію додано');
+  loadAll();
+};
+
+// ── LOAD LICENSES PAGE ──
+async function loadLicenses() {
+  const el = document.getElementById('licenses-list');
+  el.innerHTML = '<div class="loading">Завантаження...</div>';
+  const snap = await getDocs(collection(db, 'licenses'));
+  if (!snap.size) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div>Ліцензій немає</div>'; return; }
+  const clients = {};
+  const cSnap = await getDocs(collection(db,'clients'));
+  cSnap.docs.forEach(d => { clients[d.id] = d.data(); });
+  el.innerHTML = snap.docs.map(d => {
+    const l = d.data();
+    const c = clients[l.clientId];
+    return `<div class="license-code">
+      <div><div class="license-code-text">${l.code}</div>
+      <div style="font-size:11px;color:var(--hint);margin-top:3px;">${c ? c.emoji+' '+c.name : '—'}</div></div>
+      <div class="license-status ${l.status}">${l.status==='used'?'● Активовано':'● Вільна'}</div>
+      <button class="btn-copy" onclick="copyCode('${l.code}')">📋</button>
+    </div>`;
+  }).join('');
+}
+
+// ── LOAD DEVICES PAGE ──
+async function loadDevices() {
+  const el = document.getElementById('devices-list');
+  el.innerHTML = '<div class="loading">Завантаження...</div>';
+  const snap = await getDocs(collection(db,'devices'));
+  if (!snap.size) { el.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Пристроїв немає</div>'; return; }
+  const clients = {};
+  const cSnap = await getDocs(collection(db,'clients'));
+  cSnap.docs.forEach(d => { clients[d.id] = d.data(); });
+  const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
+  el.innerHTML = snap.docs.map(d => {
+    const dev = d.data();
+    const c = clients[dev.clientId];
+    return `<div class="client-item">
+      <div class="client-avatar">📱</div>
+      <div class="client-info">
+        <div class="client-name">${dev.name || dev.code}</div>
+        <div class="client-meta">${c ? c.emoji+' '+c.name : '—'} · ${ZONES[dev.zone]||dev.zone||'—'}</div>
+      </div>
+      <span class="badge badge-green">Онлайн</span>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER CLIENTS ──
+function renderClientList(clients, elId, limit) {
+  const el = document.getElementById(elId);
+  const list = limit ? clients.slice(0, limit) : clients;
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>Клієнтів ще немає</div>';
+    return;
+  }
+  el.innerHTML = list.map(c => `
+    <div class="client-item">
+      <div class="client-avatar">${c.emoji||'🏢'}</div>
+      <div class="client-info">
+        <div class="client-name">${c.name}</div>
+        <div class="client-meta">${c.email}</div>
+      </div>
+      <div class="client-actions">
+        <span class="badge badge-accent">📱 ${c.licenseCount||0}</span>
+        <span class="badge ${c.status==='active'?'badge-green':'badge-red'}">${c.status==='active'?'Активний':'Заблок.'}</span>
+        <button class="btn-icon" onclick="showLicenses('${c.id}','${c.emoji||''} ${c.name}')" title="Ліцензії">🔑</button>
+        <button class="btn-icon" onclick="toggleClient('${c.id}','${c.status}')" title="Статус">${c.status==='active'?'🚫':'✅'}</button>
+        <button class="btn-icon danger" onclick="deleteClient('${c.id}')" title="Видалити">🗑️</button>
+      </div>
+    </div>`).join('');
 }
 
 function getEmoji(name) {
   const n = name.toLowerCase();
-  if (n.includes('піц') || n.includes('piz')) return '🍕';
-  if (n.includes('кав') || n.includes('cof')) return '☕';
-  if (n.includes('таксі') || n.includes('taxi')) return '🚕';
-  if (n.includes('спорт') || n.includes('gym') || n.includes('фітнес')) return '💪';
-  if (n.includes('клінік') || n.includes('медіц')) return '🏥';
-  if (n.includes('ресто') || n.includes('rest')) return '🍽️';
-  if (n.includes('готел') || n.includes('hotel')) return '🏨';
-  if (n.includes('гаджет') || n.includes('tech') || n.includes('смарт')) return '📱';
+  if (n.includes('піц')||n.includes('piz')) return '🍕';
+  if (n.includes('кав')||n.includes('cof')) return '☕';
+  if (n.includes('такс')||n.includes('taxi')) return '🚕';
+  if (n.includes('спорт')||n.includes('gym')||n.includes('фітнес')) return '💪';
+  if (n.includes('клін')||n.includes('медіц')) return '🏥';
+  if (n.includes('ресто')) return '🍽️';
+  if (n.includes('готел')) return '🏨';
+  if (n.includes('гаджет')||n.includes('смарт')) return '📱';
   return '🏢';
 }
 
-// ===== TOGGLE CLIENT =====
-function toggleClient(id) {
-  const c = state.clients.find(c => c.id === id);
-  if (!c) return;
-  c.status = c.status === 'active' ? 'blocked' : 'active';
-  saveState();
-  renderAll();
-  showToast(c.status === 'active' ? '✅ Клієнта активовано' : '🚫 Клієнта заблоковано');
-}
-
-// ===== DELETE CLIENT =====
-function deleteClient(id) {
-  if (!confirm('Видалити клієнта та всі його ліцензії?')) return;
-  state.clients = state.clients.filter(c => c.id !== id);
-  state.licenses = state.licenses.filter(l => l.clientId !== id);
-  saveState();
-  renderAll();
-  showToast('🗑️ Клієнта видалено');
-}
-
-// ===== SHOW LICENSES MODAL =====
-function showLicenses(clientId) {
-  const client = state.clients.find(c => c.id === clientId);
-  if (!client) return;
-  state.currentModal = clientId;
-
-  document.getElementById('modal-client-name').textContent = `${client.emoji} ${client.name} — ${client.email}`;
-  renderModalCodes(clientId);
-  document.getElementById('modal-licenses').classList.add('active');
-}
-
-function renderModalCodes(clientId) {
-  const codes = state.licenses.filter(l => l.clientId === clientId);
-  const list = document.getElementById('modal-codes-list');
-  if (!codes.length) {
-    list.innerHTML = '<div class="empty">Ліцензій немає</div>';
-    return;
-  }
-  list.innerHTML = codes.map(l => `
-    <div class="license-code">
-      <div class="license-code-text">${l.code}</div>
-      <div class="license-status ${l.status === 'used' ? 'used' : 'free'}">
-        ${l.status === 'used' ? '● Активовано' : '● Вільна'}
-      </div>
-      <button class="btn-copy" onclick="copyCode('${l.code}')" title="Копіювати">📋</button>
-    </div>
-  `).join('');
-}
-
-function closeModal() {
-  document.getElementById('modal-licenses').classList.remove('active');
-  state.currentModal = null;
-}
-
-function copyCode(code) {
-  navigator.clipboard.writeText(code).then(() => showToast('📋 Скопійовано: ' + code));
-}
-
-function copyAllCodes() {
-  if (!state.currentModal) return;
-  const codes = state.licenses
-    .filter(l => l.clientId === state.currentModal)
-    .map(l => l.code)
-    .join('\n');
-  navigator.clipboard.writeText(codes).then(() => showToast('📋 Всі коди скопійовані'));
-}
-
-function generateMoreCodes() {
-  if (!state.currentModal) return;
-  const clientId = state.currentModal;
-  const existing = state.licenses.filter(l => l.clientId === clientId).length;
-  const newCode = {
-    code: generateCode(clientId, existing),
-    clientId,
-    status: 'free',
-    deviceId: null,
-    createdAt: new Date().toISOString()
-  };
-  state.licenses.push(newCode);
-  const client = state.clients.find(c => c.id === clientId);
-  if (client) client.licenseCount++;
-  saveState();
-  renderModalCodes(clientId);
-  renderAll();
-  showToast('✅ Нову ліцензію додано');
-}
-
-// ===== RENDER =====
-function renderAll() {
-  renderDashboard();
-  renderClients();
-}
-
-function renderDashboard() {
-  const active = state.clients.filter(c => c.status === 'active').length;
-  const devices = state.licenses.filter(l => l.status === 'used').length;
-  document.getElementById('stat-clients').textContent = active;
-  document.getElementById('stat-licenses').textContent = state.licenses.length;
-  document.getElementById('stat-devices').textContent = devices;
-  document.getElementById('stat-shows').textContent = Math.floor(Math.random() * 500 + devices * 80);
-
-  const recent = state.clients.slice(0, 3);
-  const el = document.getElementById('dashboard-recent');
-  if (!recent.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>Клієнтів ще немає</div>';
-    return;
-  }
-  el.innerHTML = recent.map(c => clientHTML(c)).join('');
-}
-
-function renderClients() {
-  const el = document.getElementById('clients-list');
-  if (!state.clients.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div>Клієнтів ще немає<br>Додайте першого клієнта вище</div>';
-    return;
-  }
-  el.innerHTML = state.clients.map(c => clientHTML(c)).join('');
-}
-
-function clientHTML(c) {
-  const lic = state.licenses.filter(l => l.clientId === c.id);
-  const used = lic.filter(l => l.status === 'used').length;
-  const date = new Date(c.createdAt).toLocaleDateString('uk-UA');
-  return `
-    <div class="client-item">
-      <div class="client-avatar">${c.emoji}</div>
-      <div class="client-info">
-        <div class="client-name">${c.name}</div>
-        <div class="client-meta">${c.email} · Додано ${date}</div>
-      </div>
-      <div class="client-actions">
-        <span class="badge badge-license">📱 ${used}/${lic.length}</span>
-        <span class="badge ${c.status === 'active' ? 'badge-active' : 'badge-blocked'}">
-          ${c.status === 'active' ? 'Активний' : 'Заблокований'}
-        </span>
-        <button class="btn-icon" onclick="showLicenses('${c.id}')" title="Ліцензії">🔑</button>
-        <button class="btn-icon" onclick="toggleClient('${c.id}')" title="${c.status === 'active' ? 'Заблокувати' : 'Активувати'}">
-          ${c.status === 'active' ? '🚫' : '✅'}
-        </button>
-        <button class="btn-icon danger" onclick="deleteClient('${c.id}')" title="Видалити">🗑️</button>
-      </div>
-    </div>
-  `;
-}
-
-function renderLicensesPage() {
-  const el = document.getElementById('licenses-list');
-  if (!state.licenses.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div>Ліцензій ще немає</div>';
-    return;
-  }
-  el.innerHTML = state.licenses.map(l => {
-    const client = state.clients.find(c => c.id === l.clientId);
-    const date = new Date(l.createdAt).toLocaleDateString('uk-UA');
-    return `
-      <div class="license-code">
-        <div>
-          <div class="license-code-text">${l.code}</div>
-          <div style="font-size:11px;color:var(--hint);margin-top:4px;">
-            ${client ? client.emoji + ' ' + client.name : '—'} · ${date}
-          </div>
-        </div>
-        <div class="license-status ${l.status === 'used' ? 'used' : 'free'}">
-          ${l.status === 'used' ? '● Активовано' : '● Вільна'}
-        </div>
-        <button class="btn-copy" onclick="copyCode('${l.code}')">📋</button>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderDevicesPage() {
-  const el = document.getElementById('devices-list');
-  const used = state.licenses.filter(l => l.status === 'used');
-  if (!used.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Активних пристроїв ще немає</div>';
-    return;
-  }
-  el.innerHTML = used.map(l => {
-    const client = state.clients.find(c => c.id === l.clientId);
-    return `
-      <div class="client-item">
-        <div class="client-avatar">📱</div>
-        <div class="client-info">
-          <div class="client-name">${l.code}</div>
-          <div class="client-meta">${client ? client.emoji + ' ' + client.name : '—'}</div>
-        </div>
-        <span class="badge badge-active">Онлайн</span>
-      </div>
-    `;
-  }).join('');
-}
-
-// ===== TOAST =====
+function showErr(msg) { document.getElementById('login-err').textContent = msg; }
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
-// ===== INIT =====
-loadState();
 </script>
 </body>
 </html>
