@@ -198,8 +198,8 @@
     <div class="music-now" id="music-now">♪ <span>Оберіть жанр</span></div>
     <div class="genre-btns">
       <button class="genre-btn" data-stream="https://stream.zeno.fm/0r0xa792kwzuv" onclick="playGenre(this,'Поп')">Поп</button>
-      <button class="genre-btn" data-stream="https://igor.torontocast.com:1025/stream" onclick="playGenre(this,'Джаз')">Джаз</button>
-      <button class="genre-btn" data-stream="https://stream.rcs.revma.com/ypqrvmgdmzquv" onclick="playGenre(this,'Рок')">Рок</button>
+      <button class="genre-btn" data-stream="https://streaming.radio.co/s3f6ae1cd6/listen" onclick="playGenre(this,'Джаз')">Джаз</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/vhetyvnqq28uv" onclick="playGenre(this,'Рок')">Рок</button>
       <button class="genre-btn" data-stream="https://live.musopen.org:8085/streamvbr0" onclick="playGenre(this,'Класика')">Класика</button>
       <button class="genre-btn" data-stream="https://stream.zeno.fm/2mv0fmzt754uv" onclick="playGenre(this,'Лаунж')">Лаунж</button>
       <button class="genre-btn mute" onclick="toggleMute(this)">🔇 Тихо</button>
@@ -432,6 +432,9 @@ if (savedCode && savedZone) {
   document.querySelectorAll('.zone-opt').forEach(b=>{
     b.classList.toggle('selected', b.dataset.zone === savedZone);
   });
+  // Автозапуск!
+  showScreen('player');
+  initPlayer(savedZone, savedLic);
 }
 
 function showToast(msg) {
