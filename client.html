@@ -287,6 +287,10 @@
             </div>
             <img class="file-preview" id="file-preview" src="" alt="">
           </div>
+          <div class="field">
+            <label>Або вставте URL зображення</label>
+            <input class="inp" id="bn-url" placeholder="https://example.com/banner.jpg" oninput="previewUrl(this)">
+          </div>
           <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
         </div>
       </div>
@@ -344,6 +348,7 @@ const db   = getFirestore(app);
 const storage = getStorage(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
+const IMGBB_KEY = '53218ee98108e21f2f2774d8bffb7f49';
 const TRIAL_DAYS = 3;
 let currentUser = null;
 let clientData  = null;
@@ -627,6 +632,15 @@ function getSelectedZones() {
   return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
 }
 
+window.previewUrl = inp => {
+  const url = inp.value.trim();
+  if (!url) return;
+  const p = document.getElementById('file-preview');
+  p.src = url; p.style.display='block';
+  document.getElementById('drop-icon').textContent='🔗';
+  document.getElementById('drop-text').innerHTML=`<span>URL вставлено</span>`;
+};
+
 window.previewImage = input => {
   const file = input.files[0]; if (!file) return;
   document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
@@ -657,24 +671,45 @@ window.addBanner = async () => {
   const duration = parseInt(document.getElementById('bn-duration').value);
   const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
-  if (!title)     { showToast('⚠️ Введіть назву'); return; }
-  if (!imageFile) { showToast('⚠️ Додайте зображення'); return; }
-  showToast('⏳ Завантаження...');
+  const manualUrl = document.getElementById('bn-url').value.trim();
+  if (!title) { showToast('⚠️ Введіть назву'); return; }
+  if (!imageFile && !manualUrl) { showToast('⚠️ Додайте зображення або URL'); return; }
+  showToast('⏳ Збереження...');
   try {
-    const path = `banners/${currentUser.uid}/${Date.now()}_${imageFile.name}`;
-    const storageRef = ref(storage, path);
-    await uploadBytes(storageRef, imageFile);
-    const imageUrl = await getDownloadURL(storageRef);
-    const isVideo = imageFile.type.startsWith('video/');
+    let imageUrl = manualUrl;
+    let storagePath = null;
+    let isVideo = false;
+
+    if (imageFile) {
+      isVideo = imageFile.type.startsWith('video/');
+      if (isVideo) {
+        showToast('⚠️ Відео поки не підтримується, використайте JPG/PNG');
+        return;
+      }
+      // Завантажуємо через ImgBB
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('key', IMGBB_KEY);
+      const res = await fetch('https://api.imgbb.com/1/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error('ImgBB upload failed');
+      imageUrl = data.data.url;
+      storagePath = data.data.delete_url;
+    }
+
     await addDoc(collection(db,'banners'),{
       clientId:currentUser.uid, title, duration, zones,
-      imageUrl, storagePath:path,
+      imageUrl, storagePath,
       type: isVideo ? 'video' : 'image',
       status:'active', shows:0, qrScans:0,
       createdAt:serverTimestamp()
     });
     document.getElementById('bn-title').value='';
     document.getElementById('bn-image').value='';
+    document.getElementById('bn-url').value='';
     const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
     document.getElementById('drop-icon').textContent='🖼';
     document.getElementById('drop-text').innerHTML='Перетягніть або <span>оберіть файл</span>';
