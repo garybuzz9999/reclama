@@ -672,7 +672,13 @@ window.addBanner = async () => {
   const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
   const manualUrl = document.getElementById('bn-url').value.trim();
-  if (!title) { showToast('⚠️ Введіть назву'); return; }
+  if (!title) { 
+    document.getElementById('bn-title').style.borderColor = 'var(--red)';
+    document.getElementById('bn-title').focus();
+    showToast('⚠️ Введіть назву банера!'); 
+    return; 
+  }
+  document.getElementById('bn-title').style.borderColor = '';
   if (!imageFile && !manualUrl) { showToast('⚠️ Додайте зображення або URL'); return; }
   showToast('⏳ Збереження...');
   try {
