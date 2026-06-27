@@ -185,7 +185,8 @@
     </div>
     <!-- Банер -->
     <div class="banner-frame" id="banner-frame">
-      <img id="banner-img" src="" alt="">
+      <img id="banner-img" src="" alt="" style="display:none;">
+      <video id="banner-video" src="" style="display:none;width:100%;height:100%;object-fit:contain;" muted playsinline></video>
       <div class="banner-progress">
         <div class="banner-progress-fill" id="banner-progress"></div>
       </div>
@@ -197,10 +198,10 @@
     <div class="music-now" id="music-now">♪ <span>Оберіть жанр</span></div>
     <div class="genre-btns">
       <button class="genre-btn" data-stream="https://stream.zeno.fm/0r0xa792kwzuv" onclick="playGenre(this,'Поп')">Поп</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/4d5ge5ygkqzuv" onclick="playGenre(this,'Джаз')">Джаз</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/yn65m44htwzuv" onclick="playGenre(this,'Рок')">Рок</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/fgvxmz5ptwzuv" onclick="playGenre(this,'Класика')">Класика</button>
-      <button class="genre-btn" data-stream="https://stream.zeno.fm/fsrhmvqhtwzuv" onclick="playGenre(this,'Лаунж')">Лаунж</button>
+      <button class="genre-btn" data-stream="https://igor.torontocast.com:1025/stream" onclick="playGenre(this,'Джаз')">Джаз</button>
+      <button class="genre-btn" data-stream="https://stream.rcs.revma.com/ypqrvmgdmzquv" onclick="playGenre(this,'Рок')">Рок</button>
+      <button class="genre-btn" data-stream="https://live.musopen.org:8085/streamvbr0" onclick="playGenre(this,'Класика')">Класика</button>
+      <button class="genre-btn" data-stream="https://stream.zeno.fm/2mv0fmzt754uv" onclick="playGenre(this,'Лаунж')">Лаунж</button>
       <button class="genre-btn mute" onclick="toggleMute(this)">🔇 Тихо</button>
     </div>
   </div>
@@ -227,7 +228,7 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
-const PAUSE_BETWEEN = 5 * 60 * 1000; // 5 хвилин між банерами
+const PAUSE_BETWEEN = 30 * 1000; // 30 секунд між банерами (змінити на 5*60*1000 для продакшну)
 const RELOAD_INTERVAL = 10 * 60 * 1000; // оновлювати банери кожні 10 хв
 
 let currentZone = 'center';
@@ -346,35 +347,38 @@ function showIdle() {
 function showBanner(banner) {
   if (!banner) { scheduleNext(); return; }
 
-  const img = document.getElementById('banner-img');
+  const img   = document.getElementById('banner-img');
+  const video = document.getElementById('banner-video');
   const frame = document.getElementById('banner-frame');
   const progress = document.getElementById('banner-progress');
+  const dur = (banner.duration || 30) * 1000;
 
-  img.src = banner.imageUrl || '';
-  img.onload = () => {
+  const activate = () => {
     document.getElementById('idle-frame').classList.remove('active');
     frame.classList.add('active');
-
-    // Прогрес бар
-    const dur = (banner.duration || 30) * 1000;
     progress.style.transition = 'none';
     progress.style.width = '0%';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        progress.style.transition = `width ${dur}ms linear`;
-        progress.style.width = '100%';
-      });
-    });
-
-    // Інкремент показів
-    try {
-      updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 });
-    } catch(e){}
-
-    // Після закінчення — наступний цикл
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      progress.style.transition = `width ${dur}ms linear`;
+      progress.style.width = '100%';
+    }));
+    try { updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 }); } catch(e){}
     setTimeout(() => scheduleNext(), dur);
   };
-  img.onerror = () => scheduleNext();
+
+  if (banner.type === 'video') {
+    img.style.display = 'none';
+    video.style.display = 'block';
+    video.src = banner.imageUrl || '';
+    video.oncanplay = () => { video.play(); activate(); };
+    video.onerror = () => scheduleNext();
+  } else {
+    video.style.display = 'none';
+    img.style.display = 'block';
+    img.src = banner.imageUrl || '';
+    img.onload = () => activate();
+    img.onerror = () => scheduleNext();
+  }
 }
 
 // ── CLOCK ──
