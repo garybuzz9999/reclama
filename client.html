@@ -5,541 +5,169 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>AdScreen — Кабінет клієнта</title>
   <style>
-    :root {
-      --bg: #0d0d0d;
-      --surface: #161616;
-      --surface2: #1f1f1f;
-      --surface3: #282828;
-      --border: #2a2a2a;
-      --accent: #f5c842;
-      --accent2: #e8b800;
-      --accent-dim: rgba(245,200,66,0.08);
-      --accent-border: rgba(245,200,66,0.2);
-      --text: #f0f0f0;
-      --muted: #888;
-      --hint: #555;
-      --green: #3ddc84;
-      --green-dim: rgba(61,220,132,0.08);
-      --green-border: rgba(61,220,132,0.2);
-      --red: #ff4d4d;
-      --red-dim: rgba(255,77,77,0.08);
-      --blue: #4d9fff;
-      --blue-dim: rgba(77,159,255,0.08);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    .screen { display: none; min-height: 100vh; }
-    .screen.active { display: flex; flex-direction: column; }
-
-    /* ===== LOGIN ===== */
-    #screen-login {
-      align-items: center;
-      justify-content: center;
-    }
-    .login-wrap { width: 100%; max-width: 360px; padding: 24px; }
-    .logo { text-align: center; margin-bottom: 32px; }
-    .logo-eyebrow {
-      font-size: 11px; font-weight: 700; letter-spacing: 3px;
-      text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
-    }
-    .logo-name {
-      font-size: 30px; font-weight: 800; color: var(--text); letter-spacing: -1px;
-    }
-    .logo-name span { color: var(--accent); }
-    .logo-sub { font-size: 13px; color: var(--hint); margin-top: 6px; }
-
-    .login-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-    }
-    .login-card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
-    .login-card-sub { font-size: 12px; color: var(--muted); margin-bottom: 24px; }
-
-    /* ===== ACTIVATE SCREEN ===== */
-    #screen-activate {
-      align-items: center;
-      justify-content: center;
-    }
-    .activate-wrap { width: 100%; max-width: 400px; padding: 24px; }
-    .steps {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 28px;
-      justify-content: center;
-    }
-    .step-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--border);
-      transition: background .3s;
-    }
-    .step-dot.done { background: var(--accent); }
-
-    /* ===== SHARED INPUTS ===== */
-    .field { margin-bottom: 14px; }
-    .field label {
-      display: block; font-size: 11px; font-weight: 600;
-      letter-spacing: .5px; text-transform: uppercase;
-      color: var(--hint); margin-bottom: 6px;
-    }
-    .inp {
-      width: 100%; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 10px;
-      padding: 11px 14px; font-size: 14px; color: var(--text);
-      outline: none; transition: border-color .2s;
-    }
-    .inp:focus { border-color: var(--accent2); }
-    .inp::placeholder { color: var(--hint); }
-    .inp.code-inp {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 15px; letter-spacing: 2px;
-      text-transform: uppercase; text-align: center;
-    }
-    select.inp {
-      cursor: pointer; appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 12px center;
-      padding-right: 32px;
-    }
-    select.inp option { background: var(--surface2); }
-
-    .btn-primary {
-      width: 100%; background: var(--accent); color: #000;
-      border: none; border-radius: 10px; padding: 13px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      transition: opacity .2s; letter-spacing: .2px;
-    }
-    .btn-primary:hover { opacity: .88; }
-    .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-    .err-msg {
-      color: var(--red); font-size: 12px;
-      text-align: center; margin-top: 10px; min-height: 18px;
-    }
-
-    /* ===== TOPBAR ===== */
-    .topbar {
-      background: var(--surface); border-bottom: 1px solid var(--border);
-      padding: 0 20px; height: 54px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0; position: sticky; top: 0; z-index: 100;
-    }
-    .topbar-left { display: flex; align-items: center; gap: 10px; }
-    .topbar-logo { font-size: 15px; font-weight: 800; letter-spacing: -.3px; }
-    .topbar-logo span { color: var(--accent); }
-    .topbar-client {
-      font-size: 12px; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 20px; padding: 3px 10px;
-    }
-    .topbar-right { display: flex; align-items: center; gap: 10px; }
-    .btn-logout {
-      background: none; border: 1px solid var(--border);
-      border-radius: 8px; padding: 6px 12px;
-      color: var(--muted); font-size: 12px; cursor: pointer; transition: all .2s;
-    }
-    .btn-logout:hover { border-color: var(--red); color: var(--red); }
-
-    /* ===== TABS ===== */
-    .tabs {
-      display: flex; background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
-    }
-    .tabs::-webkit-scrollbar { display: none; }
-    .tab {
-      background: none; border: none;
-      border-bottom: 2px solid transparent;
-      padding: 14px 18px; font-size: 13px; font-weight: 500;
-      color: var(--muted); cursor: pointer; white-space: nowrap; transition: all .2s;
-    }
-    .tab:hover { color: var(--text); }
-    .tab.on { color: var(--accent); border-bottom-color: var(--accent); }
-
-    /* ===== CONTENT ===== */
-    .content {
-      flex: 1; overflow-y: auto; padding: 20px;
-      max-width: 860px; width: 100%; margin: 0 auto;
-    }
-    .page { display: none; }
-    .page.active { display: block; }
-
-    /* ===== STATS ===== */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 10px; margin-bottom: 24px;
-    }
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px;
-    }
-    .stat-label {
-      font-size: 11px; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .5px; color: var(--hint); margin-bottom: 8px;
-    }
-    .stat-value {
-      font-size: 26px; font-weight: 800;
-      color: var(--text); letter-spacing: -1px;
-    }
-    .stat-value.accent { color: var(--accent); }
-    .stat-value.green { color: var(--green); }
-    .stat-sub { font-size: 11px; color: var(--hint); margin-top: 3px; }
-
-    /* ===== SECTION ===== */
-    .sec-title {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .8px; color: var(--hint); margin-bottom: 10px;
-    }
-    .card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; padding: 16px; margin-bottom: 14px;
-    }
-
-    /* ===== DEVICES ===== */
-    .device-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 0; border-bottom: 1px solid var(--border);
-    }
-    .device-item:last-child { border-bottom: none; }
-    .device-icon {
-      width: 40px; height: 40px; border-radius: 10px;
-      background: var(--surface3); display: flex;
-      align-items: center; justify-content: center;
-      font-size: 18px; flex-shrink: 0;
-    }
-    .device-info { flex: 1; min-width: 0; }
-    .device-name {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 13px; color: var(--accent); letter-spacing: 1px;
-    }
-    .device-meta { font-size: 11px; color: var(--muted); margin-top: 3px; }
-    .device-zone {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .5px; padding: 3px 8px; border-radius: 6px;
-      background: var(--blue-dim); color: var(--blue);
-      border: 1px solid rgba(77,159,255,.2);
-    }
-
-    /* ===== ACTIVATE DEVICE ===== */
-    .activate-card {
-      background: var(--accent-dim); border: 1px solid var(--accent-border);
-      border-radius: 12px; padding: 16px; margin-bottom: 14px;
-    }
-    .activate-card-title {
-      font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px;
-    }
-    .activate-card-sub { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
-    .activate-form { display: flex; gap: 10px; flex-wrap: wrap; }
-    .activate-form .field { flex: 1; min-width: 180px; margin-bottom: 0; }
-    .btn-activate {
-      background: var(--accent); color: #000; border: none;
-      border-radius: 10px; padding: 11px 20px;
-      font-size: 13px; font-weight: 700; cursor: pointer;
-      white-space: nowrap; align-self: flex-end;
-      transition: opacity .2s;
-    }
-    .btn-activate:hover { opacity: .85; }
-
-    /* ===== BANNERS ===== */
-    .banner-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 10px; margin-top: 4px;
-    }
-    .banner-card {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; overflow: hidden; position: relative;
-    }
-    .banner-img {
-      width: 100%; aspect-ratio: 16/9;
-      object-fit: cover; display: block;
-      background: var(--surface3);
-    }
-    .banner-img-placeholder {
-      width: 100%; aspect-ratio: 16/9;
-      background: var(--surface3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 28px; color: var(--hint);
-    }
-    .banner-info { padding: 10px; }
-    .banner-title {
-      font-size: 13px; font-weight: 600; color: var(--text);
-      margin-bottom: 4px; white-space: nowrap;
-      overflow: hidden; text-overflow: ellipsis;
-    }
-    .banner-zones {
-      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;
-    }
-    .zone-pill {
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .3px; padding: 2px 6px; border-radius: 4px;
-      background: var(--blue-dim); color: var(--blue);
-      border: 1px solid rgba(77,159,255,.2);
-    }
-    .banner-actions {
-      display: flex; gap: 6px;
-    }
-    .btn-sm {
-      flex: 1; background: var(--surface3); border: 1px solid var(--border);
-      border-radius: 7px; padding: 6px; font-size: 11px;
-      color: var(--muted); cursor: pointer; text-align: center;
-      transition: all .2s;
-    }
-    .btn-sm:hover { border-color: var(--red); color: var(--red); }
-    .btn-sm.toggle { }
-    .btn-sm.toggle.on { border-color: var(--green); color: var(--green); background: var(--green-dim); }
-    .banner-status {
-      position: absolute; top: 8px; right: 8px;
-      font-size: 10px; font-weight: 700; text-transform: uppercase;
-      padding: 3px 7px; border-radius: 20px;
-    }
-    .banner-status.active {
-      background: rgba(0,0,0,.6); color: var(--green); border: 1px solid var(--green-border);
-    }
-    .banner-status.paused {
-      background: rgba(0,0,0,.6); color: var(--muted); border: 1px solid var(--border);
-    }
-
-    /* ===== ADD BANNER FORM ===== */
-    .add-banner-form { display: flex; flex-direction: column; gap: 10px; }
-    .zones-picker { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-    .zone-btn {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 14px; font-size: 13px;
-      color: var(--muted); cursor: pointer; transition: all .2s;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .zone-btn:hover { border-color: var(--accent); color: var(--text); }
-    .zone-btn.selected {
-      background: var(--accent-dim); border-color: var(--accent);
-      color: var(--accent); font-weight: 600;
-    }
-    .file-drop {
-      border: 2px dashed var(--border); border-radius: 10px;
-      padding: 28px; text-align: center; cursor: pointer;
-      transition: all .2s; position: relative;
-    }
-    .file-drop:hover, .file-drop.over {
-      border-color: var(--accent); background: var(--accent-dim);
-    }
-    .file-drop input[type=file] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer;
-    }
-    .file-drop-icon { font-size: 28px; margin-bottom: 8px; }
-    .file-drop-text { font-size: 13px; color: var(--muted); }
-    .file-drop-text span { color: var(--accent); }
-    .file-preview {
-      display: none; width: 100%; aspect-ratio: 16/9;
-      object-fit: cover; border-radius: 8px; margin-top: 8px;
-    }
-    .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
-    .form-row .field { flex: 1; min-width: 160px; margin-bottom: 0; }
-
-    /* ===== SCHEDULE ===== */
-    .schedule-row {
-      display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
-    .schedule-row:last-child { border-bottom: none; }
-    .schedule-time {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 12px; color: var(--accent); width: 80px; flex-shrink: 0;
-    }
-    .schedule-name { flex: 1; font-size: 13px; color: var(--text); }
-    .schedule-dur {
-      font-size: 11px; color: var(--muted);
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 6px; padding: 3px 8px;
-    }
-
-    /* ===== STATS PAGE ===== */
-    .chart-bar-wrap { margin-bottom: 20px; }
-    .chart-label {
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--muted); margin-bottom: 4px;
-    }
-    .chart-bar-track {
-      height: 8px; background: var(--surface2);
-      border-radius: 4px; overflow: hidden;
-    }
-    .chart-bar-fill {
-      height: 100%; background: var(--accent);
-      border-radius: 4px; transition: width 1s ease;
-    }
-    .chart-bar-fill.green { background: var(--green); }
-
-    /* ===== EMPTY ===== */
-    .empty {
-      text-align: center; padding: 36px 20px;
-      color: var(--hint); font-size: 13px;
-    }
-    .empty-icon { font-size: 32px; margin-bottom: 10px; }
-
-    /* ===== MODAL ===== */
-    .modal-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,.75); z-index: 200;
-      align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-overlay.active { display: flex; }
-    .modal {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px;
-      width: 100%; max-width: 500px; max-height: 85vh; overflow-y: auto;
-    }
-    .modal-header {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-bottom: 20px;
-    }
-    .modal-title { font-size: 16px; font-weight: 700; }
-    .btn-close {
-      background: none; border: none; color: var(--muted);
-      font-size: 22px; cursor: pointer; line-height: 1;
-    }
-
-    /* ===== TOAST ===== */
-    .toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(80px);
-      background: var(--surface3); border: 1px solid var(--border);
-      border-radius: 10px; padding: 10px 18px;
-      font-size: 13px; color: var(--text); z-index: 999;
-      transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-      white-space: nowrap; pointer-events: none;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ===== BADGE ===== */
-    .badge {
-      font-size: 10px; font-weight: 700; letter-spacing: .5px;
-      text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
-    }
-    .badge-green { background: var(--green-dim); color: var(--green); border: 1px solid var(--green-border); }
-    .badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,77,77,.2); }
-    .badge-accent { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent-border); }
-
-    /* ===== LICENSE LIST ===== */
-    .lic-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 0; border-bottom: 1px solid var(--border);
-    }
-    .lic-item:last-child { border-bottom: none; }
-    .lic-code {
-      font-family: 'SF Mono', 'Fira Code', monospace;
-      font-size: 13px; color: var(--accent); flex: 1; letter-spacing: 1px;
-    }
+    :root{--bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;--border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;--accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);--text:#f0f0f0;--muted:#888;--hint:#555;--green:#3ddc84;--green-dim:rgba(61,220,132,.08);--green-border:rgba(61,220,132,.2);--red:#ff4d4d;--red-dim:rgba(255,77,77,.08);--blue:#4d9fff;--blue-dim:rgba(77,159,255,.08);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    .screen{display:none;min-height:100vh;}.screen.active{display:flex;flex-direction:column;}
+    #screen-login{align-items:center;justify-content:center;}
+    .login-wrap{width:100%;max-width:360px;padding:24px;}
+    .logo{text-align:center;margin-bottom:32px;}
+    .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+    .logo-name{font-size:28px;font-weight:800;letter-spacing:-1px;}
+    .logo-name span{color:var(--accent);}
+    .logo-sub{font-size:13px;color:var(--hint);margin-top:6px;}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
+    .login-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+    .login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:6px;}
+    .inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
+    .inp:focus{border-color:var(--accent2);}
+    .inp::placeholder{color:var(--hint);}
+    select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+    select.inp option{background:var(--surface2);}
+    .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.88;}
+    .err-msg{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+    .topbar-logo{font-size:15px;font-weight:800;}.topbar-logo span{color:var(--accent);}
+    .topbar-client{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;margin-left:8px;}
+    .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);}
+    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{background:none;border:none;border-bottom:2px solid transparent;padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;}
+    .tab:hover{color:var(--text);}.tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+    .content{flex:1;overflow-y:auto;padding:20px;max-width:860px;width:100%;margin:0 auto;}
+    .page{display:none;}.page.active{display:block;}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--hint);margin-bottom:8px;}
+    .stat-value{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;}
+    .stat-value.accent{color:var(--accent);}.stat-value.green{color:var(--green);}
+    .stat-sub{font-size:11px;color:var(--hint);margin-top:3px;}
+    .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--hint);margin-bottom:10px;}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+    .activate-card{background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;padding:16px;margin-bottom:14px;}
+    .activate-card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+    .activate-card-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+    .activate-form{display:flex;gap:10px;flex-wrap:wrap;}
+    .activate-form .field{flex:1;min-width:180px;margin-bottom:0;}
+    .btn-activate{background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:opacity .2s;}
+    .btn-activate:hover{opacity:.85;}
+    .device-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .device-item:last-child{border-bottom:none;}
+    .device-icon{width:40px;height:40px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .device-info{flex:1;min-width:0;}
+    .device-name{font-size:14px;font-weight:600;}
+    .device-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+    .zone-pill-blue{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:6px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
+    .badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+    .badge-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+    .badge-accent{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+    .banner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px;}
+    .banner-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;}
+    .banner-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--surface3);}
+    .banner-img-ph{width:100%;aspect-ratio:16/9;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--hint);}
+    .banner-info{padding:10px;}
+    .banner-title{font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .banner-zones{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+    .zone-chip{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
+    .banner-actions{display:flex;gap:6px;}
+    .btn-sm{flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px;font-size:11px;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s;}
+    .btn-sm:hover{border-color:var(--red);color:var(--red);}
+    .btn-sm.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+    .banner-status-badge{position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;text-transform:uppercase;padding:3px 7px;border-radius:20px;}
+    .banner-status-badge.active{background:rgba(0,0,0,.6);color:var(--green);border:1px solid var(--green-border);}
+    .banner-status-badge.paused{background:rgba(0,0,0,.6);color:var(--muted);border:1px solid var(--border);}
+    .add-banner-form{display:flex;flex-direction:column;gap:10px;}
+    .zones-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+    .zone-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .zone-btn:hover{border-color:var(--accent);color:var(--text);}
+    .zone-btn.selected{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);font-weight:600;}
+    .file-drop{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+    .file-drop:hover,.file-drop.over{border-color:var(--accent);background:var(--accent-dim);}
+    .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+    .file-drop-icon{font-size:28px;margin-bottom:8px;}
+    .file-drop-text{font-size:13px;color:var(--muted);}
+    .file-drop-text span{color:var(--accent);}
+    .file-preview{display:none;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;margin-top:8px;}
+    .form-row{display:flex;gap:10px;flex-wrap:wrap;}
+    .form-row .field{flex:1;min-width:160px;margin-bottom:0;}
+    .chart-bar-wrap{margin-bottom:16px;}
+    .chart-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .chart-bar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+    .chart-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 1s ease;}
+    .chart-bar-fill.green{background:var(--green);}
+    .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
+    .empty-icon{font-size:32px;margin-bottom:10px;}
+    .lic-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .lic-item:last-child{border-bottom:none;}
+    .lic-code{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--accent);flex:1;letter-spacing:1px;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+    .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
   </style>
 </head>
 <body>
 
-<!-- ===== LOGIN ===== -->
 <div class="screen active" id="screen-login">
   <div class="login-wrap">
     <div class="logo">
-      <div class="logo-eyebrow">Кабінет клієнта</div>
+      <div class="logo-mark">Кабінет клієнта</div>
       <div class="logo-name">Ad<span>Screen</span></div>
-      <div class="logo-sub">Керуйте рекламою на всіх своїх екранах</div>
+      <div class="logo-sub">Керуйте рекламою на всіх екранах</div>
     </div>
     <div class="login-card">
-      <div class="login-card-title">Вхід</div>
-      <div class="login-card-sub">Використовуйте дані які надав адміністратор</div>
-      <div class="field">
-        <label>Email</label>
-        <input class="inp" id="login-email" type="email" placeholder="your@email.com">
-      </div>
-      <div class="field">
-        <label>Пароль</label>
-        <input class="inp" id="login-password" type="password" placeholder="••••••••">
-      </div>
+      <div class="login-title">Вхід</div>
+      <div class="login-sub">Використовуйте дані які надав адміністратор</div>
+      <div class="field"><label>Email</label><input class="inp" id="login-email" type="email" placeholder="your@email.com"></div>
+      <div class="field"><label>Пароль</label><input class="inp" id="login-password" type="password" placeholder="••••••••"></div>
       <button class="btn-primary" id="btn-login">Увійти</button>
       <div class="err-msg" id="login-err"></div>
     </div>
   </div>
 </div>
 
-<!-- ===== MAIN CABINET ===== -->
 <div class="screen" id="screen-cabinet">
   <div class="topbar">
-    <div class="topbar-left">
+    <div style="display:flex;align-items:center;">
       <div class="topbar-logo">Ad<span>Screen</span></div>
       <div class="topbar-client" id="topbar-client-name">—</div>
     </div>
-    <div class="topbar-right">
-      <button class="btn-logout" onclick="logout()">Вийти</button>
-    </div>
+    <button class="btn-logout" onclick="doLogout()">Вийти</button>
   </div>
-
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
     <button class="tab" onclick="showTab('banners',this)">Банери</button>
-    <button class="tab" onclick="showTab('schedule',this)">Розклад</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
   </div>
-
   <div class="content">
 
-    <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Пристрої</div>
-          <div class="stat-value green" id="ov-devices">0</div>
-          <div class="stat-sub">активних</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Банери</div>
-          <div class="stat-value accent" id="ov-banners">0</div>
-          <div class="stat-sub">опубліковано</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Покази сьогодні</div>
-          <div class="stat-value" id="ov-shows">0</div>
-          <div class="stat-sub">переглядів</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">QR-сканів</div>
-          <div class="stat-value accent" id="ov-qr">0</div>
-          <div class="stat-sub">за сьогодні</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Банери</div><div class="stat-value accent" id="ov-banners">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Покази</div><div class="stat-value" id="ov-shows">—</div><div class="stat-sub">всього</div></div>
+        <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="ov-qr">—</div><div class="stat-sub">переходів</div></div>
       </div>
-
       <div class="sec-title">Мої ліцензії</div>
-      <div class="card" id="ov-licenses">
-        <div class="empty"><div class="empty-icon">🔑</div>Немає ліцензій</div>
-      </div>
-
+      <div class="card" id="ov-licenses"><div class="loading">Завантаження...</div></div>
       <div class="sec-title">Активні банери</div>
-      <div class="card" id="ov-active-banners">
-        <div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>
-      </div>
+      <div class="card" id="ov-active-banners"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- DEVICES -->
     <div class="page" id="page-devices">
       <div class="activate-card">
         <div class="activate-card-title">➕ Підключити пристрій</div>
-        <div class="activate-card-sub">Введіть ліцензійний код на планшеті або телевізорі та виберіть зону показу</div>
+        <div class="activate-card-sub">Виберіть вільну ліцензію, введіть назву і зону — пристрій одразу отримає контент</div>
         <div class="activate-form">
-          <div class="field">
-            <label>Ліцензійний код</label>
-            <select class="inp" id="act-code">
-              <option value="">— Оберіть код —</option>
-            </select>
+          <div class="field"><label>Ліцензійний код</label>
+            <select class="inp" id="act-code"><option value="">— Оберіть код —</option></select>
           </div>
-          <div class="field">
-            <label>Назва пристрою</label>
-            <input class="inp" id="act-name" placeholder="Таксі #12 / Зал А / Рецепція">
-          </div>
-          <div class="field">
-            <label>Зона</label>
+          <div class="field"><label>Назва пристрою</label><input class="inp" id="act-name" placeholder="Таксі #12 / Зал А"></div>
+          <div class="field"><label>Зона</label>
             <select class="inp" id="act-zone">
               <option value="center">🏙 Центр</option>
               <option value="north">⬆️ Північ</option>
@@ -553,36 +181,24 @@
           </div>
         </div>
       </div>
-
       <div class="sec-title">Мої пристрої</div>
-      <div class="card" id="devices-list">
-        <div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає<br>Активуйте перший пристрій вище</div>
-      </div>
+      <div class="card" id="devices-list"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- BANNERS -->
     <div class="page" id="page-banners">
-      <!-- Add banner -->
       <div class="sec-title">Додати банер</div>
       <div class="card" style="margin-bottom:20px;">
         <div class="add-banner-form">
           <div class="form-row">
-            <div class="field">
-              <label>Назва банера</label>
-              <input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%">
-            </div>
-            <div class="field">
-              <label>Тривалість показу</label>
+            <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%"></div>
+            <div class="field"><label>Тривалість</label>
               <select class="inp" id="bn-duration">
-                <option value="15">15 секунд</option>
-                <option value="20">20 секунд</option>
-                <option value="30" selected>30 секунд</option>
-                <option value="45">45 секунд</option>
-                <option value="60">1 хвилина</option>
+                <option value="15">15 сек</option><option value="20">20 сек</option>
+                <option value="30" selected>30 сек</option><option value="45">45 сек</option>
+                <option value="60">1 хв</option>
               </select>
             </div>
           </div>
-
           <div class="field">
             <label>Зони показу</label>
             <div class="zones-picker" id="zones-picker">
@@ -594,186 +210,210 @@
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
             </div>
           </div>
-
           <div class="field">
-            <label>Зображення банера (JPG / PNG, 16:9)</label>
+            <label>Зображення (JPG/PNG 16:9)</label>
             <div class="file-drop" id="file-drop">
               <input type="file" id="bn-image" accept="image/*" onchange="previewImage(this)">
-              <div class="file-drop-icon">🖼</div>
-              <div class="file-drop-text">Перетягніть файл або <span>оберіть зі сховища</span></div>
+              <div class="file-drop-icon" id="drop-icon">🖼</div>
+              <div class="file-drop-text" id="drop-text">Перетягніть або <span>оберіть файл</span></div>
             </div>
             <img class="file-preview" id="file-preview" src="" alt="">
           </div>
-
-          <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати банер</button>
+          <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
         </div>
       </div>
-
       <div class="sec-title">Мої банери</div>
-      <div id="banners-grid">
-        <div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає<br>Додайте перший банер вище</div>
-      </div>
+      <div id="banners-grid"><div class="loading">Завантаження...</div></div>
     </div>
 
-    <!-- SCHEDULE -->
-    <div class="page" id="page-schedule">
-      <div class="sec-title">Розклад показів на сьогодні</div>
-      <div class="card" id="schedule-list">
-        <div class="empty"><div class="empty-icon">🕐</div>Додайте банери щоб побачити розклад</div>
-      </div>
-
-      <div class="sec-title" style="margin-top:16px;">Налаштування чергування</div>
-      <div class="card">
-        <div class="field">
-          <label>Контент між рекламою</label>
-          <select class="inp" id="content-type">
-            <option value="cartoon">🎬 Мультики</option>
-            <option value="music">🎵 Музика + заставка</option>
-            <option value="blank">⬛ Чорний екран</option>
-          </select>
-        </div>
-        <div class="field" style="margin-bottom:0;">
-          <label>Пауза між банерами</label>
-          <select class="inp" id="pause-duration">
-            <option value="3">3 хвилини</option>
-            <option value="5" selected>5 хвилин</option>
-            <option value="10">10 хвилин</option>
-            <option value="15">15 хвилин</option>
-          </select>
-        </div>
-      </div>
-    </div>
-
-    <!-- STATS -->
     <div class="page" id="page-stats">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Всього показів</div>
-          <div class="stat-value" id="st-total">0</div>
-          <div class="stat-sub">за весь час</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">QR-сканів</div>
-          <div class="stat-value accent" id="st-qr">0</div>
-          <div class="stat-sub">переходів</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Конверсія</div>
-          <div class="stat-value green" id="st-conv">0%</div>
-          <div class="stat-sub">скан / показ</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Всього показів</div><div class="stat-value" id="st-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="st-qr">—</div></div>
+        <div class="stat-card"><div class="stat-label">Конверсія</div><div class="stat-value green" id="st-conv">—</div></div>
       </div>
-
-      <div class="sec-title">Покази по зонах</div>
+      <div class="sec-title">По зонах</div>
       <div class="card" id="stats-zones"></div>
-
-      <div class="sec-title" style="margin-top:16px;">Покази по банерах</div>
+      <div class="sec-title" style="margin-top:16px;">По банерах</div>
       <div class="card" id="stats-banners"></div>
     </div>
 
   </div>
 </div>
 
-<!-- ===== TOAST ===== -->
 <div class="toast" id="toast"></div>
 
-<script>
-// ===== DEMO CLIENT =====
-const DEMO_CLIENT = {
-  id: 'demo001',
-  name: 'Піцерія Центр',
-  email: 'pizza@center.ua',
-  password: '1234',
-  emoji: '🍕',
-  licenses: [
-    { code: 'ADS-001A-WXRT-001', status: 'free' },
-    { code: 'ADS-001A-WXRT-002', status: 'free' },
-    { code: 'ADS-001A-WXRT-003', status: 'free' },
-  ]
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, collection, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
+  authDomain: "reklama-7ed3d.firebaseapp.com",
+  projectId: "reklama-7ed3d",
+  storageBucket: "reklama-7ed3d.firebasestorage.app",
+  messagingSenderId: "992657806561",
+  appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
 };
 
-const ZONES = {
-  center: '🏙 Центр',
-  north:  '⬆️ Північ',
-  south:  '⬇️ Південь',
-  west:   '⬅️ Захід',
-  east:   '➡️ Схід',
-  all:    '🌐 Всі зони'
-};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
-// ===== STATE =====
-let state = {
-  client: null,
-  devices: [],
-  banners: [],
-  licenses: [...DEMO_CLIENT.licenses]
-};
+const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
+let currentUser = null;
+let clientData = null;
 
-function loadState() {
-  const s = localStorage.getItem('adscreen_client_state');
-  if (s) {
-    try {
-      const parsed = JSON.parse(s);
-      state.devices = parsed.devices || [];
-      state.banners = parsed.banners || [];
-      state.licenses = parsed.licenses || [...DEMO_CLIENT.licenses];
-    } catch(e) {}
+// ── AUTH ──
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    const snap = await getDoc(doc(db, 'clients', user.uid));
+    if (snap.exists()) {
+      currentUser = user;
+      clientData = { id: user.uid, ...snap.data() };
+      document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
+      showScreen('cabinet');
+      loadAll();
+    } else {
+      await signOut(auth);
+      showErr('Акаунт не знайдено');
+    }
   }
-}
-
-function saveState() {
-  localStorage.setItem('adscreen_client_state', JSON.stringify({
-    devices: state.devices,
-    banners: state.banners,
-    licenses: state.licenses
-  }));
-}
-
-// ===== AUTH =====
-document.getElementById('btn-login').onclick = login;
-document.getElementById('login-password').addEventListener('keydown', e => {
-  if (e.key === 'Enter') login();
 });
 
-function login() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-password').value;
-  const err = document.getElementById('login-err');
+document.getElementById('btn-login').onclick = doLogin;
+document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
 
-  if (email === DEMO_CLIENT.email && pass === DEMO_CLIENT.password) {
-    err.textContent = '';
-    state.client = DEMO_CLIENT;
-    document.getElementById('topbar-client-name').textContent = `${DEMO_CLIENT.emoji} ${DEMO_CLIENT.name}`;
-    showScreen('cabinet');
-    renderAll();
-    populateLicenseSelect();
-  } else {
-    err.textContent = 'Невірний email або пароль';
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  showErr('');
+  if (!email || !pass) { showErr('Заповніть всі поля'); return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showErr('Невірний email або пароль');
   }
 }
 
-function logout() {
-  state.client = null;
-  showScreen('login');
-}
+window.doLogout = async () => { await signOut(auth); showScreen('login'); };
 
-// ===== SCREENS & TABS =====
-function showScreen(name) {
+// ── SCREENS / TABS ──
+function showScreen(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  document.getElementById('screen-' + n).classList.add('active');
 }
-
-function showTab(name, btn) {
+window.showTab = (name, btn) => {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   btn.classList.add('on');
   document.getElementById('page-' + name).classList.add('active');
   if (name === 'stats') renderStats();
-  if (name === 'schedule') renderSchedule();
+};
+
+// ── LOAD ALL ──
+async function loadAll() {
+  const [lics, devs, bans] = await Promise.all([
+    getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'devices'), where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'banners'), where('clientId','==',currentUser.uid), orderBy('createdAt','desc')))
+  ]);
+
+  const licenses = lics.docs.map(d => ({id:d.id,...d.data()}));
+  const devices  = devs.docs.map(d => ({id:d.id,...d.data()}));
+  const banners  = bans.docs.map(d => ({id:d.id,...d.data()}));
+
+  const active   = banners.filter(b => b.status === 'active');
+  const shows    = banners.reduce((s,b) => s+(b.shows||0), 0);
+  const qr       = banners.reduce((s,b) => s+(b.qrScans||0), 0);
+
+  document.getElementById('ov-devices').textContent  = devices.length;
+  document.getElementById('ov-banners').textContent  = active.length;
+  document.getElementById('ov-shows').textContent    = shows;
+  document.getElementById('ov-qr').textContent       = qr;
+
+  renderLicenses(licenses);
+  renderActiveBanners(active);
+  renderDevices(devices, licenses);
+  renderBanners(banners);
 }
 
-// ===== ZONES PICKER =====
-function toggleZone(btn) {
+// ── LICENSES ──
+function renderLicenses(licenses) {
+  const el = document.getElementById('ov-licenses');
+  if (!licenses.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div>Ліцензій немає</div>'; return; }
+  el.innerHTML = licenses.map(l => `
+    <div class="lic-item">
+      <div class="lic-code">${l.code}</div>
+      <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+    </div>`).join('');
+}
+
+function renderActiveBanners(banners) {
+  const el = document.getElementById('ov-active-banners');
+  if (!banners.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>'; return; }
+  el.innerHTML = banners.slice(0,3).map(b => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
+      <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
+      <span class="badge badge-green">Live</span>
+    </div>`).join('');
+}
+
+// ── DEVICES ──
+function renderDevices(devices, licenses) {
+  const freeLics = licenses.filter(l => l.status === 'free');
+  const sel = document.getElementById('act-code');
+  sel.innerHTML = '<option value="">— Оберіть код —</option>' +
+    freeLics.map(l => `<option value="${l.id}">${l.code}</option>`).join('');
+
+  const el = document.getElementById('devices-list');
+  if (!devices.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
+  el.innerHTML = devices.map(d => `
+    <div class="device-item">
+      <div class="device-icon">📱</div>
+      <div class="device-info">
+        <div class="device-name">${d.name}</div>
+        <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}</div>
+      </div>
+      <span class="zone-pill-blue">${ZONES[d.zone]||d.zone}</span>
+      <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
+      <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
+    </div>`).join('');
+}
+
+window.activateDevice = async () => {
+  const licId = document.getElementById('act-code').value;
+  const name  = document.getElementById('act-name').value.trim();
+  const zone  = document.getElementById('act-zone').value;
+  if (!licId) { showToast('⚠️ Оберіть ліцензійний код'); return; }
+  if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
+  const licSnap = await getDoc(doc(db,'licenses',licId));
+  const lic = licSnap.data();
+  await addDoc(collection(db,'devices'), {
+    clientId: currentUser.uid, licenseId: licId,
+    code: lic.code, name, zone,
+    activatedAt: serverTimestamp(), online: true
+  });
+  await updateDoc(doc(db,'licenses',licId), { status:'used' });
+  document.getElementById('act-name').value = '';
+  showToast(`✅ Пристрій "${name}" активовано!`);
+  loadAll();
+};
+
+window.removeDevice = async (deviceId, licenseId) => {
+  if (!confirm('Деактивувати пристрій?')) return;
+  await deleteDoc(doc(db,'devices',deviceId));
+  if (licenseId) await updateDoc(doc(db,'licenses',licenseId), { status:'free' });
+  showToast('🗑️ Пристрій деактивовано');
+  loadAll();
+};
+
+// ── BANNERS ──
+window.toggleZone = btn => {
   const zone = btn.dataset.zone;
   if (zone === 'all') {
     document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
@@ -781,10 +421,10 @@ function toggleZone(btn) {
   } else {
     document.querySelector('[data-zone="all"]').classList.remove('selected');
     btn.classList.toggle('selected');
-    const anySelected = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b => b.classList.contains('selected'));
-    if (!anySelected) document.querySelector('[data-zone="all"]').classList.add('selected');
+    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b => b.classList.contains('selected'));
+    if (!any) document.querySelector('[data-zone="all"]').classList.add('selected');
   }
-}
+};
 
 function getSelectedZones() {
   const allBtn = document.querySelector('[data-zone="all"]');
@@ -792,8 +432,7 @@ function getSelectedZones() {
   return [...document.querySelectorAll('.zone-btn.selected')].map(b => b.dataset.zone);
 }
 
-// ===== IMAGE PREVIEW =====
-function previewImage(input) {
+window.previewImage = input => {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -801,311 +440,139 @@ function previewImage(input) {
     const preview = document.getElementById('file-preview');
     preview.src = e.target.result;
     preview.style.display = 'block';
-    document.querySelector('.file-drop-icon').textContent = '✅';
-    document.querySelector('.file-drop-text').innerHTML = `<span>${file.name}</span>`;
+    document.getElementById('drop-icon').textContent = '✅';
+    document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
   };
   reader.readAsDataURL(file);
-}
+};
 
-// Drag & drop
 const dropZone = document.getElementById('file-drop');
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('over');
+  e.preventDefault(); dropZone.classList.remove('over');
   const file = e.dataTransfer.files[0];
   if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer();
-    dt.items.add(file);
+    const dt = new DataTransfer(); dt.items.add(file);
     document.getElementById('bn-image').files = dt.files;
-    previewImage(document.getElementById('bn-image'));
+    window.previewImage(document.getElementById('bn-image'));
   }
 });
 
-// ===== ADD BANNER =====
-function addBanner() {
-  const title = document.getElementById('bn-title').value.trim();
+window.addBanner = async () => {
+  const title    = document.getElementById('bn-title').value.trim();
   const duration = parseInt(document.getElementById('bn-duration').value);
-  const zones = getSelectedZones();
+  const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
-  const preview = document.getElementById('file-preview');
+  if (!title)     { showToast('⚠️ Введіть назву банера'); return; }
+  if (!imageFile) { showToast('⚠️ Додайте зображення'); return; }
 
-  if (!title) { showToast('⚠️ Введіть назву банера'); return; }
-  if (!imageFile && !preview.src) { showToast('⚠️ Додайте зображення'); return; }
+  showToast('⏳ Завантаження...');
+  try {
+    const path = `banners/${currentUser.uid}/${Date.now()}_${imageFile.name}`;
+    const storageRef = ref(storage, path);
+    await uploadBytes(storageRef, imageFile);
+    const imageUrl = await getDownloadURL(storageRef);
 
-  const banner = {
-    id: Date.now().toString(36),
-    title,
-    duration,
-    zones,
-    imageUrl: preview.src || null,
-    status: 'active',
-    createdAt: new Date().toISOString(),
-    shows: Math.floor(Math.random() * 200),
-    qrScans: Math.floor(Math.random() * 20)
-  };
+    await addDoc(collection(db,'banners'), {
+      clientId: currentUser.uid, title, duration, zones,
+      imageUrl, storagePath: path,
+      status: 'active', shows: 0, qrScans: 0,
+      createdAt: serverTimestamp()
+    });
 
-  state.banners.unshift(banner);
-  saveState();
+    document.getElementById('bn-title').value = '';
+    document.getElementById('bn-image').value = '';
+    const preview = document.getElementById('file-preview');
+    preview.style.display = 'none'; preview.src = '';
+    document.getElementById('drop-icon').textContent = '🖼';
+    document.getElementById('drop-text').innerHTML = 'Перетягніть або <span>оберіть файл</span>';
+    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelector('[data-zone="all"]').classList.add('selected');
 
-  // Reset form
-  document.getElementById('bn-title').value = '';
-  document.getElementById('bn-image').value = '';
-  preview.style.display = 'none';
-  preview.src = '';
-  document.querySelector('.file-drop-icon').textContent = '🖼';
-  document.querySelector('.file-drop-text').innerHTML = 'Перетягніть файл або <span>оберіть зі сховища</span>';
-  document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector('[data-zone="all"]').classList.add('selected');
-
-  renderAll();
-  showToast('✅ Банер опубліковано!');
-}
-
-function toggleBanner(id) {
-  const b = state.banners.find(b => b.id === id);
-  if (!b) return;
-  b.status = b.status === 'active' ? 'paused' : 'active';
-  saveState();
-  renderBanners();
-  renderOverview();
-  showToast(b.status === 'active' ? '▶️ Банер активовано' : '⏸ Банер призупинено');
-}
-
-function deleteBanner(id) {
-  if (!confirm('Видалити банер?')) return;
-  state.banners = state.banners.filter(b => b.id !== id);
-  saveState();
-  renderAll();
-  showToast('🗑️ Банер видалено');
-}
-
-// ===== ACTIVATE DEVICE =====
-function populateLicenseSelect() {
-  const sel = document.getElementById('act-code');
-  const free = state.licenses.filter(l => l.status === 'free');
-  sel.innerHTML = '<option value="">— Оберіть код —</option>' +
-    free.map(l => `<option value="${l.code}">${l.code}</option>`).join('');
-}
-
-function activateDevice() {
-  const code = document.getElementById('act-code').value;
-  const name = document.getElementById('act-name').value.trim();
-  const zone = document.getElementById('act-zone').value;
-
-  if (!code) { showToast('⚠️ Оберіть ліцензійний код'); return; }
-  if (!name) { showToast('⚠️ Введіть назву пристрою'); return; }
-
-  // Mark license as used
-  const lic = state.licenses.find(l => l.code === code);
-  if (lic) lic.status = 'used';
-
-  state.devices.push({
-    id: Date.now().toString(36),
-    code, name, zone,
-    activatedAt: new Date().toISOString(),
-    online: true
-  });
-
-  saveState();
-  populateLicenseSelect();
-  renderAll();
-  document.getElementById('act-name').value = '';
-  showToast(`✅ Пристрій "${name}" активовано!`);
-}
-
-function removeDevice(id) {
-  if (!confirm('Деактивувати пристрій?')) return;
-  const dev = state.devices.find(d => d.id === id);
-  if (dev) {
-    const lic = state.licenses.find(l => l.code === dev.code);
-    if (lic) lic.status = 'free';
+    showToast('✅ Банер опубліковано!');
+    loadAll();
+  } catch(e) {
+    showToast('❌ Помилка: ' + e.message);
   }
-  state.devices = state.devices.filter(d => d.id !== id);
-  saveState();
-  populateLicenseSelect();
-  renderAll();
-  showToast('🗑️ Пристрій деактивовано');
-}
+};
 
-// ===== RENDER =====
-function renderAll() {
-  renderOverview();
-  renderDevices();
-  renderBanners();
-}
-
-function renderOverview() {
-  const active = state.banners.filter(b => b.status === 'active').length;
-  const shows = state.banners.reduce((s, b) => s + (b.shows || 0), 0);
-  const qr = state.banners.reduce((s, b) => s + (b.qrScans || 0), 0);
-
-  document.getElementById('ov-devices').textContent = state.devices.length;
-  document.getElementById('ov-banners').textContent = active;
-  document.getElementById('ov-shows').textContent = shows;
-  document.getElementById('ov-qr').textContent = qr;
-
-  // Licenses
-  const licEl = document.getElementById('ov-licenses');
-  if (!state.licenses.length) {
-    licEl.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div>Немає ліцензій</div>';
-  } else {
-    licEl.innerHTML = state.licenses.map(l => `
-      <div class="lic-item">
-        <div class="lic-code">${l.code}</div>
-        <span class="badge ${l.status === 'used' ? 'badge-accent' : 'badge-green'}">
-          ${l.status === 'used' ? '● Активовано' : '● Вільна'}
-        </span>
-      </div>
-    `).join('');
-  }
-
-  // Active banners preview
-  const activeBanners = state.banners.filter(b => b.status === 'active').slice(0, 3);
-  const abEl = document.getElementById('ov-active-banners');
-  if (!activeBanners.length) {
-    abEl.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>';
-  } else {
-    abEl.innerHTML = activeBanners.map(b => `
-      <div class="schedule-row">
-        <div class="schedule-name">${b.title}</div>
-        <div class="schedule-dur">${b.duration}с</div>
-        <span class="badge badge-green">Активний</span>
-      </div>
-    `).join('');
-  }
-}
-
-function renderDevices() {
-  const el = document.getElementById('devices-list');
-  if (!state.devices.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає<br>Активуйте перший пристрій вище</div>';
-    return;
-  }
-  el.innerHTML = state.devices.map(d => `
-    <div class="device-item">
-      <div class="device-icon">📱</div>
-      <div class="device-info">
-        <div class="device-name">${d.code}</div>
-        <div class="device-meta">${d.name} · Активовано ${new Date(d.activatedAt).toLocaleDateString('uk-UA')}</div>
-      </div>
-      <div class="device-zone">${ZONES[d.zone] || d.zone}</div>
-      <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
-      <button onclick="removeDevice('${d.id}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;" title="Деактивувати">🗑️</button>
-    </div>
-  `).join('');
-}
-
-function renderBanners() {
+function renderBanners(banners) {
   const el = document.getElementById('banners-grid');
-  if (!state.banners.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає<br>Додайте перший банер вище</div>';
-    return;
-  }
-  el.innerHTML = `<div class="banner-grid">${state.banners.map(b => {
-    const zonesHtml = b.zones.map(z => `<span class="zone-pill">${ZONES[z] || z}</span>`).join('');
-    const imgHtml = b.imageUrl
-      ? `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`
-      : `<div class="banner-img-placeholder">🖼</div>`;
-    return `
-      <div class="banner-card">
-        ${imgHtml}
-        <div class="banner-status ${b.status === 'active' ? 'active' : 'paused'}">
-          ${b.status === 'active' ? '● Live' : '⏸ Пауза'}
-        </div>
-        <div class="banner-info">
-          <div class="banner-title">${b.title}</div>
-          <div class="banner-zones">${zonesHtml}</div>
-          <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">
-            ${b.duration}с · ${b.shows || 0} показів · ${b.qrScans || 0} QR
-          </div>
-          <div class="banner-actions">
-            <button class="btn-sm toggle ${b.status === 'active' ? 'on' : ''}" onclick="toggleBanner('${b.id}')">
-              ${b.status === 'active' ? '⏸ Пауза' : '▶️ Старт'}
-            </button>
-            <button class="btn-sm" onclick="deleteBanner('${b.id}')">🗑️ Видалити</button>
-          </div>
+  if (!banners.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
+  el.innerHTML = `<div class="banner-grid">${banners.map(b => `
+    <div class="banner-card">
+      ${b.imageUrl ? `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">` : '<div class="banner-img-ph">🖼</div>'}
+      <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
+      <div class="banner-info">
+        <div class="banner-title">${b.title}</div>
+        <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
+        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів · ${b.qrScans||0} QR</div>
+        <div class="banner-actions">
+          <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
+            ${b.status==='active'?'⏸ Пауза':'▶️ Старт'}
+          </button>
+          <button class="btn-sm" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️</button>
         </div>
       </div>
-    `;
-  }).join('')}</div>`;
+    </div>`).join('')}</div>`;
 }
 
-function renderSchedule() {
-  const el = document.getElementById('schedule-list');
-  const active = state.banners.filter(b => b.status === 'active');
-  if (!active.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">🕐</div>Додайте активні банери щоб побачити розклад</div>';
-    return;
+window.toggleBanner = async (id, current) => {
+  const newStatus = current === 'active' ? 'paused' : 'active';
+  await updateDoc(doc(db,'banners',id), { status: newStatus });
+  showToast(newStatus === 'active' ? '▶️ Активовано' : '⏸ Призупинено');
+  loadAll();
+};
+
+window.deleteBanner = async (id, storagePath) => {
+  if (!confirm('Видалити банер?')) return;
+  await deleteDoc(doc(db,'banners',id));
+  if (storagePath) {
+    try { await deleteObject(ref(storage, storagePath)); } catch(e) {}
   }
-  const pause = parseInt(document.getElementById('pause-duration')?.value || 5);
-  let time = 9 * 60; // 9:00
-  el.innerHTML = active.map(b => {
-    const h = String(Math.floor(time / 60)).padStart(2,'0');
-    const m = String(time % 60).padStart(2,'0');
-    const t = `${h}:${m}`;
-    time += Math.ceil(b.duration / 60) + pause;
-    return `
-      <div class="schedule-row">
-        <div class="schedule-time">${t}</div>
-        <div class="schedule-name">${b.title}</div>
-        <div class="schedule-dur">${b.duration}с</div>
-        <span class="badge badge-green">Активний</span>
-      </div>
-    `;
-  }).join('');
-}
+  showToast('🗑️ Видалено');
+  loadAll();
+};
 
-function renderStats() {
-  const total = state.banners.reduce((s, b) => s + (b.shows || 0), 0);
-  const qr = state.banners.reduce((s, b) => s + (b.qrScans || 0), 0);
-  const conv = total > 0 ? ((qr / total) * 100).toFixed(1) : 0;
+// ── STATS ──
+async function renderStats() {
+  const snap = await getDocs(query(collection(db,'banners'), where('clientId','==',currentUser.uid)));
+  const banners = snap.docs.map(d => ({id:d.id,...d.data()}));
+  const total = banners.reduce((s,b) => s+(b.shows||0), 0);
+  const qr    = banners.reduce((s,b) => s+(b.qrScans||0), 0);
+  const conv  = total > 0 ? ((qr/total)*100).toFixed(1) : 0;
 
   document.getElementById('st-total').textContent = total;
-  document.getElementById('st-qr').textContent = qr;
-  document.getElementById('st-conv').textContent = conv + '%';
+  document.getElementById('st-qr').textContent    = qr;
+  document.getElementById('st-conv').textContent  = conv + '%';
 
-  // Zones
-  const zonesEl = document.getElementById('stats-zones');
-  const zoneData = { center: 0, north: 0, south: 0, west: 0, east: 0 };
-  state.banners.forEach(b => {
-    const zones = b.zones.includes('all') ? Object.keys(zoneData) : b.zones;
-    zones.forEach(z => { if (zoneData[z] !== undefined) zoneData[z] += (b.shows || 0) / zones.length; });
+  const zoneData = {center:0,north:0,south:0,west:0,east:0};
+  banners.forEach(b => {
+    const zones = (b.zones||[]).includes('all') ? Object.keys(zoneData) : (b.zones||[]);
+    zones.forEach(z => { if(zoneData[z]!==undefined) zoneData[z] += (b.shows||0)/zones.length; });
   });
   const maxZ = Math.max(...Object.values(zoneData), 1);
-  zonesEl.innerHTML = Object.entries(zoneData).map(([z, v]) => `
+  document.getElementById('stats-zones').innerHTML = Object.entries(zoneData).map(([z,v]) => `
     <div class="chart-bar-wrap">
       <div class="chart-label"><span>${ZONES[z]}</span><span>${Math.round(v)}</span></div>
-      <div class="chart-bar-track">
-        <div class="chart-bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div>
-      </div>
-    </div>
-  `).join('') || '<div class="empty">Даних ще немає</div>';
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
+    </div>`).join('') || '<div class="empty">Даних немає</div>';
 
-  // Banners
-  const bannersEl = document.getElementById('stats-banners');
-  const maxB = Math.max(...state.banners.map(b => b.shows || 0), 1);
-  bannersEl.innerHTML = state.banners.map(b => `
+  const maxB = Math.max(...banners.map(b => b.shows||0), 1);
+  document.getElementById('stats-banners').innerHTML = banners.map(b => `
     <div class="chart-bar-wrap">
-      <div class="chart-label"><span>${b.title}</span><span>${b.shows || 0} показів · ${b.qrScans || 0} QR</span></div>
-      <div class="chart-bar-track">
-        <div class="chart-bar-fill green" style="width:${((b.shows||0)/maxB*100).toFixed(1)}%"></div>
-      </div>
-    </div>
-  `).join('') || '<div class="empty">Банерів ще немає</div>';
+      <div class="chart-label"><span>${b.title}</span><span>${b.shows||0} · ${b.qrScans||0} QR</span></div>
+      <div class="chart-bar-track"><div class="chart-bar-fill green" style="width:${((b.shows||0)/maxB*100).toFixed(1)}%"></div></div>
+    </div>`).join('') || '<div class="empty">Банерів немає</div>';
 }
 
-// ===== TOAST =====
+function showErr(msg) { document.getElementById('login-err').textContent = msg; }
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
 }
-
-// ===== INIT =====
-loadState();
 </script>
 </body>
 </html>
