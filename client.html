@@ -10,15 +10,16 @@
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
     .screen{display:none;min-height:100vh;}.screen.active{display:flex;flex-direction:column;}
     #screen-login{align-items:center;justify-content:center;}
-    .login-wrap{width:100%;max-width:360px;padding:24px;}
+    .login-wrap{width:100%;max-width:380px;padding:24px;}
     .logo{text-align:center;margin-bottom:32px;}
     .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
     .logo-name{font-size:28px;font-weight:800;letter-spacing:-1px;}
     .logo-name span{color:var(--accent);}
     .logo-sub{font-size:13px;color:var(--hint);margin-top:6px;}
     .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
-    .login-title{font-size:15px;font-weight:600;margin-bottom:4px;}
-    .login-sub{font-size:12px;color:var(--muted);margin-bottom:24px;}
+    .login-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;gap:4px;}
+    .login-tab{flex:1;background:none;border:none;border-radius:7px;padding:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .login-tab.on{background:var(--surface);color:var(--text);}
     .field{margin-bottom:14px;}
     .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:6px;}
     .inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
@@ -29,18 +30,41 @@
     .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
     .btn-primary:hover{opacity:.88;}
     .err-msg{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+
+    /* TRIAL BANNER */
+    .trial-banner{margin:0 0 16px;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .trial-banner.ok{background:var(--green-dim);border:1px solid var(--green-border);}
+    .trial-banner.warn{background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.2);}
+    .trial-banner.expired{background:var(--red-dim);border:1px solid rgba(255,77,77,.2);}
+    .trial-banner-text{font-size:13px;font-weight:600;}
+    .trial-banner-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+    .trial-banner.ok .trial-banner-text{color:var(--green);}
+    .trial-banner.warn .trial-banner-text{color:#ffc800;}
+    .trial-banner.expired .trial-banner-text{color:var(--red);}
+    .btn-upgrade{background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+    /* TOPBAR */
     .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
     .topbar-logo{font-size:15px;font-weight:800;}.topbar-logo span{color:var(--accent);}
-    .topbar-client{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;margin-left:8px;}
+    .topbar-client{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;margin-left:8px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .topbar-right{display:flex;align-items:center;gap:8px;}
+    .trial-chip{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid;}
+    .trial-chip.ok{background:var(--green-dim);color:var(--green);border-color:var(--green-border);}
+    .trial-chip.warn{background:rgba(255,200,0,.08);color:#ffc800;border-color:rgba(255,200,0,.2);}
+    .trial-chip.expired{background:var(--red-dim);color:var(--red);border-color:rgba(255,77,77,.2);}
     .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
     .btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+    /* TABS */
     .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
     .tabs::-webkit-scrollbar{display:none;}
     .tab{background:none;border:none;border-bottom:2px solid transparent;padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;}
     .tab:hover{color:var(--text);}.tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+
+    /* CONTENT */
     .content{flex:1;overflow-y:auto;padding:20px;max-width:860px;width:100%;margin:0 auto;}
     .page{display:none;}.page.active{display:block;}
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
     .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
     .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--hint);margin-bottom:8px;}
     .stat-value{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;}
@@ -48,23 +72,26 @@
     .stat-sub{font-size:11px;color:var(--hint);margin-top:3px;}
     .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--hint);margin-bottom:10px;}
     .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+
+    /* DEVICES */
     .activate-card{background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;padding:16px;margin-bottom:14px;}
     .activate-card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px;}
     .activate-card-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
     .activate-form{display:flex;gap:10px;flex-wrap:wrap;}
     .activate-form .field{flex:1;min-width:180px;margin-bottom:0;}
-    .btn-activate{background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;transition:opacity .2s;}
-    .btn-activate:hover{opacity:.85;}
+    .btn-activate{background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;}
     .device-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
     .device-item:last-child{border-bottom:none;}
     .device-icon{width:40px;height:40px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
     .device-info{flex:1;min-width:0;}
     .device-name{font-size:14px;font-weight:600;}
     .device-meta{font-size:11px;color:var(--muted);margin-top:3px;}
-    .zone-pill-blue{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:3px 8px;border-radius:6px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
+    .zone-chip-blue{font-size:11px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
     .badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
     .badge-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
     .badge-accent{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+
+    /* BANNERS */
     .banner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px;}
     .banner-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;}
     .banner-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--surface3);}
@@ -94,58 +121,99 @@
     .file-preview{display:none;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;margin-top:8px;}
     .form-row{display:flex;gap:10px;flex-wrap:wrap;}
     .form-row .field{flex:1;min-width:160px;margin-bottom:0;}
+
+    /* STATS */
     .chart-bar-wrap{margin-bottom:16px;}
     .chart-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
     .chart-bar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
     .chart-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 1s ease;}
     .chart-bar-fill.green{background:var(--green);}
-    .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
-    .empty-icon{font-size:32px;margin-bottom:10px;}
+
+    /* EXPIRED OVERLAY */
+    .expired-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;align-items:center;justify-content:center;padding:24px;}
+    .expired-overlay.active{display:flex;}
+    .expired-card{background:var(--surface);border:1px solid rgba(255,77,77,.3);border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center;}
+    .expired-icon{font-size:48px;margin-bottom:16px;}
+    .expired-title{font-size:20px;font-weight:800;color:var(--red);margin-bottom:8px;}
+    .expired-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
+    .btn-contact{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+    .btn-contact-ghost{width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--muted);cursor:pointer;}
+
     .lic-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
     .lic-item:last-child{border-bottom:none;}
     .lic-code{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--accent);flex:1;letter-spacing:1px;}
+    .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
+    .empty-icon{font-size:32px;margin-bottom:10px;}
+    .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
     .toast.show{transform:translateX(-50%) translateY(0);}
-    .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
   </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div class="screen active" id="screen-login">
   <div class="login-wrap">
     <div class="logo">
       <div class="logo-mark">Кабінет клієнта</div>
       <div class="logo-name">Ad<span>Screen</span></div>
-      <div class="logo-sub">Керуйте рекламою на всіх екранах</div>
+      <div class="logo-sub">3 дні безкоштовного тестування</div>
     </div>
     <div class="login-card">
-      <div class="login-title">Вхід</div>
-      <div class="login-sub">Використовуйте дані які надав адміністратор</div>
-      <div class="field"><label>Email</label><input class="inp" id="login-email" type="email" placeholder="your@email.com"></div>
-      <div class="field"><label>Пароль</label><input class="inp" id="login-password" type="password" placeholder="••••••••"></div>
-      <button class="btn-primary" id="btn-login">Увійти</button>
-      <div class="err-msg" id="login-err"></div>
+      <div class="login-tabs">
+        <button class="login-tab on" onclick="switchTab('login',this)">Увійти</button>
+        <button class="login-tab" onclick="switchTab('register',this)">Реєстрація</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <div class="field"><label>Email</label><input class="inp" id="login-email" type="email" placeholder="your@email.com"></div>
+        <div class="field"><label>Пароль</label><input class="inp" id="login-password" type="password" placeholder="••••••••"></div>
+        <button class="btn-primary" onclick="doLogin()">Увійти</button>
+        <div class="err-msg" id="login-err"></div>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="tab-register" style="display:none;">
+        <div class="field"><label>Назва компанії</label><input class="inp" id="reg-company" placeholder="Піцерія Центр"></div>
+        <div class="field"><label>Місто</label><input class="inp" id="reg-city" placeholder="Вінниця"></div>
+        <div class="field"><label>Email</label><input class="inp" id="reg-email" type="email" placeholder="your@email.com"></div>
+        <div class="field"><label>Пароль</label><input class="inp" id="reg-password" type="password" placeholder="Мінімум 6 символів"></div>
+        <button class="btn-primary" onclick="doRegister()">Зареєструватись та тестувати</button>
+        <div class="err-msg" id="reg-err"></div>
+        <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:12px;">
+          Після реєстрації — 3 дні повного доступу безкоштовно
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
+<!-- CABINET -->
 <div class="screen" id="screen-cabinet">
   <div class="topbar">
-    <div style="display:flex;align-items:center;">
+    <div style="display:flex;align-items:center;min-width:0;">
       <div class="topbar-logo">Ad<span>Screen</span></div>
       <div class="topbar-client" id="topbar-client-name">—</div>
     </div>
-    <button class="btn-logout" onclick="doLogout()">Вийти</button>
+    <div class="topbar-right">
+      <div class="trial-chip" id="trial-chip">—</div>
+      <button class="btn-logout" onclick="doLogout()">Вийти</button>
+    </div>
   </div>
+
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
     <button class="tab" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
   </div>
+
   <div class="content">
 
+    <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
+      <div id="trial-banner-wrap"></div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
         <div class="stat-card"><div class="stat-label">Банери</div><div class="stat-value accent" id="ov-banners">—</div><div class="stat-sub">активних</div></div>
@@ -158,10 +226,11 @@
       <div class="card" id="ov-active-banners"><div class="loading">Завантаження...</div></div>
     </div>
 
+    <!-- DEVICES -->
     <div class="page" id="page-devices">
       <div class="activate-card">
         <div class="activate-card-title">➕ Підключити пристрій</div>
-        <div class="activate-card-sub">Виберіть вільну ліцензію, введіть назву і зону — пристрій одразу отримає контент</div>
+        <div class="activate-card-sub">Відкрийте плеєр на планшеті або ТВ, введіть код і оберіть зону</div>
         <div class="activate-form">
           <div class="field"><label>Ліцензійний код</label>
             <select class="inp" id="act-code"><option value="">— Оберіть код —</option></select>
@@ -185,6 +254,7 @@
       <div class="card" id="devices-list"><div class="loading">Завантаження...</div></div>
     </div>
 
+    <!-- BANNERS -->
     <div class="page" id="page-banners">
       <div class="sec-title">Додати банер</div>
       <div class="card" style="margin-bottom:20px;">
@@ -199,8 +269,7 @@
               </select>
             </div>
           </div>
-          <div class="field">
-            <label>Зони показу</label>
+          <div class="field"><label>Зони показу</label>
             <div class="zones-picker" id="zones-picker">
               <button class="zone-btn" data-zone="center" onclick="toggleZone(this)">🏙 Центр</button>
               <button class="zone-btn" data-zone="north" onclick="toggleZone(this)">⬆️ Північ</button>
@@ -210,8 +279,7 @@
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
             </div>
           </div>
-          <div class="field">
-            <label>Зображення (JPG/PNG 16:9)</label>
+          <div class="field"><label>Зображення (JPG/PNG 16:9)</label>
             <div class="file-drop" id="file-drop">
               <input type="file" id="bn-image" accept="image/*" onchange="previewImage(this)">
               <div class="file-drop-icon" id="drop-icon">🖼</div>
@@ -226,6 +294,7 @@
       <div id="banners-grid"><div class="loading">Завантаження...</div></div>
     </div>
 
+    <!-- STATS -->
     <div class="page" id="page-stats">
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Всього показів</div><div class="stat-value" id="st-total">—</div></div>
@@ -241,12 +310,23 @@
   </div>
 </div>
 
+<!-- EXPIRED OVERLAY -->
+<div class="expired-overlay" id="expired-overlay">
+  <div class="expired-card">
+    <div class="expired-icon">⏰</div>
+    <div class="expired-title">Тестовий період закінчився</div>
+    <div class="expired-sub">3 дні безкоштовного тестування завершені. Щоб продовжити — оберіть тариф або зв'яжіться з нами.</div>
+    <button class="btn-contact" onclick="contactAdmin()">📩 Написати адміністратору</button>
+    <button class="btn-contact-ghost" onclick="doLogout()">Вийти</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -258,14 +338,53 @@ const firebaseConfig = {
   appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
 };
 
-const app = initializeApp(firebaseConfig);
+const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
+const db   = getFirestore(app);
 const storage = getStorage(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
+const TRIAL_DAYS = 3;
 let currentUser = null;
-let clientData = null;
+let clientData  = null;
+
+// ── TRIAL HELPERS ──
+function trialDaysLeft(trialEnd) {
+  if (!trialEnd) return 0;
+  const end = trialEnd.toDate ? trialEnd.toDate() : new Date(trialEnd);
+  const diff = end - new Date();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function renderTrialUI(daysLeft) {
+  const chip = document.getElementById('trial-chip');
+  const wrap = document.getElementById('trial-banner-wrap');
+
+  if (daysLeft > 1) {
+    chip.className = 'trial-chip ok';
+    chip.textContent = `Тріал: ${daysLeft}д`;
+    wrap.innerHTML = `<div class="trial-banner ok">
+      <div><div class="trial-banner-text">✅ Тестовий період активний</div>
+      <div class="trial-banner-sub">Залишилось ${daysLeft} ${daysLeft===1?'день':daysLeft<5?'дні':'днів'} безкоштовно</div></div>
+    </div>`;
+  } else if (daysLeft === 1) {
+    chip.className = 'trial-chip warn';
+    chip.textContent = 'Тріал: 1д';
+    wrap.innerHTML = `<div class="trial-banner warn">
+      <div><div class="trial-banner-text">⚠️ Останній день тестування!</div>
+      <div class="trial-banner-sub">Завтра доступ буде обмежено</div></div>
+      <button class="btn-upgrade" onclick="contactAdmin()">Продовжити</button>
+    </div>`;
+  } else {
+    chip.className = 'trial-chip expired';
+    chip.textContent = 'Тріал закінчився';
+    document.getElementById('expired-overlay').classList.add('active');
+  }
+}
+
+window.contactAdmin = () => {
+  window.location.href = 'mailto:ckbbuild@gmail.com?subject=AdScreen — Продовження тарифу&body=Привіт! Хочу продовжити доступ до AdScreen.';
+};
 
 // ── AUTH ──
 onAuthStateChanged(auth, async user => {
@@ -273,33 +392,82 @@ onAuthStateChanged(auth, async user => {
     const snap = await getDoc(doc(db, 'clients', user.uid));
     if (snap.exists()) {
       currentUser = user;
-      clientData = { id: user.uid, ...snap.data() };
+      clientData  = { id: user.uid, ...snap.data() };
       document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
+      const daysLeft = trialDaysLeft(clientData.trialEnd);
+      renderTrialUI(daysLeft);
       showScreen('cabinet');
       loadAll();
     } else {
       await signOut(auth);
-      showErr('Акаунт не знайдено');
+      showErr('login', 'Акаунт не знайдено');
     }
   }
 });
 
-document.getElementById('btn-login').onclick = doLogin;
-document.getElementById('login-password').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+// ── LOGIN ──
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-login').style.display   = name==='login'    ? 'block' : 'none';
+  document.getElementById('tab-register').style.display = name==='register' ? 'block' : 'none';
+};
 
-async function doLogin() {
+window.doLogin = async () => {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-password').value;
-  showErr('');
-  if (!email || !pass) { showErr('Заповніть всі поля'); return; }
+  showErr('login','');
+  if (!email||!pass) { showErr('login','Заповніть всі поля'); return; }
   try {
     await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    showErr('Невірний email або пароль');
-  }
-}
+  } catch(e) { showErr('login','Невірний email або пароль'); }
+};
 
-window.doLogout = async () => { await signOut(auth); showScreen('login'); };
+window.doRegister = async () => {
+  const company = document.getElementById('reg-company').value.trim();
+  const city    = document.getElementById('reg-city').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-password').value;
+  showErr('reg','');
+  if (!company||!city||!email||!pass) { showErr('reg','Заповніть всі поля'); return; }
+  if (pass.length < 6) { showErr('reg','Пароль мінімум 6 символів'); return; }
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid  = cred.user.uid;
+
+    // Тріал — 3 дні
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
+
+    await setDoc(doc(db, 'clients', uid), {
+      name: company, city, email,
+      emoji: getEmoji(company),
+      status: 'trial',
+      trialEnd: Timestamp.fromDate(trialEnd),
+      licenseCount: 1,
+      createdAt: serverTimestamp()
+    });
+
+    // Автоматично 1 тестова ліцензія
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const code = `ADS-${uid.slice(-4).toUpperCase()}-${part}-001`;
+    await addDoc(collection(db,'licenses'), {
+      code, clientId: uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+
+    showToast('✅ Акаунт створено! Тестовий період: 3 дні');
+  } catch(e) {
+    showErr('reg', e.code==='auth/email-already-in-use' ? 'Цей email вже зареєстровано' : e.message);
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+  document.getElementById('expired-overlay').classList.remove('active');
+  showScreen('login');
+};
 
 // ── SCREENS / TABS ──
 function showScreen(n) {
@@ -318,22 +486,20 @@ window.showTab = (name, btn) => {
 async function loadAll() {
   const [lics, devs, bans] = await Promise.all([
     getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid))),
-    getDocs(query(collection(db,'devices'), where('clientId','==',currentUser.uid))),
-    getDocs(query(collection(db,'banners'), where('clientId','==',currentUser.uid), orderBy('createdAt','desc')))
+    getDocs(query(collection(db,'devices'),  where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'banners'),  where('clientId','==',currentUser.uid), orderBy('createdAt','desc')))
   ]);
+  const licenses = lics.docs.map(d=>({id:d.id,...d.data()}));
+  const devices  = devs.docs.map(d=>({id:d.id,...d.data()}));
+  const banners  = bans.docs.map(d=>({id:d.id,...d.data()}));
+  const active   = banners.filter(b=>b.status==='active');
+  const shows    = banners.reduce((s,b)=>s+(b.shows||0),0);
+  const qr       = banners.reduce((s,b)=>s+(b.qrScans||0),0);
 
-  const licenses = lics.docs.map(d => ({id:d.id,...d.data()}));
-  const devices  = devs.docs.map(d => ({id:d.id,...d.data()}));
-  const banners  = bans.docs.map(d => ({id:d.id,...d.data()}));
-
-  const active   = banners.filter(b => b.status === 'active');
-  const shows    = banners.reduce((s,b) => s+(b.shows||0), 0);
-  const qr       = banners.reduce((s,b) => s+(b.qrScans||0), 0);
-
-  document.getElementById('ov-devices').textContent  = devices.length;
-  document.getElementById('ov-banners').textContent  = active.length;
-  document.getElementById('ov-shows').textContent    = shows;
-  document.getElementById('ov-qr').textContent       = qr;
+  document.getElementById('ov-devices').textContent = devices.length;
+  document.getElementById('ov-banners').textContent = active.length;
+  document.getElementById('ov-shows').textContent   = shows;
+  document.getElementById('ov-qr').textContent      = qr;
 
   renderLicenses(licenses);
   renderActiveBanners(active);
@@ -341,11 +507,10 @@ async function loadAll() {
   renderBanners(banners);
 }
 
-// ── LICENSES ──
 function renderLicenses(licenses) {
   const el = document.getElementById('ov-licenses');
-  if (!licenses.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🔑</div>Ліцензій немає</div>'; return; }
-  el.innerHTML = licenses.map(l => `
+  if (!licenses.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🔑</div>Ліцензій немає</div>'; return; }
+  el.innerHTML = licenses.map(l=>`
     <div class="lic-item">
       <div class="lic-code">${l.code}</div>
       <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
@@ -354,8 +519,8 @@ function renderLicenses(licenses) {
 
 function renderActiveBanners(banners) {
   const el = document.getElementById('ov-active-banners');
-  if (!banners.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>'; return; }
-  el.innerHTML = banners.slice(0,3).map(b => `
+  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>'; return; }
+  el.innerHTML = banners.slice(0,3).map(b=>`
     <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
       <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
       <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
@@ -363,23 +528,21 @@ function renderActiveBanners(banners) {
     </div>`).join('');
 }
 
-// ── DEVICES ──
 function renderDevices(devices, licenses) {
-  const freeLics = licenses.filter(l => l.status === 'free');
+  const freeLics = licenses.filter(l=>l.status==='free');
   const sel = document.getElementById('act-code');
   sel.innerHTML = '<option value="">— Оберіть код —</option>' +
-    freeLics.map(l => `<option value="${l.id}">${l.code}</option>`).join('');
-
+    freeLics.map(l=>`<option value="${l.id}">${l.code}</option>`).join('');
   const el = document.getElementById('devices-list');
-  if (!devices.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
-  el.innerHTML = devices.map(d => `
+  if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
+  el.innerHTML = devices.map(d=>`
     <div class="device-item">
       <div class="device-icon">📱</div>
       <div class="device-info">
         <div class="device-name">${d.name}</div>
         <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}</div>
       </div>
-      <span class="zone-pill-blue">${ZONES[d.zone]||d.zone}</span>
+      <span class="zone-chip-blue">${ZONES[d.zone]||d.zone}</span>
       <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
       <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
     </div>`).join('');
@@ -394,20 +557,20 @@ window.activateDevice = async () => {
   const licSnap = await getDoc(doc(db,'licenses',licId));
   const lic = licSnap.data();
   await addDoc(collection(db,'devices'), {
-    clientId: currentUser.uid, licenseId: licId,
-    code: lic.code, name, zone,
-    activatedAt: serverTimestamp(), online: true
+    clientId:currentUser.uid, licenseId:licId,
+    code:lic.code, name, zone,
+    activatedAt:serverTimestamp(), online:true
   });
-  await updateDoc(doc(db,'licenses',licId), { status:'used' });
-  document.getElementById('act-name').value = '';
-  showToast(`✅ Пристрій "${name}" активовано!`);
+  await updateDoc(doc(db,'licenses',licId), {status:'used'});
+  document.getElementById('act-name').value='';
+  showToast(`✅ "${name}" активовано!`);
   loadAll();
 };
 
 window.removeDevice = async (deviceId, licenseId) => {
   if (!confirm('Деактивувати пристрій?')) return;
   await deleteDoc(doc(db,'devices',deviceId));
-  if (licenseId) await updateDoc(doc(db,'licenses',licenseId), { status:'free' });
+  if (licenseId) await updateDoc(doc(db,'licenses',licenseId),{status:'free'});
   showToast('🗑️ Пристрій деактивовано');
   loadAll();
 };
@@ -415,46 +578,43 @@ window.removeDevice = async (deviceId, licenseId) => {
 // ── BANNERS ──
 window.toggleZone = btn => {
   const zone = btn.dataset.zone;
-  if (zone === 'all') {
-    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
+  if (zone==='all') {
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
     btn.classList.add('selected');
   } else {
     document.querySelector('[data-zone="all"]').classList.remove('selected');
     btn.classList.toggle('selected');
-    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b => b.classList.contains('selected'));
+    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b=>b.classList.contains('selected'));
     if (!any) document.querySelector('[data-zone="all"]').classList.add('selected');
   }
 };
 
 function getSelectedZones() {
-  const allBtn = document.querySelector('[data-zone="all"]');
-  if (allBtn.classList.contains('selected')) return ['all'];
-  return [...document.querySelectorAll('.zone-btn.selected')].map(b => b.dataset.zone);
+  if (document.querySelector('[data-zone="all"]').classList.contains('selected')) return ['all'];
+  return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
 }
 
 window.previewImage = input => {
-  const file = input.files[0];
-  if (!file) return;
+  const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const preview = document.getElementById('file-preview');
-    preview.src = e.target.result;
-    preview.style.display = 'block';
-    document.getElementById('drop-icon').textContent = '✅';
-    document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
+    const p = document.getElementById('file-preview');
+    p.src = e.target.result; p.style.display='block';
+    document.getElementById('drop-icon').textContent='✅';
+    document.getElementById('drop-text').innerHTML=`<span>${file.name}</span>`;
   };
   reader.readAsDataURL(file);
 };
 
 const dropZone = document.getElementById('file-drop');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e => {
+dropZone.addEventListener('dragover', e=>{e.preventDefault();dropZone.classList.add('over');});
+dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e=>{
   e.preventDefault(); dropZone.classList.remove('over');
   const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const dt = new DataTransfer(); dt.items.add(file);
-    document.getElementById('bn-image').files = dt.files;
+  if (file&&file.type.startsWith('image/')) {
+    const dt=new DataTransfer(); dt.items.add(file);
+    document.getElementById('bn-image').files=dt.files;
     window.previewImage(document.getElementById('bn-image'));
   }
 });
@@ -464,45 +624,38 @@ window.addBanner = async () => {
   const duration = parseInt(document.getElementById('bn-duration').value);
   const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
-  if (!title)     { showToast('⚠️ Введіть назву банера'); return; }
+  if (!title)     { showToast('⚠️ Введіть назву'); return; }
   if (!imageFile) { showToast('⚠️ Додайте зображення'); return; }
-
   showToast('⏳ Завантаження...');
   try {
     const path = `banners/${currentUser.uid}/${Date.now()}_${imageFile.name}`;
     const storageRef = ref(storage, path);
     await uploadBytes(storageRef, imageFile);
     const imageUrl = await getDownloadURL(storageRef);
-
-    await addDoc(collection(db,'banners'), {
-      clientId: currentUser.uid, title, duration, zones,
-      imageUrl, storagePath: path,
-      status: 'active', shows: 0, qrScans: 0,
-      createdAt: serverTimestamp()
+    await addDoc(collection(db,'banners'),{
+      clientId:currentUser.uid, title, duration, zones,
+      imageUrl, storagePath:path,
+      status:'active', shows:0, qrScans:0,
+      createdAt:serverTimestamp()
     });
-
-    document.getElementById('bn-title').value = '';
-    document.getElementById('bn-image').value = '';
-    const preview = document.getElementById('file-preview');
-    preview.style.display = 'none'; preview.src = '';
-    document.getElementById('drop-icon').textContent = '🖼';
-    document.getElementById('drop-text').innerHTML = 'Перетягніть або <span>оберіть файл</span>';
-    document.querySelectorAll('.zone-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('bn-title').value='';
+    document.getElementById('bn-image').value='';
+    const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
+    document.getElementById('drop-icon').textContent='🖼';
+    document.getElementById('drop-text').innerHTML='Перетягніть або <span>оберіть файл</span>';
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
     document.querySelector('[data-zone="all"]').classList.add('selected');
-
     showToast('✅ Банер опубліковано!');
     loadAll();
-  } catch(e) {
-    showToast('❌ Помилка: ' + e.message);
-  }
+  } catch(e) { showToast('❌ '+e.message); }
 };
 
 function renderBanners(banners) {
   const el = document.getElementById('banners-grid');
-  if (!banners.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
-  el.innerHTML = `<div class="banner-grid">${banners.map(b => `
+  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
+  el.innerHTML=`<div class="banner-grid">${banners.map(b=>`
     <div class="banner-card">
-      ${b.imageUrl ? `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">` : '<div class="banner-img-ph">🖼</div>'}
+      ${b.imageUrl?`<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`:'<div class="banner-img-ph">🖼</div>'}
       <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
       <div class="banner-info">
         <div class="banner-title">${b.title}</div>
@@ -518,60 +671,67 @@ function renderBanners(banners) {
     </div>`).join('')}</div>`;
 }
 
-window.toggleBanner = async (id, current) => {
-  const newStatus = current === 'active' ? 'paused' : 'active';
-  await updateDoc(doc(db,'banners',id), { status: newStatus });
-  showToast(newStatus === 'active' ? '▶️ Активовано' : '⏸ Призупинено');
+window.toggleBanner = async (id,current) => {
+  const s = current==='active'?'paused':'active';
+  await updateDoc(doc(db,'banners',id),{status:s});
+  showToast(s==='active'?'▶️ Активовано':'⏸ Призупинено');
   loadAll();
 };
 
-window.deleteBanner = async (id, storagePath) => {
+window.deleteBanner = async (id,storagePath) => {
   if (!confirm('Видалити банер?')) return;
   await deleteDoc(doc(db,'banners',id));
-  if (storagePath) {
-    try { await deleteObject(ref(storage, storagePath)); } catch(e) {}
-  }
+  if (storagePath) try { await deleteObject(ref(storage,storagePath)); } catch(e){}
   showToast('🗑️ Видалено');
   loadAll();
 };
 
-// ── STATS ──
 async function renderStats() {
-  const snap = await getDocs(query(collection(db,'banners'), where('clientId','==',currentUser.uid)));
-  const banners = snap.docs.map(d => ({id:d.id,...d.data()}));
-  const total = banners.reduce((s,b) => s+(b.shows||0), 0);
-  const qr    = banners.reduce((s,b) => s+(b.qrScans||0), 0);
-  const conv  = total > 0 ? ((qr/total)*100).toFixed(1) : 0;
-
-  document.getElementById('st-total').textContent = total;
-  document.getElementById('st-qr').textContent    = qr;
-  document.getElementById('st-conv').textContent  = conv + '%';
-
-  const zoneData = {center:0,north:0,south:0,west:0,east:0};
-  banners.forEach(b => {
-    const zones = (b.zones||[]).includes('all') ? Object.keys(zoneData) : (b.zones||[]);
-    zones.forEach(z => { if(zoneData[z]!==undefined) zoneData[z] += (b.shows||0)/zones.length; });
+  const snap = await getDocs(query(collection(db,'banners'),where('clientId','==',currentUser.uid)));
+  const banners = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total = banners.reduce((s,b)=>s+(b.shows||0),0);
+  const qr    = banners.reduce((s,b)=>s+(b.qrScans||0),0);
+  const conv  = total>0?((qr/total)*100).toFixed(1):0;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-qr').textContent=qr;
+  document.getElementById('st-conv').textContent=conv+'%';
+  const zd={center:0,north:0,south:0,west:0,east:0};
+  banners.forEach(b=>{
+    const zones=(b.zones||[]).includes('all')?Object.keys(zd):(b.zones||[]);
+    zones.forEach(z=>{if(zd[z]!==undefined)zd[z]+=(b.shows||0)/zones.length;});
   });
-  const maxZ = Math.max(...Object.values(zoneData), 1);
-  document.getElementById('stats-zones').innerHTML = Object.entries(zoneData).map(([z,v]) => `
+  const maxZ=Math.max(...Object.values(zd),1);
+  document.getElementById('stats-zones').innerHTML=Object.entries(zd).map(([z,v])=>`
     <div class="chart-bar-wrap">
       <div class="chart-label"><span>${ZONES[z]}</span><span>${Math.round(v)}</span></div>
       <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
-    </div>`).join('') || '<div class="empty">Даних немає</div>';
-
-  const maxB = Math.max(...banners.map(b => b.shows||0), 1);
-  document.getElementById('stats-banners').innerHTML = banners.map(b => `
+    </div>`).join('')||'<div class="empty">Даних немає</div>';
+  const maxB=Math.max(...banners.map(b=>b.shows||0),1);
+  document.getElementById('stats-banners').innerHTML=banners.map(b=>`
     <div class="chart-bar-wrap">
       <div class="chart-label"><span>${b.title}</span><span>${b.shows||0} · ${b.qrScans||0} QR</span></div>
       <div class="chart-bar-track"><div class="chart-bar-fill green" style="width:${((b.shows||0)/maxB*100).toFixed(1)}%"></div></div>
-    </div>`).join('') || '<div class="empty">Банерів немає</div>';
+    </div>`).join('')||'<div class="empty">Банерів немає</div>';
 }
 
-function showErr(msg) { document.getElementById('login-err').textContent = msg; }
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+function getEmoji(name) {
+  const n=name.toLowerCase();
+  if(n.includes('піц')||n.includes('piz'))return'🍕';
+  if(n.includes('кав')||n.includes('cof'))return'☕';
+  if(n.includes('такс')||n.includes('taxi'))return'🚕';
+  if(n.includes('спорт')||n.includes('gym'))return'💪';
+  if(n.includes('клін'))return'🏥';
+  if(n.includes('ресто'))return'🍽️';
+  if(n.includes('готел'))return'🏨';
+  if(n.includes('гаджет')||n.includes('смарт'))return'📱';
+  return'🏢';
+}
+
+function showErr(form,msg){document.getElementById(form+'-err').textContent=msg;}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 </script>
 </body>
