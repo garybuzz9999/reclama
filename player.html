@@ -6,152 +6,229 @@
   <title>AdScreen Player</title>
   <style>
     :root {
-      --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#222;
-      --accent:#f5c842;--text:#f0f0f0;--muted:#666;--green:#3ddc84;--red:#ff4d4d;
+      --bg:#000;--surface:#0f0f0f;--surface2:#181818;--border:#222;
+      --accent:#f5c842;--text:#f0f0f0;--muted:#555;--green:#3ddc84;--red:#ff4d4d;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-      background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden;}
+      background:var(--bg);color:var(--text);height:100vh;overflow:hidden;}
 
     /* ── SETUP SCREEN ── */
     #screen-setup{
       display:flex;flex-direction:column;align-items:center;justify-content:center;
-      min-height:100vh;padding:32px 24px;
+      height:100vh;padding:32px 24px;background:var(--bg);
     }
-    .setup-logo{font-size:32px;font-weight:900;letter-spacing:-1px;margin-bottom:8px;}
+    .setup-logo{
+      font-size:36px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;
+      text-align:center;
+    }
     .setup-logo span{color:var(--accent);}
-    .setup-sub{font-size:14px;color:var(--muted);margin-bottom:40px;}
-    .setup-card{background:var(--surface);border:1px solid var(--border);
-      border-radius:20px;padding:32px;width:100%;max-width:420px;}
-    .setup-label{font-size:11px;font-weight:700;letter-spacing:1px;
-      text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-    .setup-code-inp{
+    .setup-tagline{font-size:13px;color:var(--muted);margin-bottom:40px;text-align:center;}
+    .setup-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:32px;width:100%;max-width:400px;
+    }
+    .setup-label{
+      font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+    }
+    .setup-inp{
       width:100%;background:var(--surface2);border:1px solid var(--border);
       border-radius:12px;padding:16px;font-size:18px;color:var(--accent);
       letter-spacing:3px;text-align:center;text-transform:uppercase;
       outline:none;font-family:'SF Mono','Fira Code',monospace;
-      transition:border-color .2s;margin-bottom:16px;
+      transition:border-color .2s;margin-bottom:20px;
     }
-    .setup-code-inp:focus{border-color:var(--accent);}
-    .setup-code-inp::placeholder{color:var(--muted);letter-spacing:1px;font-size:14px;}
-    .setup-zone-label{font-size:11px;font-weight:700;letter-spacing:1px;
-      text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-    .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
-    .zone-opt{background:var(--surface2);border:1px solid var(--border);
-      border-radius:10px;padding:12px;text-align:center;cursor:pointer;
-      font-size:13px;font-weight:600;color:var(--muted);transition:all .2s;}
+    .setup-inp:focus{border-color:var(--accent);}
+    .setup-inp::placeholder{color:var(--border);letter-spacing:1px;font-size:14px;}
+    .setup-zone-label{
+      font-size:11px;font-weight:700;letter-spacing:1px;
+      text-transform:uppercase;color:var(--muted);margin-bottom:8px;
+    }
+    .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:24px;}
+    .zone-opt{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:10px;padding:14px;text-align:center;cursor:pointer;
+      font-size:14px;font-weight:600;color:var(--muted);transition:all .2s;
+    }
     .zone-opt:hover{border-color:var(--accent);color:var(--text);}
     .zone-opt.selected{background:rgba(245,200,66,.08);border-color:var(--accent);color:var(--accent);}
     .zone-opt.full{grid-column:1/-1;}
-    .btn-start{width:100%;background:var(--accent);color:#000;border:none;
-      border-radius:12px;padding:16px;font-size:16px;font-weight:800;
-      cursor:pointer;transition:opacity .2s;letter-spacing:.3px;}
+    .btn-start{
+      width:100%;background:var(--accent);color:#000;border:none;
+      border-radius:12px;padding:18px;font-size:17px;font-weight:800;
+      cursor:pointer;transition:opacity .2s;letter-spacing:.3px;
+    }
     .btn-start:hover{opacity:.88;}
-    .setup-err{color:var(--red);font-size:13px;text-align:center;
-      margin-top:12px;min-height:20px;}
+    .setup-err{color:var(--red);font-size:13px;text-align:center;margin-top:12px;min-height:20px;}
 
     /* ── PLAYER SCREEN ── */
     #screen-player{
-      display:none;position:fixed;inset:0;
-      flex-direction:column;background:#000;
+      display:none;flex-direction:column;height:100vh;
+      position:fixed;inset:0;background:#000;
     }
 
-    /* Медіа зона */
+    /* Media zone */
     .media-zone{
       flex:1;position:relative;overflow:hidden;
       display:flex;align-items:center;justify-content:center;
     }
 
-    /* Банер */
-    .banner-frame{
-      position:absolute;inset:0;
-      display:flex;align-items:center;justify-content:center;
-      opacity:0;transition:opacity .8s;
-    }
-    .banner-frame.active{opacity:1;}
-    .banner-frame img{width:100%;height:100%;object-fit:contain;}
-
-    /* Заставка між рекламою */
+    /* Idle / заставка */
     .idle-frame{
       position:absolute;inset:0;
       display:flex;flex-direction:column;
       align-items:center;justify-content:center;
-      background:#000;opacity:0;transition:opacity .8s;
+      background:#000;z-index:1;
+      transition:opacity .8s;
     }
-    .idle-frame.active{opacity:1;}
-    .idle-logo{font-size:clamp(24px,6vw,48px);font-weight:900;
-      letter-spacing:-2px;margin-bottom:8px;}
+    .idle-logo{
+      font-size:clamp(20px,5vw,40px);font-weight:900;
+      letter-spacing:-1px;margin-bottom:6px;
+    }
     .idle-logo span{color:var(--accent);}
-    .idle-clock{font-size:clamp(48px,12vw,96px);font-weight:200;
-      color:var(--muted);letter-spacing:-4px;font-variant-numeric:tabular-nums;}
-    .idle-zone{font-size:12px;color:var(--muted);margin-top:8px;
+    .idle-clock{
+      font-size:clamp(56px,14vw,110px);font-weight:200;
+      color:#222;letter-spacing:-4px;
+      font-variant-numeric:tabular-nums;line-height:1;
+    }
+    .idle-zone{font-size:12px;color:#333;margin-top:8px;
       text-transform:uppercase;letter-spacing:2px;}
 
-    /* Прогрес банера */
+    /* СТОП екран */
+    .stopped-frame{
+      position:absolute;inset:0;
+      display:none;flex-direction:column;
+      align-items:center;justify-content:center;
+      background:#000;z-index:3;
+    }
+    .stopped-frame.active{display:flex;}
+    .stopped-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
+    .stopped-text{font-size:16px;color:#333;margin-bottom:8px;}
+    .stopped-sub{font-size:12px;color:#222;}
+
+    /* Banner */
+    .banner-frame{
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;transition:opacity .8s;z-index:2;
+    }
+    .banner-frame.active{opacity:1;}
+    .banner-frame img,.banner-frame video{
+      width:100%;height:100%;object-fit:contain;
+    }
     .banner-progress{
-      position:absolute;bottom:0;left:0;right:0;height:3px;
-      background:rgba(255,255,255,.1);
+      position:absolute;bottom:0;left:0;right:0;height:4px;
+      background:rgba(255,255,255,.08);z-index:4;
     }
     .banner-progress-fill{
       height:100%;background:var(--accent);width:0%;
       transition:width linear;
     }
 
-    /* ── MUSIC BAR ── */
-    .music-bar{
-      background:rgba(0,0,0,.9);border-top:1px solid var(--border);
-      padding:14px 16px;display:flex;align-items:center;gap:10px;
-      flex-shrink:0;
-    }
-    .music-now{font-size:11px;color:var(--muted);flex:1;
-      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .music-now span{color:var(--accent);}
-    .genre-btns{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;}
-    .genre-btns::-webkit-scrollbar{display:none;}
-    .genre-btn{background:var(--surface2);border:1px solid var(--border);
-      border-radius:20px;padding:12px 22px;font-size:15px;font-weight:700;
-      color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
-    .genre-btn:hover{border-color:var(--accent);color:var(--text);}
-    .genre-btn.active{background:rgba(245,200,66,.1);border-color:var(--accent);color:var(--accent);}
-    .genre-btn.mute{border-color:var(--red);color:var(--red);}
-    .genre-btn.mute.active{background:rgba(255,77,77,.1);}
-
-    /* ── STATUS BAR ── */
+    /* Status bar */
     .status-bar{
-      position:absolute;top:0;left:0;right:0;
+      position:absolute;top:0;left:0;right:0;z-index:5;
       display:flex;justify-content:space-between;align-items:center;
-      padding:8px 16px;
-      background:linear-gradient(to bottom,rgba(0,0,0,.7),transparent);
+      padding:10px 16px;
+      background:linear-gradient(to bottom,rgba(0,0,0,.5),transparent);
       pointer-events:none;
     }
     .status-zone{font-size:11px;font-weight:700;letter-spacing:1px;
-      text-transform:uppercase;color:rgba(255,255,255,.4);}
-    .status-time{font-size:11px;color:rgba(255,255,255,.3);
+      text-transform:uppercase;color:rgba(255,255,255,.3);}
+    .status-time{font-size:11px;color:rgba(255,255,255,.2);
       font-variant-numeric:tabular-nums;}
 
-    /* Toast */
-    .toast{position:fixed;bottom:80px;left:50%;
+    /* ── CONTROL BAR ── */
+    .control-bar{
+      background:rgba(0,0,0,.95);border-top:1px solid #151515;
+      padding:10px 12px;flex-shrink:0;
+    }
+
+    /* Рядок водія */
+    .driver-row{
+      display:flex;align-items:center;gap:8px;
+      margin-bottom:8px;padding-bottom:8px;
+      border-bottom:1px solid #151515;
+    }
+    .driver-label{
+      font-size:10px;font-weight:700;text-transform:uppercase;
+      letter-spacing:1px;color:#333;flex-shrink:0;
+    }
+    .btn-toggle-ad{
+      flex:1;border:none;border-radius:8px;
+      padding:10px 14px;font-size:13px;font-weight:700;
+      cursor:pointer;transition:all .2s;display:flex;
+      align-items:center;justify-content:center;gap:6px;
+    }
+    .btn-toggle-ad.on{
+      background:rgba(61,220,132,.12);
+      border:1px solid rgba(61,220,132,.25);color:var(--green);
+    }
+    .btn-toggle-ad.off{
+      background:rgba(255,77,77,.08);
+      border:1px solid rgba(255,77,77,.2);color:var(--red);
+    }
+    .btn-reset{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:8px;padding:10px 12px;font-size:11px;
+      color:var(--muted);cursor:pointer;white-space:nowrap;
+      transition:all .2s;
+    }
+    .btn-reset:hover{border-color:var(--red);color:var(--red);}
+
+    /* Рядок клієнта */
+    .client-row{
+      display:flex;align-items:center;gap:6px;
+    }
+    .music-label{
+      font-size:10px;color:#333;white-space:nowrap;
+      overflow:hidden;text-overflow:ellipsis;max-width:80px;flex-shrink:0;
+    }
+    .genre-btns{
+      display:flex;gap:5px;overflow-x:auto;
+      scrollbar-width:none;flex:1;
+    }
+    .genre-btns::-webkit-scrollbar{display:none;}
+    .genre-btn{
+      background:var(--surface2);border:1px solid var(--border);
+      border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;
+      color:var(--muted);cursor:pointer;white-space:nowrap;
+      transition:all .2s;flex-shrink:0;
+    }
+    .genre-btn:hover{border-color:var(--accent);color:var(--text);}
+    .genre-btn.active{
+      background:rgba(245,200,66,.1);
+      border-color:var(--accent);color:var(--accent);
+    }
+    .genre-btn.mute.active{
+      background:rgba(255,77,77,.1);
+      border-color:var(--red);color:var(--red);
+    }
+
+    .toast{
+      position:fixed;bottom:100px;left:50%;
       transform:translateX(-50%) translateY(60px);
       background:var(--surface2);border:1px solid var(--border);
-      border-radius:10px;padding:10px 18px;font-size:13px;
-      color:var(--text);z-index:999;
+      border-radius:10px;padding:10px 20px;
+      font-size:13px;color:var(--text);z-index:999;
       transition:transform .3s cubic-bezier(.34,1.56,.64,1);
-      white-space:nowrap;pointer-events:none;}
+      white-space:nowrap;pointer-events:none;
+    }
     .toast.show{transform:translateX(-50%) translateY(0);}
   </style>
 </head>
 <body>
 
-<!-- ── SETUP ── -->
+<!-- SETUP -->
 <div id="screen-setup">
   <div class="setup-logo">Ad<span>Screen</span></div>
-  <div class="setup-sub">Рекламний плеєр</div>
+  <div class="setup-tagline">Рекламний екран · Введіть ліцензійний код</div>
   <div class="setup-card">
-    <div class="setup-label">Ліцензійний код пристрою</div>
-    <input class="setup-code-inp" id="setup-code"
+    <div class="setup-label">Ліцензійний код</div>
+    <input class="setup-inp" id="setup-code"
       placeholder="ADS-XXXX-XXXX-001" maxlength="20"
       oninput="formatCode(this)">
-
     <div class="setup-zone-label">Зона показу</div>
     <div class="zone-grid">
       <div class="zone-opt" data-zone="north" onclick="selectZone(this)">⬆️ Північ</div>
@@ -160,52 +237,67 @@
       <div class="zone-opt" data-zone="south" onclick="selectZone(this)">⬇️ Південь</div>
       <div class="zone-opt full selected" data-zone="center" onclick="selectZone(this)">🏙 Центр</div>
     </div>
-
-    <button class="btn-start" onclick="startPlayer()">▶ Запустити плеєр</button>
+    <button class="btn-start" onclick="startPlayer()">▶ Запустити екран</button>
     <div class="setup-err" id="setup-err"></div>
   </div>
 </div>
 
-<!-- ── PLAYER ── -->
+<!-- PLAYER -->
 <div id="screen-player">
 
-  <!-- Status bar -->
+  <!-- Status -->
   <div class="status-bar">
     <div class="status-zone" id="status-zone">—</div>
     <div class="status-time" id="status-time">—</div>
   </div>
 
   <!-- Media -->
-  <div class="media-zone" id="media-zone">
+  <div class="media-zone">
     <!-- Заставка -->
-    <div class="idle-frame active" id="idle-frame">
+    <div class="idle-frame" id="idle-frame">
       <div class="idle-logo">Ad<span>Screen</span></div>
       <div class="idle-clock" id="idle-clock">00:00</div>
       <div class="idle-zone" id="idle-zone-label">—</div>
     </div>
+    <!-- Зупинено -->
+    <div class="stopped-frame" id="stopped-frame">
+      <div class="stopped-icon">⏹</div>
+      <div class="stopped-text">Рекламу вимкнено</div>
+      <div class="stopped-sub">Натисніть "Увімкнути рекламу" щоб продовжити</div>
+    </div>
     <!-- Банер -->
     <div class="banner-frame" id="banner-frame">
       <img id="banner-img" src="" alt="" style="display:none;">
-      <video id="banner-video" src="" style="display:none;width:100%;height:100%;object-fit:contain;" muted playsinline></video>
+      <video id="banner-video" src="" style="display:none;" muted playsinline></video>
       <div class="banner-progress">
         <div class="banner-progress-fill" id="banner-progress"></div>
       </div>
     </div>
   </div>
 
-  <!-- Music bar -->
-  <div class="music-bar">
-    <div class="music-now" id="music-now">♪ <span>Оберіть жанр</span></div>
-    <div class="genre-btns">
-      <button class="genre-btn" data-tag="pop"       onclick="playTag(this,'Поп')">Поп</button>
-      <button class="genre-btn" data-tag="jazz"      onclick="playTag(this,'Джаз')">Джаз</button>
-      <button class="genre-btn" data-tag="rock"      onclick="playTag(this,'Рок')">Рок</button>
-      <button class="genre-btn" data-tag="classical" onclick="playTag(this,'Класика')">Класика</button>
-      <button class="genre-btn" data-tag="lounge"    onclick="playTag(this,'Лаунж')">Лаунж</button>
-      <button class="genre-btn mute" onclick="toggleMute(this)">🔇 Тихо</button>
+  <!-- Controls -->
+  <div class="control-bar">
+    <!-- Водій -->
+    <div class="driver-row">
+      <div class="driver-label">Водій:</div>
+      <button class="btn-toggle-ad on" id="btn-toggle-ad" onclick="toggleAd()">
+        ▶ Реклама увімкнена
+      </button>
+      <button class="btn-reset" onclick="resetPlayer()">🔄 Скинути</button>
+    </div>
+    <!-- Клієнт -->
+    <div class="client-row">
+      <div class="music-label" id="music-now">🎵 Музика:</div>
+      <div class="genre-btns">
+        <button class="genre-btn" data-tag="pop"       onclick="playTag(this,'Поп')">Поп</button>
+        <button class="genre-btn" data-tag="jazz"      onclick="playTag(this,'Джаз')">Джаз</button>
+        <button class="genre-btn" data-tag="rock"      onclick="playTag(this,'Рок')">Рок</button>
+        <button class="genre-btn" data-tag="classical" onclick="playTag(this,'Класика')">Класика</button>
+        <button class="genre-btn" data-tag="lounge"    onclick="playTag(this,'Лаунж')">Лаунж</button>
+        <button class="genre-btn mute" onclick="toggleMute(this)">🔇</button>
+      </div>
     </div>
   </div>
-
 </div>
 
 <audio id="radio" preload="none"></audio>
@@ -228,23 +320,24 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
-const PAUSE_BETWEEN = 10 * 1000; // 10 секунд між банерами (змінити на 5*60*1000 для продакшну)
-const RELOAD_INTERVAL = 10 * 60 * 1000; // оновлювати банери кожні 10 хв
+const PAUSE_BETWEEN = 10 * 1000; // 10 сек для тесту (5*60*1000 для продакшну)
+const RELOAD_INTERVAL = 10 * 60 * 1000;
 
 let currentZone = 'center';
 let banners = [];
 let bannerIndex = 0;
-let playerInterval = null;
-let reloadInterval = null;
+let adActive = true;
+let bannerTimeout = null;
 let isMuted = false;
 let currentGenre = null;
+let currentUtterance = null;
 
 // ── FORMAT CODE ──
 window.formatCode = inp => {
   let v = inp.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();
-  if (v.length > 3)  v = v.slice(0,3) + '-' + v.slice(3);
-  if (v.length > 8)  v = v.slice(0,8) + '-' + v.slice(8);
-  if (v.length > 13) v = v.slice(0,13) + '-' + v.slice(13);
+  if (v.length > 3)  v = v.slice(0,3)+'-'+v.slice(3);
+  if (v.length > 8)  v = v.slice(0,8)+'-'+v.slice(8);
+  if (v.length > 13) v = v.slice(0,13)+'-'+v.slice(13);
   inp.value = v.slice(0,20);
 };
 
@@ -254,154 +347,121 @@ window.selectZone = btn => {
   currentZone = btn.dataset.zone;
 };
 
-// ── START PLAYER ──
+// ── START ──
 window.startPlayer = async () => {
   const code = document.getElementById('setup-code').value.trim().toUpperCase();
   const err  = document.getElementById('setup-err');
   err.textContent = '';
-
   if (code.length < 10) { err.textContent = 'Введіть ліцензійний код'; return; }
-
-  err.textContent = 'Перевірка коду...';
-
+  err.textContent = '⏳ Перевірка...';
   try {
-    // Перевіряємо ліцензію
     const snap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
     if (snap.empty) { err.textContent = '❌ Код не знайдено'; return; }
-
-    const licDoc = snap.docs[0];
-    const lic = licDoc.data();
-    if (lic.status === 'used' && !lic.deviceId) {
-      // ok — вже активована через кабінет
-    }
-
-    // Зберігаємо в localStorage
     localStorage.setItem('ads_code', code);
     localStorage.setItem('ads_zone', currentZone);
-    localStorage.setItem('ads_lic_id', licDoc.id);
-
     showScreen('player');
-    initPlayer(currentZone, licDoc.id);
-
+    initPlayer(currentZone);
   } catch(e) {
     err.textContent = '❌ Помилка: ' + e.message;
   }
 };
 
-// ── INIT PLAYER ──
-async function initPlayer(zone, licId) {
-  document.getElementById('status-zone').textContent = ZONES[zone] || zone;
-  document.getElementById('idle-zone-label').textContent = ZONES[zone] || zone;
-
-  // Годинник
+// ── INIT ──
+async function initPlayer(zone) {
+  document.getElementById('status-zone').textContent = ZONES[zone]||zone;
+  document.getElementById('idle-zone-label').textContent = ZONES[zone]||zone;
   setInterval(updateClock, 1000);
   updateClock();
-
-  // Завантажуємо банери
   await loadBanners(zone);
-
-  // Запускаємо показ одразу якщо є банери, або через 5 сек
-  if (banners.length > 0) {
-    setTimeout(() => {
-      showBanner(banners[0]);
-      bannerIndex = 1 % banners.length;
-    }, 3000);
-  } else {
-    scheduleNext();
-  }
-
-  // Оновлюємо банери кожні 10 хв
-  reloadInterval = setInterval(async () => {
-    await loadBanners(zone);
-  }, RELOAD_INTERVAL);
+  scheduleNext();
+  setInterval(() => loadBanners(zone), RELOAD_INTERVAL);
 }
 
 async function loadBanners(zone) {
   try {
-    const snap = await getDocs(query(
-      collection(db,'banners'),
-      where('status','==','active')
-    ));
-    banners = snap.docs
-      .map(d=>({id:d.id,...d.data()}))
+    const snap = await getDocs(query(collection(db,'banners'), where('status','==','active')));
+    banners = snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
-    bannerIndex = 0;
-  } catch(e) {
-    banners = [];
-  }
+  } catch(e) { banners = []; }
 }
 
-function scheduleNext() {
-  if (!banners.length) {
+// ── AD TOGGLE ──
+window.toggleAd = () => {
+  adActive = !adActive;
+  const btn = document.getElementById('btn-toggle-ad');
+  const stopped = document.getElementById('stopped-frame');
+  if (adActive) {
+    btn.className = 'btn-toggle-ad on';
+    btn.textContent = '▶ Реклама увімкнена';
+    stopped.classList.remove('active');
+    scheduleNext();
+    showToast('▶ Рекламу увімкнено');
+  } else {
+    btn.className = 'btn-toggle-ad off';
+    btn.textContent = '⏹ Реклама вимкнена';
+    if (bannerTimeout) clearTimeout(bannerTimeout);
     showIdle();
-    setTimeout(scheduleNext, PAUSE_BETWEEN);
-    return;
+    stopped.classList.add('active');
+    if (currentUtterance) window.speechSynthesis?.cancel();
+    showToast('⏹ Рекламу вимкнено');
   }
+};
+
+// ── RESET ──
+window.resetPlayer = () => {
+  if (!confirm('Скинути налаштування екрану?')) return;
+  localStorage.removeItem('ads_code');
+  localStorage.removeItem('ads_zone');
+  location.reload();
+};
+
+// ── SCHEDULE ──
+function scheduleNext() {
+  if (!adActive) return;
+  if (bannerTimeout) clearTimeout(bannerTimeout);
   showIdle();
-  setTimeout(() => {
-    showBanner(banners[bannerIndex]);
-    bannerIndex = (bannerIndex + 1) % banners.length;
+  bannerTimeout = setTimeout(() => {
+    if (!adActive) return;
+    if (!banners.length) { scheduleNext(); return; }
+    showBanner(banners[bannerIndex % banners.length]);
+    bannerIndex++;
   }, PAUSE_BETWEEN);
 }
 
 function showIdle() {
-  document.getElementById('idle-frame').classList.add('active');
+  document.getElementById('idle-frame').style.opacity = '1';
+  document.getElementById('idle-frame').style.zIndex = '1';
   document.getElementById('banner-frame').classList.remove('active');
   document.getElementById('banner-progress').style.transition = 'none';
   document.getElementById('banner-progress').style.width = '0%';
 }
 
 // ── TTS ──
-let currentUtterance = null;
-
-function speak(text, onComplete) {
-  if (!text || !window.speechSynthesis) {
-    if (onComplete) onComplete();
-    return;
-  }
+function speak(text) {
+  if (!text || !window.speechSynthesis) return;
   if (currentUtterance) window.speechSynthesis.cancel();
-
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'uk-UA';
-  utt.rate = 0.9;
-  utt.pitch = 1.0;
-  utt.volume = 1;
-
-  // Вибираємо український голос
+  utt.lang = 'uk-UA'; utt.rate = 0.9; utt.pitch = 1; utt.volume = 1;
   const trySpeak = () => {
     const voices = window.speechSynthesis.getVoices();
-    const ukVoice = voices.find(v => v.lang.startsWith('uk'));
-    if (ukVoice) utt.voice = ukVoice;
-    currentUtterance = utt;
-
+    const uk = voices.find(v => v.lang.startsWith('uk'));
+    if (uk) utt.voice = uk;
     const radio = document.getElementById('radio');
-    const prevVolume = radio.volume;
+    const prev = radio.volume;
     radio.volume = 0.15;
-
-    utt.onend = () => {
-      currentUtterance = null;
-      radio.volume = prevVolume;
-      if (onComplete) onComplete();
-    };
-    utt.onerror = () => {
-      currentUtterance = null;
-      radio.volume = prevVolume;
-      if (onComplete) onComplete();
-    };
+    utt.onend = () => { currentUtterance = null; radio.volume = prev; };
+    utt.onerror = () => { currentUtterance = null; radio.volume = prev; };
+    currentUtterance = utt;
     window.speechSynthesis.speak(utt);
   };
-
   const voices = window.speechSynthesis.getVoices();
-  if (voices.length === 0) {
-    window.speechSynthesis.onvoiceschanged = () => trySpeak();
-  } else {
-    trySpeak();
-  }
+  if (voices.length === 0) { window.speechSynthesis.onvoiceschanged = trySpeak; }
+  else { trySpeak(); }
 }
 
+// ── SHOW BANNER ──
 function showBanner(banner) {
-  if (!banner) { scheduleNext(); return; }
-
+  if (!banner || !adActive) { scheduleNext(); return; }
   const img   = document.getElementById('banner-img');
   const video = document.getElementById('banner-video');
   const frame = document.getElementById('banner-frame');
@@ -409,7 +469,7 @@ function showBanner(banner) {
   const dur = (banner.duration || 30) * 1000;
 
   const activate = () => {
-    document.getElementById('idle-frame').classList.remove('active');
+    document.getElementById('idle-frame').style.opacity = '0';
     frame.classList.add('active');
     progress.style.transition = 'none';
     progress.style.width = '0%';
@@ -417,20 +477,21 @@ function showBanner(banner) {
       progress.style.transition = `width ${dur}ms linear`;
       progress.style.width = '100%';
     }));
-    try { updateDoc(doc(db,'banners',banner.id), { shows: (banner.shows||0) + 1 }); } catch(e){}
-    if (banner.voiceText) setTimeout(() => speak(banner.voiceText, null), 1000);
-    setTimeout(() => { window.speechSynthesis?.cancel(); scheduleNext(); }, dur);
+    try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){}
+    if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 800);
+    bannerTimeout = setTimeout(() => {
+      window.speechSynthesis?.cancel();
+      scheduleNext();
+    }, dur);
   };
 
   if (banner.type === 'video') {
-    img.style.display = 'none';
-    video.style.display = 'block';
+    img.style.display = 'none'; video.style.display = 'block';
     video.src = banner.imageUrl || '';
     video.oncanplay = () => { video.play(); activate(); };
     video.onerror = () => scheduleNext();
   } else {
-    video.style.display = 'none';
-    img.style.display = 'block';
+    video.style.display = 'none'; img.style.display = 'block';
     img.src = banner.imageUrl || '';
     img.onload = () => activate();
     img.onerror = () => scheduleNext();
@@ -451,62 +512,33 @@ window.playTag = async (btn, name) => {
   document.querySelectorAll('.genre-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector('.genre-btn.mute').classList.remove('active');
   btn.classList.add('active');
-  currentGenre = name;
-  isMuted = false;
-  document.getElementById('music-now').innerHTML = `⏳ <span>Завантаження ${name}...</span>`;
+  currentGenre = name; isMuted = false;
+  document.getElementById('music-now').textContent = `♪ ${name}`;
 
   try {
-    // Radio Browser API — безкоштовний, без ключа
-    const tag = btn.dataset.tag;
     const res = await fetch(
-      `https://de1.api.radio-browser.info/json/stations/bytag/${tag}?limit=20&hidebroken=true&order=clickcount&reverse=true&codec=MP3`
+      `https://de1.api.radio-browser.info/json/stations/bytag/${btn.dataset.tag}?limit=20&hidebroken=true&order=clickcount&reverse=true&codec=MP3`
     );
     const stations = await res.json();
-
-    // Фільтруємо тільки https
-    const https_stations = stations.filter(s => s.url_resolved && s.url_resolved.startsWith('https'));
-    const list = https_stations.length > 0 ? https_stations : stations;
-
-    if (!list.length) {
-      document.getElementById('music-now').innerHTML = `❌ <span>Немає станцій</span>`;
-      return;
-    }
-
-    // Беремо випадкову з топ-10
+    const https_s = stations.filter(s => s.url_resolved?.startsWith('https'));
+    const list = https_s.length > 0 ? https_s : stations;
+    if (!list.length) { showToast('❌ Немає станцій'); return; }
     const pick = list[Math.floor(Math.random() * Math.min(10, list.length))];
-    const streamUrl = pick.url_resolved || pick.url;
-
     const radio = document.getElementById('radio');
-    radio.src = '';
-    radio.load();
-    radio.src = streamUrl;
+    radio.src = ''; radio.load();
+    radio.src = pick.url_resolved || pick.url;
     radio.volume = 1;
-    radio.play().catch(() => {
-      // Якщо не грає — беремо наступну
-      setTimeout(() => {
-        const pick2 = list[Math.floor(Math.random() * Math.min(10, list.length))];
-        radio.src = pick2.url_resolved || pick2.url;
-        radio.play().catch(()=>{});
-      }, 1500);
-    });
-
-    document.getElementById('music-now').innerHTML = `♪ <span>${pick.name} — ${name}</span>`;
-  } catch(e) {
-    document.getElementById('music-now').innerHTML = `❌ <span>Помилка завантаження</span>`;
-  }
+    radio.play().catch(() => setTimeout(() => radio.play().catch(()=>{}), 1500));
+    document.getElementById('music-now').textContent = `♪ ${pick.name}`;
+  } catch(e) { showToast('❌ Помилка радіо'); }
 };
-
-// Залишаємо для сумісності
-window.playGenre = window.playTag;
 
 window.toggleMute = btn => {
   const radio = document.getElementById('radio');
   isMuted = !isMuted;
   radio.volume = isMuted ? 0 : 1;
   btn.classList.toggle('active', isMuted);
-  document.getElementById('music-now').innerHTML = isMuted
-    ? '🔇 <span>Звук вимкнено</span>'
-    : `♪ <span>${currentGenre || 'Оберіть жанр'}</span>`;
+  document.getElementById('music-now').textContent = isMuted ? '🔇 Тихо' : `♪ ${currentGenre||'Музика'}`;
 };
 
 // ── SCREENS ──
@@ -517,23 +549,21 @@ function showScreen(name) {
 
 // ── AUTO RESTORE ──
 const savedCode = localStorage.getItem('ads_code');
-const savedZone = localStorage.getItem('ads_zone');
-const savedLic  = localStorage.getItem('ads_lic_id');
-if (savedCode && savedZone) {
+const savedZone = localStorage.getItem('ads_zone') || 'center';
+if (savedCode) {
   document.getElementById('setup-code').value = savedCode;
   currentZone = savedZone;
   document.querySelectorAll('.zone-opt').forEach(b=>{
     b.classList.toggle('selected', b.dataset.zone === savedZone);
   });
-  // Автозапуск!
   showScreen('player');
-  initPlayer(savedZone, savedLic);
+  initPlayer(savedZone);
 }
 
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 </script>
 </body>
