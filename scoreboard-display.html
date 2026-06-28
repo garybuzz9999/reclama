@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen — Табло</title>
+  <style>
+    :root{--bg:#000;--accent:#f5c842;--text:#fff;--muted:#333;--green:#3ddc84;--red:#ff4d4d;--blue:#4d9fff;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#000;color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column;}
+
+    /* AD OVERLAY */
+    .ad-overlay{position:fixed;inset:0;background:#000;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;}
+    .ad-overlay.active{display:flex;}
+    .ad-img{max-width:100%;max-height:75%;object-fit:contain;}
+    .ad-timer{font-size:clamp(14px,3vw,24px);color:#333;margin-top:16px;font-variant-numeric:tabular-nums;}
+    .ad-label{font-size:11px;color:#222;text-transform:uppercase;letter-spacing:2px;margin-top:8px;}
+    .break-clock{font-size:clamp(36px,8vw,72px);font-weight:200;color:#222;font-variant-numeric:tabular-nums;margin-top:16px;}
+
+    /* MAIN DISPLAY */
+    .main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#000;}
+
+    .teams{display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,40px);width:100%;margin-bottom:clamp(12px,3vw,28px);}
+    .team{flex:1;text-align:center;}
+    .team-name{font-size:clamp(14px,3.5vw,32px);font-weight:900;color:rgba(255,255,255,.6);letter-spacing:-0.5px;margin-bottom:clamp(4px,1vw,12px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .team-score{font-size:clamp(72px,20vw,200px);font-weight:900;line-height:1;letter-spacing:-6px;color:var(--accent);font-variant-numeric:tabular-nums;}
+    .divider{font-size:clamp(40px,10vw,100px);font-weight:100;color:#111;flex-shrink:0;}
+
+    .timer-wrap{text-align:center;}
+    .timer{font-size:clamp(28px,6vw,64px);font-weight:200;color:#333;letter-spacing:-2px;font-variant-numeric:tabular-nums;line-height:1;}
+    .timer.running{color:#444;}
+    .timer.extra{color:var(--red);}
+    .extra-time{font-size:clamp(12px,2vw,20px);color:var(--red);margin-top:4px;font-weight:700;}
+    .period{font-size:clamp(10px,2vw,16px);font-weight:700;text-transform:uppercase;letter-spacing:3px;margin-top:8px;}
+    .p1{color:var(--blue);}.p2{color:var(--accent);}.p3{color:var(--green);}.pe{color:var(--red);}.pf{color:var(--muted);}
+
+    /* No match */
+    .no-match{text-align:center;color:#222;font-size:14px;}
+    .no-match-icon{font-size:48px;margin-bottom:12px;}
+  </style>
+</head>
+<body>
+
+<!-- AD -->
+<div class="ad-overlay" id="ad-overlay">
+  <img class="ad-img" id="ad-img" src="" alt="" style="display:none;">
+  <div class="break-clock" id="break-clock">15:00</div>
+  <div class="ad-label">Перерва</div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="main-display">
+  <div class="no-match" id="no-match">
+    <div class="no-match-icon">⚽</div>
+    <div>Очікування матчу...</div>
+    <div style="font-size:11px;margin-top:8px;color:#111;" id="match-id-show">—</div>
+  </div>
+
+  <div id="match-content" style="display:none;width:100%;text-align:center;">
+    <div class="teams">
+      <div class="team">
+        <div class="team-name" id="d-name-a">А</div>
+        <div class="team-score" id="d-score-a">0</div>
+      </div>
+      <div class="divider">:</div>
+      <div class="team">
+        <div class="team-name" id="d-name-b">Б</div>
+        <div class="team-score" id="d-score-b">0</div>
+      </div>
+    </div>
+    <div class="timer-wrap">
+      <div class="timer" id="d-timer">00:00</div>
+      <div class="extra-time" id="d-extra" style="display:none;"></div>
+      <div class="period p1" id="d-period">● ТАЙМ 1</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
+  authDomain: "reklama-7ed3d.firebaseapp.com",
+  projectId: "reklama-7ed3d",
+  storageBucket: "reklama-7ed3d.firebasestorage.app",
+  messagingSenderId: "992657806561",
+  appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+// Get match ID from URL
+const params = new URLSearchParams(location.search);
+const matchId = params.get('id') || '';
+document.getElementById('match-id-show').textContent = matchId ? `ID: ${matchId}` : 'Немає ID матчу';
+
+if (!matchId) {
+  document.getElementById('no-match').style.display = 'block';
+} else {
+  // Realtime listener
+  let localTimer = 0;
+  let localRunning = false;
+  let localInterval = null;
+  let lastPeriod = 0;
+  let breakRemaining = 0;
+  let breakInterval = null;
+
+  onSnapshot(doc(db, 'matches', matchId), snap => {
+    if (!snap.exists()) return;
+    const d = snap.data();
+
+    document.getElementById('no-match').style.display = 'none';
+    document.getElementById('match-content').style.display = 'block';
+
+    // Update scores
+    document.getElementById('d-name-a').textContent = d.nameA;
+    document.getElementById('d-name-b').textContent = d.nameB;
+    document.getElementById('d-score-a').textContent = d.scoreA;
+    document.getElementById('d-score-b').textContent = d.scoreB;
+
+    // Period change → перерва
+    if (d.period === 2 && lastPeriod !== 2) {
+      startBreak(d.breakMin || 15);
+    } else if (d.period !== 2) {
+      stopBreak();
+    }
+    lastPeriod = d.period;
+
+    // Timer sync
+    localTimer = d.timerSec || 0;
+    localRunning = d.running && d.period !== 2;
+
+    clearInterval(localInterval);
+    if (localRunning) {
+      localInterval = setInterval(() => {
+        localTimer++;
+        updateTimer(localTimer, d.period, d.periodMin, d.extraMin);
+      }, 1000);
+    }
+
+    updateTimer(localTimer, d.period, d.periodMin, d.extraMin);
+    updatePeriod(d.period);
+  });
+
+  function updateTimer(sec, period, periodMin, extraMin) {
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    const el = document.getElementById('d-timer');
+    el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    el.className = 'timer';
+    if (localRunning) el.classList.add('running');
+    const limit = (periodMin||45)*60;
+    if (sec > limit) {
+      el.classList.add('extra');
+      const extraSec = sec - limit;
+      const em = Math.floor(extraSec/60);
+      const es = extraSec%60;
+      const extraEl = document.getElementById('d-extra');
+      extraEl.style.display = 'block';
+      extraEl.textContent = `+${String(em).padStart(2,'0')}:${String(es).padStart(2,'0')} доп. час`;
+    } else {
+      document.getElementById('d-extra').style.display = 'none';
+    }
+  }
+
+  function updatePeriod(period) {
+    const el = document.getElementById('d-period');
+    const map = {
+      1:['● ТАЙМ 1','p1'],
+      2:['⏸ ПЕРЕРВА','p2'],
+      3:['● ТАЙМ 2','p3'],
+      4:['● ДОД. ЧАС','pe'],
+      5:['🏁 ФІНАЛ','pf']
+    };
+    const [text, cls] = map[period] || ['—','pf'];
+    el.textContent = text;
+    el.className = 'period ' + cls;
+  }
+
+  function startBreak(minutes) {
+    breakRemaining = minutes * 60;
+    document.getElementById('ad-overlay').classList.add('active');
+    updateBreakClock();
+    breakInterval = setInterval(() => {
+      breakRemaining--;
+      updateBreakClock();
+      if (breakRemaining <= 0) stopBreak();
+    }, 1000);
+  }
+
+  function stopBreak() {
+    clearInterval(breakInterval);
+    document.getElementById('ad-overlay').classList.remove('active');
+  }
+
+  function updateBreakClock() {
+    const m = Math.floor(breakRemaining/60);
+    const s = breakRemaining%60;
+    document.getElementById('break-clock').textContent =
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+}
+</script>
+</body>
+</html>
