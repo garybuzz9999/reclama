@@ -531,7 +531,10 @@ const db   = getFirestore(app);
 const storage = getStorage(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
-const IMGBB_KEY = '53218ee98108e21f2f2774d8bffb7f49';
+const CF_ACCOUNT_ID = '1da63aa2271a97df4190bf732b035483';
+const CF_TOKEN = 'cfut_4lZDXONaHIeaFR1PY95era8zEnUuawTuqfrF8cqi4fa0390a';
+const CF_BUCKET = 'adscreen-media';
+const CF_PUBLIC_URL = 'https://pub-60647f73fdd54a9e85bc96f6e978dbb8.r2.dev';
 const TRIAL_DAYS = 3;
 let currentUser = null;
 let clientData  = null;
@@ -1026,13 +1029,20 @@ window.saveBg = async () => {
   if (!file) { showToast('⚠️ Оберіть зображення'); return; }
   showToast('⏳ Завантаження...');
   try {
-    const formData = new FormData();
-    formData.append('image', file);
-    formData.append('key', IMGBB_KEY);
-    const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:formData });
-    const data = await res.json();
-    if (!data.success) throw new Error('Upload failed');
-    const bgUrl = data.data.display_url || data.data.image?.url || data.data.url;
+    const fileName = `backgrounds/${currentUser.uid}/${Date.now()}_${file.name}`;
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/r2/buckets/${CF_BUCKET}/objects/${fileName}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${CF_TOKEN}`,
+          'Content-Type': file.type
+        },
+        body: file
+      }
+    );
+    if (!res.ok) throw new Error('R2 upload failed: ' + res.status);
+    const bgUrl = `${CF_PUBLIC_URL}/${fileName}`;
     await saveSettingsToFirestore({ bgUrl, orientation: currentOrientation });
     // Show current
     document.getElementById('bg-current').style.display = 'block';
