@@ -171,11 +171,22 @@
     }
     .btn-reset{
       background:#111;border:1px solid #222;
-      border-radius:10px;padding:14px 14px;font-size:13px;
+      border-radius:10px;padding:14px 10px;font-size:13px;
       color:#444;cursor:pointer;white-space:nowrap;
       transition:all .2s;flex-shrink:0;
     }
     .btn-reset:hover{border-color:var(--red);color:var(--red);}
+    .btn-shell{
+      background:#111;border:1px solid #222;
+      border-radius:10px;padding:14px 12px;font-size:13px;font-weight:700;
+      color:#444;cursor:pointer;white-space:nowrap;
+      transition:all .2s;flex-shrink:0;
+    }
+    .btn-shell.active{
+      background:rgba(77,159,255,.08);
+      border-color:rgba(77,159,255,.3);color:#4d9fff;
+    }
+    .btn-shell:hover{border-color:#4d9fff;color:#4d9fff;}
 
     /* Рядок клієнта */
     .client-row{
@@ -283,7 +294,8 @@
       <button class="btn-toggle-ad on" id="btn-toggle-ad" onclick="toggleAd()">
         ▶ Реклама увімкнена
       </button>
-      <button class="btn-reset" onclick="resetPlayer()">🔄 Скинути</button>
+      <button class="btn-shell" id="btn-shell" onclick="toggleShell()">🔒 Шел</button>
+      <button class="btn-reset" onclick="resetPlayer()">🔄</button>
     </div>
     <!-- Клієнт -->
     <div class="client-row">
@@ -559,6 +571,34 @@ if (savedCode) {
   showScreen('player');
   initPlayer(savedZone);
 }
+
+// ── SHELL ──
+let shellActive = false;
+window.toggleShell = () => {
+  const btn = document.getElementById('btn-shell');
+  if (!shellActive) {
+    // Увімкнути Screen Pinning через інструкцію
+    shellActive = true;
+    btn.className = 'btn-shell active';
+    btn.textContent = '🔓 Шел вкл';
+    // Android Screen Pinning
+    if (navigator.userAgent.includes('Android')) {
+      showToast('📌 Затисніть кнопку "Огляд" → іконка планшета → Закріпити');
+    } else if (navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad')) {
+      showToast('📌 Потрійний клік бічної кнопки → Guided Access');
+    } else {
+      // Для браузера — повноекранний режим
+      document.documentElement.requestFullscreen?.().catch(()=>{});
+      showToast('📌 Повноекранний режим увімкнено');
+    }
+  } else {
+    shellActive = false;
+    btn.className = 'btn-shell';
+    btn.textContent = '🔒 Шел';
+    document.exitFullscreen?.().catch(()=>{});
+    showToast('🔓 Шел вимкнено');
+  }
+};
 
 function showToast(msg) {
   const t = document.getElementById('toast');
