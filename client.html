@@ -594,8 +594,7 @@ window.doRegister = async () => {
 
 window.doLogout = async () => {
   await signOut(auth);
-  document.getElementById('expired-overlay').classList.remove('active');
-  showScreen('login');
+  window.location.href = 'https://adscreen.online';
 };
 
 // ── SCREENS / TABS ──
