@@ -141,28 +141,28 @@
 
     /* ── CONTROL BAR ── */
     .control-bar{
-      background:rgba(0,0,0,.95);border-top:1px solid #151515;
-      padding:10px 12px;flex-shrink:0;
+      background:#0a0a0a;border-top:1px solid #1a1a1a;
+      padding:12px 14px;flex-shrink:0;
     }
 
     /* Рядок водія */
     .driver-row{
       display:flex;align-items:center;gap:8px;
-      margin-bottom:8px;padding-bottom:8px;
-      border-bottom:1px solid #151515;
+      margin-bottom:10px;padding-bottom:10px;
+      border-bottom:1px solid #1a1a1a;
     }
     .driver-label{
-      font-size:10px;font-weight:700;text-transform:uppercase;
+      font-size:11px;font-weight:700;text-transform:uppercase;
       letter-spacing:1px;color:#333;flex-shrink:0;
     }
     .btn-toggle-ad{
-      flex:1;border:none;border-radius:8px;
-      padding:10px 14px;font-size:13px;font-weight:700;
-      cursor:pointer;transition:all .2s;display:flex;
-      align-items:center;justify-content:center;gap:6px;
+      flex:1;border:none;border-radius:10px;
+      padding:14px 18px;font-size:15px;font-weight:800;
+      cursor:pointer;transition:all .2s;
+      text-align:center;
     }
     .btn-toggle-ad.on{
-      background:rgba(61,220,132,.12);
+      background:rgba(61,220,132,.1);
       border:1px solid rgba(61,220,132,.25);color:var(--green);
     }
     .btn-toggle-ad.off{
@@ -170,30 +170,29 @@
       border:1px solid rgba(255,77,77,.2);color:var(--red);
     }
     .btn-reset{
-      background:var(--surface2);border:1px solid var(--border);
-      border-radius:8px;padding:10px 12px;font-size:11px;
-      color:var(--muted);cursor:pointer;white-space:nowrap;
-      transition:all .2s;
+      background:#111;border:1px solid #222;
+      border-radius:10px;padding:14px 14px;font-size:13px;
+      color:#444;cursor:pointer;white-space:nowrap;
+      transition:all .2s;flex-shrink:0;
     }
     .btn-reset:hover{border-color:var(--red);color:var(--red);}
 
     /* Рядок клієнта */
     .client-row{
-      display:flex;align-items:center;gap:6px;
+      display:flex;align-items:center;gap:8px;
     }
     .music-label{
-      font-size:10px;color:#333;white-space:nowrap;
-      overflow:hidden;text-overflow:ellipsis;max-width:80px;flex-shrink:0;
+      font-size:11px;color:#333;white-space:nowrap;flex-shrink:0;
     }
     .genre-btns{
-      display:flex;gap:5px;overflow-x:auto;
+      display:flex;gap:6px;overflow-x:auto;
       scrollbar-width:none;flex:1;
     }
     .genre-btns::-webkit-scrollbar{display:none;}
     .genre-btn{
-      background:var(--surface2);border:1px solid var(--border);
-      border-radius:20px;padding:8px 16px;font-size:13px;font-weight:600;
-      color:var(--muted);cursor:pointer;white-space:nowrap;
+      background:#111;border:1px solid #1e1e1e;
+      border-radius:20px;padding:10px 18px;font-size:14px;font-weight:700;
+      color:#555;cursor:pointer;white-space:nowrap;
       transition:all .2s;flex-shrink:0;
     }
     .genre-btn:hover{border-color:var(--accent);color:var(--text);}
@@ -201,13 +200,14 @@
       background:rgba(245,200,66,.1);
       border-color:var(--accent);color:var(--accent);
     }
+    .genre-btn.mute{padding:10px 14px;}
     .genre-btn.mute.active{
       background:rgba(255,77,77,.1);
       border-color:var(--red);color:var(--red);
     }
 
     .toast{
-      position:fixed;bottom:100px;left:50%;
+      position:fixed;bottom:50%;left:50%;
       transform:translateX(-50%) translateY(60px);
       background:var(--surface2);border:1px solid var(--border);
       border-radius:10px;padding:10px 20px;
@@ -395,7 +395,7 @@ window.toggleAd = () => {
     btn.textContent = '▶ Реклама увімкнена';
     stopped.classList.remove('active');
     scheduleNext();
-    showToast('▶ Рекламу увімкнено');
+    // не показуємо toast щоб не дублювати
   } else {
     btn.className = 'btn-toggle-ad off';
     btn.textContent = '⏹ Реклама вимкнена';
@@ -403,7 +403,7 @@ window.toggleAd = () => {
     showIdle();
     stopped.classList.add('active');
     if (currentUtterance) window.speechSynthesis?.cancel();
-    showToast('⏹ Рекламу вимкнено');
+    // не показуємо toast щоб не дублювати
   }
 };
 
