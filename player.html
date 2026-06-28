@@ -325,7 +325,7 @@
         ▶ Реклама увімкнена
       </button>
       <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
-      <button class="btn-reset" onclick="resetPlayer()">🔄</button>
+      <button class="btn-reset" id="btn-reset" onclick="tapReset()">🔄</button>
     </div>
     <!-- Клієнт -->
     <div class="client-row">
@@ -507,6 +507,23 @@ window.toggleAd = () => {
 };
 
 // ── RESET ──
+let resetTaps = 0;
+let resetTimer = null;
+
+window.tapReset = () => {
+  resetTaps++;
+  clearTimeout(resetTimer);
+  resetTimer = setTimeout(() => { resetTaps = 0; }, 2000);
+
+  const btn = document.getElementById('btn-reset');
+  btn.style.borderColor = `rgba(255,77,77,${resetTaps * 0.2})`;
+
+  if (resetTaps >= 5) {
+    resetTaps = 0;
+    window.resetPlayer();
+  }
+};
+
 window.resetPlayer = () => {
   if (!confirm('Скинути налаштування екрану?')) return;
   localStorage.removeItem('ads_code');
