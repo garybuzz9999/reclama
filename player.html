@@ -310,7 +310,7 @@
       <button class="btn-toggle-ad on" id="btn-toggle-ad" onclick="toggleAd()">
         ▶ Реклама увімкнена
       </button>
-      <button class="btn-shell" id="btn-shell" onclick="toggleShell()">🔒 Шел</button>
+      <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
       <button class="btn-reset" onclick="resetPlayer()">🔄</button>
     </div>
     <!-- Клієнт -->
@@ -610,6 +610,43 @@ if (savedCode) {
   showScreen('player');
   initPlayer(savedZone);
 }
+
+// ── FULLSCREEN ──
+let isFullscreen = false;
+window.toggleFullscreen = () => {
+  const btn = document.getElementById('btn-shell');
+  if (!isFullscreen) {
+    document.documentElement.requestFullscreen?.()
+      .then(() => {
+        isFullscreen = true;
+        btn.textContent = '✕ Вікно';
+        btn.className = 'btn-shell active';
+      })
+      .catch(() => {
+        // Якщо не вдалось — спробуємо через webkit
+        const el = document.documentElement;
+        (el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen)?.call(el);
+        isFullscreen = true;
+        btn.textContent = '✕ Вікно';
+        btn.className = 'btn-shell active';
+      });
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen || 
+     document.mozCancelFullScreen || document.msExitFullscreen)
+      ?.call(document);
+    isFullscreen = false;
+    btn.textContent = '⛶ Екран';
+    btn.className = 'btn-shell';
+  }
+};
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    isFullscreen = false;
+    const btn = document.getElementById('btn-shell');
+    if (btn) { btn.textContent = '⛶ Екран'; btn.className = 'btn-shell'; }
+  }
+});
 
 // ── SHELL / PIN ──
 let shellActive = false;
