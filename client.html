@@ -376,7 +376,22 @@
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
             </div>
           </div>
-          <div class="field"><label>Зображення або відео (JPG/PNG/MP4 16:9)</label>
+          <div class="field">
+            <label>Зображення (JPG/PNG)</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Горизонтальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1920×1080</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Вертикальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1920</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Квадрат</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1080</div>
+              </div>
+            </div>
             <div class="file-drop" id="file-drop">
               <input type="file" id="bn-image" accept="image/*,video/*" onchange="previewImage(this)">
               <div class="file-drop-icon" id="drop-icon">🖼</div>
@@ -384,10 +399,7 @@
             </div>
             <img class="file-preview" id="file-preview" src="" alt="">
           </div>
-          <div class="field">
-            <label>Або вставте URL зображення</label>
-            <input class="inp" id="bn-url" placeholder="https://example.com/banner.jpg" oninput="previewUrl(this)">
-          </div>
+
           <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
         </div>
       </div>
@@ -419,6 +431,67 @@
       <div class="card" id="stats-zones"></div>
       <div class="sec-title" style="margin-top:16px;">По банерах</div>
       <div class="card" id="stats-banners"></div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Налаштування екрану</div>
+        <button class="help-btn" onclick="toggleHelp('help-settings')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-settings">
+        <div class="help-title">⚙️ Як налаштувати екран</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Орієнтація</strong> — оберіть як розташований планшет або ТВ. Горизонтальна = лежить. Вертикальна = стоїть</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Фоновий екран</strong> — зображення між рекламними банерами. Завантажте логотип або фото компанії</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Після завантаження натисніть <strong>Зберегти фон</strong> → з'явиться на всіх ваших екранах замість чорного</div></div>
+        <div class="help-tip">💡 Фоновий екран — це ваша "заставка" яку бачать глядачі між рекламою. Поставте логотип!</div>
+      </div>
+
+      <!-- Орієнтація -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec-title" style="margin-bottom:12px;">Орієнтація планшета / ТВ</div>
+        <div style="display:flex;gap:10px;">
+          <button class="orient-btn selected" id="orient-landscape" onclick="setOrientation('landscape',this)">
+            <div style="font-size:28px;margin-bottom:6px;">🖥</div>
+            <div style="font-size:14px;font-weight:700;">Горизонтальна</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">1920 × 1080 px</div>
+          </button>
+          <button class="orient-btn" id="orient-portrait" onclick="setOrientation('portrait',this)">
+            <div style="font-size:28px;margin-bottom:6px;">📱</div>
+            <div style="font-size:14px;font-weight:700;">Вертикальна</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:4px;">1080 × 1920 px</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Таблиця розмірів -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec-title" style="margin-bottom:12px;">Рекомендовані розміри зображень</div>
+        <div class="size-row"><div class="size-type">🖼 Банер реклами</div><div class="size-val" id="size-banner">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
+        <div class="size-row"><div class="size-type">🎨 Фоновий екран</div><div class="size-val" id="size-bg">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
+        <div class="size-row"><div class="size-type">□ Квадрат (універсальний)</div><div class="size-val">1080 × 1080 px</div><div class="size-ratio">1:1</div></div>
+        <div class="size-row"><div class="size-type">📁 Макс. розмір файлу</div><div class="size-val">32 MB</div><div class="size-ratio">JPG/PNG</div></div>
+      </div>
+
+      <!-- Фоновий екран -->
+      <div class="card">
+        <div class="sec-title" style="margin-bottom:4px;">Фоновий екран між рекламою</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Показується між банерами. Логотип, фото, заставка компанії.</div>
+        <div class="file-drop" style="margin-bottom:12px;">
+          <input type="file" id="bg-image" accept="image/*" onchange="previewBg(this)">
+          <div class="file-drop-icon" id="bg-drop-icon">🎨</div>
+          <div class="file-drop-text" id="bg-drop-text">Завантажте фонове зображення — <span>оберіть файл</span></div>
+        </div>
+        <img id="bg-preview" src="" alt="" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;max-height:200px;object-fit:cover;">
+        <div id="bg-current" style="display:none;margin-bottom:12px;">
+          <div style="font-size:12px;color:var(--green);margin-bottom:8px;">✅ Поточний фон:</div>
+          <img id="bg-current-img" src="" style="width:100%;border-radius:8px;max-height:160px;object-fit:cover;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" onclick="saveBg()" style="flex:1;">Зберегти фон</button>
+          <button onclick="removeBg()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--muted);cursor:pointer;font-size:13px;">Видалити</button>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -743,15 +816,6 @@ function getSelectedZones() {
   return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
 }
 
-window.previewUrl = inp => {
-  const url = inp.value.trim();
-  if (!url) return;
-  const p = document.getElementById('file-preview');
-  p.src = url; p.style.display='block';
-  document.getElementById('drop-icon').textContent='🔗';
-  document.getElementById('drop-text').innerHTML=`<span>URL вставлено</span>`;
-};
-
 window.previewImage = input => {
   const file = input.files[0]; if (!file) return;
   document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
@@ -782,7 +846,6 @@ window.addBanner = async () => {
   const duration = parseInt(document.getElementById('bn-duration').value);
   const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
-  const manualUrl = document.getElementById('bn-url').value.trim();
   if (!title) { 
     document.getElementById('bn-title').style.borderColor = 'var(--red)';
     document.getElementById('bn-title').focus();
@@ -790,10 +853,10 @@ window.addBanner = async () => {
     return; 
   }
   document.getElementById('bn-title').style.borderColor = '';
-  if (!imageFile && !manualUrl) { showToast('⚠️ Додайте зображення або URL'); return; }
+  if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
   showToast('⏳ Збереження...');
   try {
-    let imageUrl = manualUrl;
+    let imageUrl = '';
     let storagePath = null;
     let isVideo = false;
 
@@ -835,7 +898,7 @@ window.addBanner = async () => {
     });
     document.getElementById('bn-title').value='';
     document.getElementById('bn-image').value='';
-    document.getElementById('bn-url').value='';
+
     document.getElementById('bn-voice').value='';
     const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
     document.getElementById('drop-icon').textContent='🖼';
