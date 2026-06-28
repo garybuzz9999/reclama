@@ -145,6 +145,39 @@
     .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
     .empty-icon{font-size:32px;margin-bottom:10px;}
     .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
+
+    /* HELP MANUAL */
+    .help-btn{
+      background:none;border:1px solid var(--border);border-radius:20px;
+      padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;
+      float:right;transition:all .2s;margin-left:8px;
+    }
+    .help-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .help-panel{
+      display:none;background:rgba(245,200,66,.04);
+      border:1px solid rgba(245,200,66,.15);border-radius:12px;
+      padding:16px;margin-bottom:16px;
+    }
+    .help-panel.open{display:block;}
+    .help-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+    .help-step{
+      display:flex;gap:10px;padding:8px 0;
+      border-bottom:1px solid rgba(245,200,66,.08);font-size:13px;
+    }
+    .help-step:last-child{border-bottom:none;}
+    .help-step-num{
+      width:22px;height:22px;border-radius:50%;
+      background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);
+      color:var(--accent);font-size:11px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+    }
+    .help-step-text{color:var(--muted);line-height:1.5;}
+    .help-step-text strong{color:var(--text);}
+    .help-tip{
+      margin-top:10px;padding:10px;border-radius:8px;
+      background:rgba(61,220,132,.06);border:1px solid rgba(61,220,132,.15);
+      font-size:12px;color:var(--green);line-height:1.5;
+    }
     .orient-btn{
       flex:1;background:var(--surface2);border:2px solid var(--border);
       border-radius:12px;padding:16px 12px;text-align:center;
@@ -232,6 +265,19 @@
 
     <!-- OVERVIEW -->
     <div class="page active" id="page-overview">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Огляд</div>
+        <button class="help-btn" onclick="toggleHelp('help-overview')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-overview">
+        <div class="help-title">📊 Як читати Огляд</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Пристрої</strong> — скільки планшетів/телевізорів підключено до вашого акаунту і показують рекламу</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Банери</strong> — скільки рекламних зображень зараз активні і показуються глядачам</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Покази</strong> — загальна кількість разів коли ваш банер показався на екрані</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>QR-сканів</strong> — скільки людей відсканували QR-код на вашому банері і перейшли на сайт</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Мої ліцензії</strong> — ваші ліцензійні коди. <strong>Вільна</strong> = ще не активована на пристрої. <strong>Активовано</strong> = пристрій підключений і показує рекламу</div></div>
+        <div class="help-tip">💡 Перший крок — перейдіть у вкладку <strong>Пристрої</strong> і активуйте ваш планшет або ТВ</div>
+      </div>
       <div id="trial-banner-wrap"></div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
@@ -247,6 +293,19 @@
 
     <!-- DEVICES -->
     <div class="page" id="page-devices">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Пристрої</div>
+        <button class="help-btn" onclick="toggleHelp('help-devices')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-devices">
+        <div class="help-title">📱 Як підключити планшет або телевізор</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Відкрийте браузер на планшеті або ТВ і перейдіть на <strong>adscreen.online/player.html</strong></div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Поверніться сюди → оберіть <strong>вільний ліцензійний код</strong> зі списку нижче</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Введіть <strong>назву пристрою</strong> — наприклад "Таксі №5" або "Зал А" — щоб потім зрозуміти де він стоїть</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Оберіть <strong>зону міста</strong> — де знаходиться пристрій. Реклама буде показуватись тільки релевантна для цього району</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Натисніть <strong>Активувати</strong> → введіть цей самий код на планшеті → плеєр запуститься автоматично</div></div>
+        <div class="help-tip">💡 Код вводиться тільки один раз. Після цього планшет запускає рекламу автоматично при кожному включенні</div>
+      </div>
       <div class="activate-card">
         <div class="activate-card-title">➕ Підключити пристрій</div>
         <div class="activate-card-sub">Відкрийте плеєр на планшеті або ТВ, введіть код і оберіть зону</div>
@@ -275,6 +334,20 @@
 
     <!-- BANNERS -->
     <div class="page" id="page-banners">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Банери</div>
+        <button class="help-btn" onclick="toggleHelp('help-banners')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-banners">
+        <div class="help-title">🖼 Як додати рекламний банер</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Назва банера</strong> — для вашої зручності, глядачі її не бачать. Наприклад "Піца -20% Червень"</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Тривалість</strong> — скільки секунд показується банер. Рекомендуємо <strong>30 сек</strong> — достатньо щоб запам'ятати</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Зони показу</strong> — оберіть райони де хочете показувати рекламу. Якщо ваш заклад на Центрі — обирайте "Центр". "Всі зони" — максимальне охоплення</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>Зображення</strong> — завантажте фото банера. Рекомендований розмір: <strong>1920×1080 px</strong> (горизонтальний) або <strong>1080×1920 px</strong> (вертикальний). Формат: JPG або PNG до 32MB</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Текст озвучки</strong> — необов'язково. Введіть текст який буде вимовлятись вголос коли з'явиться банер. Наприклад: "Увага! Піца зі знижкою 20% тільки сьогодні!"</div></div>
+        <div class="help-step"><div class="help-step-num">6</div><div class="help-step-text">Натисніть <strong>Опублікувати</strong> → банер з'явиться на всіх підключених екранах протягом 10 хвилин</div></div>
+        <div class="help-tip">💡 Банер можна <strong>призупинити</strong> (⏸) щоб тимчасово не показувати, або <strong>видалити</strong> (🗑️). Завантажуйте якісні зображення — нечіткі банери відлякують клієнтів</div>
+      </div>
       <div class="sec-title">Додати банер</div>
       <div class="card" style="margin-bottom:20px;">
         <div class="add-banner-form">
@@ -323,6 +396,19 @@
 
     <!-- STATS -->
     <div class="page" id="page-stats">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Статистика</div>
+        <button class="help-btn" onclick="toggleHelp('help-stats')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-stats">
+        <div class="help-title">📈 Як читати статистику</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Всього показів</strong> — скільки разів ваші банери з'являлись на екранах. Один перегляд = один показ</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>QR-сканів</strong> — скільки людей відсканували QR-код на банері і перейшли на ваш сайт або сторінку</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Конверсія</strong> — відсоток людей які відсканували QR після перегляду. 3-5% — хороший результат для реклами в таксі</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>По зонах</strong> — в яких районах міста ваша реклама показується найчастіше. Допомагає зрозуміти де найбільше ваших потенційних клієнтів</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>По банерах</strong> — який банер показується найчастіше і який отримує більше QR-сканів. Порівнюйте ефективність різних оголошень</div></div>
+        <div class="help-tip">💡 Додайте QR-код прямо на зображення банера що веде на ваш сайт, меню або замовлення — це збільшить конверсію в 3-5 разів</div>
+      </div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-label">Всього показів</div><div class="stat-value" id="st-total">—</div></div>
         <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="st-qr">—</div></div>
@@ -925,6 +1011,13 @@ async function loadSettings() {
     document.getElementById('bg-current-img').src = s.bgUrl;
   }
 }
+
+window.toggleHelp = (id) => {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('open');
+  const btn = panel.previousElementSibling.querySelector('.help-btn');
+  if (btn) btn.textContent = panel.classList.contains('open') ? '✕ Закрити' : '? Допомога';
+};
 
 function showErr(form,msg){document.getElementById(form+'-err').textContent=msg;}
 function showToast(msg){
