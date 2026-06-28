@@ -95,17 +95,7 @@
     .idle-zone{font-size:12px;color:#333;margin-top:8px;
       text-transform:uppercase;letter-spacing:2px;}
 
-    /* СТОП екран */
-    .stopped-frame{
-      position:absolute;inset:0;
-      display:none;flex-direction:column;
-      align-items:center;justify-content:center;
-      background:#000;z-index:3;
-    }
-    .stopped-frame.active{display:flex;}
-    .stopped-icon{font-size:48px;margin-bottom:16px;opacity:.3;}
-    .stopped-text{font-size:16px;color:#333;margin-bottom:8px;}
-    .stopped-sub{font-size:12px;color:#222;}
+
 
     /* Banner */
     .banner-frame{
@@ -301,12 +291,7 @@
       <div class="idle-clock" id="idle-clock">00:00</div>
       <div class="idle-zone" id="idle-zone-label">—</div>
     </div>
-    <!-- Зупинено -->
-    <div class="stopped-frame" id="stopped-frame">
-      <div class="stopped-icon">⏹</div>
-      <div class="stopped-text">Рекламу вимкнено</div>
-      <div class="stopped-sub">Натисніть "Увімкнути рекламу" щоб продовжити</div>
-    </div>
+
     <!-- Банер -->
     <div class="banner-frame" id="banner-frame">
       <img id="banner-img" src="" alt="" style="display:none;">
@@ -460,21 +445,16 @@ async function loadBanners(zone) {
 window.toggleAd = () => {
   adActive = !adActive;
   const btn = document.getElementById('btn-toggle-ad');
-  const stopped = document.getElementById('stopped-frame');
   if (adActive) {
     btn.className = 'btn-toggle-ad on';
     btn.textContent = '▶ Реклама увімкнена';
-    stopped.classList.remove('active');
     scheduleNext();
-    // не показуємо toast щоб не дублювати
   } else {
     btn.className = 'btn-toggle-ad off';
     btn.textContent = '⏹ Реклама вимкнена';
     if (bannerTimeout) clearTimeout(bannerTimeout);
     showIdle();
-    stopped.classList.add('active');
     if (currentUtterance) window.speechSynthesis?.cancel();
-    // не показуємо toast щоб не дублювати
   }
 };
 
@@ -672,7 +652,6 @@ function activateShell() {
   document.querySelector('.driver-row').style.display = 'none';
   // Повноекранний режим
   document.documentElement.requestFullscreen?.().catch(()=>{});
-  showToast('🔒 Екран заблоковано');
 }
 
 function deactivateShell() {
@@ -682,7 +661,6 @@ function deactivateShell() {
   btn.textContent = '🔒 Шел';
   document.querySelector('.driver-row').style.display = 'flex';
   document.exitFullscreen?.().catch(()=>{});
-  showToast('🔓 Екран розблоковано');
 }
 
 function openPinModal(mode) {
