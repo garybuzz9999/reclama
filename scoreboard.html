@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen — Спортивне табло</title>
+  <style>
+    :root{
+      --bg:#000;--surface:#0f0f0f;--surface2:#181818;--border:#222;
+      --accent:#f5c842;--text:#fff;--muted:#555;--green:#3ddc84;
+      --red:#ff4d4d;--blue:#4d9fff;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:var(--bg);color:var(--text);height:100dvh;overflow:hidden;}
+
+    /* ── SETUP ── */
+    #screen-setup{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:100dvh;padding:24px;background:var(--bg);
+    }
+    .setup-logo{font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;text-align:center;}
+    .setup-logo span{color:var(--accent);}
+    .setup-sub{font-size:12px;color:var(--muted);margin-bottom:32px;text-align:center;}
+    .setup-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:420px;}
+    .setup-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+    .setup-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:16px;color:var(--text);outline:none;transition:border-color .2s;margin-bottom:12px;}
+    .setup-inp:focus{border-color:var(--accent);}
+    .setup-inp::placeholder{color:var(--border);}
+    .setup-row{display:flex;gap:8px;margin-bottom:12px;}
+    .setup-row .setup-inp{margin-bottom:0;}
+    .setup-half{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+    .setup-num{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;color:var(--text);outline:none;text-align:center;}
+    .btn-start{width:100%;background:var(--accent);color:#000;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;}
+
+    /* ── SCOREBOARD SCREEN ── */
+    #screen-board{
+      display:none;flex-direction:column;height:100dvh;
+      position:fixed;inset:0;
+    }
+
+    /* MAIN DISPLAY */
+    .board-main{
+      flex:1;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      background:#000;position:relative;
+      padding:20px;
+    }
+
+    /* Sponsor/ad overlay */
+    .ad-overlay{
+      position:absolute;inset:0;
+      background:#000;z-index:10;
+      display:none;flex-direction:column;
+      align-items:center;justify-content:center;
+    }
+    .ad-overlay.active{display:flex;}
+    .ad-overlay img{max-width:100%;max-height:80%;object-fit:contain;}
+    .ad-overlay-label{
+      position:absolute;bottom:20px;
+      font-size:12px;color:#333;text-transform:uppercase;letter-spacing:2px;
+    }
+    .ad-countdown{
+      position:absolute;top:20px;right:20px;
+      font-size:24px;font-weight:900;color:#222;
+    }
+
+    /* Teams */
+    .teams-row{
+      display:flex;align-items:center;justify-content:center;
+      gap:20px;width:100%;margin-bottom:16px;
+    }
+    .team{flex:1;text-align:center;}
+    .team-name{
+      font-size:clamp(14px,3.5vw,28px);font-weight:900;
+      color:var(--text);letter-spacing:-0.5px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .team-score{
+      font-size:clamp(64px,18vw,160px);font-weight:900;
+      line-height:1;letter-spacing:-4px;color:var(--accent);
+      font-variant-numeric:tabular-nums;
+    }
+    .score-divider{
+      font-size:clamp(40px,10vw,90px);font-weight:200;
+      color:#222;line-height:1;flex-shrink:0;
+    }
+
+    /* Timer */
+    .timer-block{text-align:center;margin-bottom:8px;}
+    .timer-display{
+      font-size:clamp(32px,8vw,72px);font-weight:200;
+      color:#444;letter-spacing:-2px;
+      font-variant-numeric:tabular-nums;line-height:1;
+    }
+    .timer-display.running{color:#666;}
+    .timer-display.extra{color:var(--red);}
+    .period-label{
+      font-size:clamp(11px,2vw,16px);font-weight:700;
+      text-transform:uppercase;letter-spacing:3px;
+      margin-top:6px;
+    }
+    .period-label.t1{color:var(--blue);}
+    .period-label.break{color:var(--accent);}
+    .period-label.t2{color:var(--green);}
+    .period-label.extra{color:var(--red);}
+    .period-label.end{color:var(--muted);}
+
+    /* Extra time badge */
+    .extra-badge{
+      display:none;background:rgba(255,77,77,.1);
+      border:1px solid rgba(255,77,77,.2);border-radius:20px;
+      padding:4px 12px;font-size:12px;font-weight:700;
+      color:var(--red);margin-top:6px;
+    }
+    .extra-badge.active{display:inline-block;}
+
+    /* ── CONTROLS ── */
+    .controls{
+      background:#080808;border-top:2px solid #1a1a1a;
+      padding:12px 12px;flex-shrink:0;
+    }
+
+    /* Score controls */
+    .score-controls{
+      display:grid;grid-template-columns:1fr auto 1fr;
+      gap:8px;margin-bottom:10px;align-items:center;
+    }
+    .team-controls{display:flex;gap:6px;}
+    .btn-goal{
+      flex:1;border:none;border-radius:10px;
+      padding:14px 10px;font-size:18px;font-weight:900;
+      cursor:pointer;transition:all .2s;
+    }
+    .btn-goal.plus{background:rgba(61,220,132,.12);border:2px solid rgba(61,220,132,.25);color:var(--green);}
+    .btn-goal.minus{background:var(--surface2);border:2px solid var(--border);color:var(--muted);}
+    .vs-label{text-align:center;font-size:11px;color:#333;font-weight:700;letter-spacing:1px;}
+
+    /* Timer controls */
+    .timer-controls{
+      display:flex;gap:6px;margin-bottom:10px;
+    }
+    .btn-timer{
+      flex:1;border:none;border-radius:10px;
+      padding:14px;font-size:14px;font-weight:800;
+      cursor:pointer;transition:all .2s;text-align:center;
+    }
+    .btn-timer.start{background:rgba(61,220,132,.12);border:2px solid rgba(61,220,132,.25);color:var(--green);}
+    .btn-timer.stop{background:rgba(255,77,77,.08);border:2px solid rgba(255,77,77,.2);color:var(--red);}
+    .btn-timer.extra{background:rgba(255,77,77,.06);border:2px solid rgba(255,77,77,.15);color:var(--red);font-size:13px;}
+    .btn-timer.period{background:rgba(245,200,66,.08);border:2px solid rgba(245,200,66,.2);color:var(--accent);font-size:13px;}
+    .btn-timer.reset{background:var(--surface2);border:2px solid var(--border);color:var(--muted);font-size:13px;}
+    .btn-timer.fullscreen{background:var(--surface2);border:2px solid var(--border);color:var(--muted);}
+
+    .toast{position:fixed;bottom:50%;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 20px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="screen-setup">
+  <div class="setup-logo">Ad<span>Screen</span> ⚽</div>
+  <div class="setup-sub">Спортивне табло з рекламою між таймами</div>
+  <div class="setup-card">
+    <div class="setup-label">Назви команд</div>
+    <div class="setup-row">
+      <input class="setup-inp" id="team-a" placeholder="Команда А" maxlength="20">
+      <input class="setup-inp" id="team-b" placeholder="Команда Б" maxlength="20">
+    </div>
+    <div class="setup-label">Тривалість тайму і перерви (хвилин)</div>
+    <div class="setup-half">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Тайм</div>
+        <input class="setup-num" id="period-min" type="number" value="45" min="1" max="90">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Перерва</div>
+        <input class="setup-num" id="break-min" type="number" value="15" min="1" max="30">
+      </div>
+    </div>
+    <div class="setup-label" style="margin-bottom:8px;">Реклама під час перерви</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">
+      Банери з вашого кабінету AdScreen будуть показуватись між таймами автоматично.<br>
+      <span style="color:var(--accent);">⚠️ Для реклами потрібна реєстрація в AdScreen</span>
+    </div>
+    <button class="btn-start" onclick="startBoard()">⚽ Запустити табло</button>
+  </div>
+</div>
+
+<!-- SCOREBOARD -->
+<div id="screen-board">
+  <!-- Ad overlay -->
+  <div class="ad-overlay" id="ad-overlay">
+    <img id="ad-img" src="" alt="">
+    <div class="ad-countdown" id="ad-countdown"></div>
+    <div class="ad-overlay-label">Реклама · перерва</div>
+  </div>
+
+  <!-- Main display -->
+  <div class="board-main">
+    <div class="teams-row">
+      <div class="team">
+        <div class="team-name" id="name-a">Команда А</div>
+        <div class="team-score" id="score-a">0</div>
+      </div>
+      <div class="score-divider">:</div>
+      <div class="team">
+        <div class="team-name" id="name-b">Команда Б</div>
+        <div class="team-score" id="score-b">0</div>
+      </div>
+    </div>
+    <div class="timer-block">
+      <div class="timer-display" id="timer-display">00:00</div>
+      <div class="period-label t1" id="period-label">● ТАЙМ 1</div>
+      <div class="extra-badge" id="extra-badge">+0 хв доп. часу</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <!-- Score -->
+    <div class="score-controls">
+      <div class="team-controls">
+        <button class="btn-goal plus" onclick="goal('a',1)">+⚽</button>
+        <button class="btn-goal minus" onclick="goal('a',-1)">−</button>
+      </div>
+      <div class="vs-label">ГОЛ</div>
+      <div class="team-controls">
+        <button class="btn-goal minus" onclick="goal('b',-1)">−</button>
+        <button class="btn-goal plus" onclick="goal('b',1)">+⚽</button>
+      </div>
+    </div>
+    <!-- Timer -->
+    <div class="timer-controls">
+      <button class="btn-timer start" id="btn-start-timer" onclick="startTimer()">▶ Старт</button>
+      <button class="btn-timer stop" id="btn-stop-timer" onclick="stopTimer()">⏸ Стоп</button>
+      <button class="btn-timer extra" onclick="addExtra()">+1 хв доп.</button>
+      <button class="btn-timer period" onclick="nextPeriod()">Кінець тайму →</button>
+      <button class="btn-timer fullscreen" onclick="toggleFs()">⛶</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let scoreA = 0, scoreB = 0;
+let periodMin = 45, breakMin = 15;
+let period = 1; // 1=тайм1, 2=перерва, 3=тайм2, 4=доп.час, 5=кінець
+let timerSec = 0;
+let extraSec = 0;
+let running = false;
+let timerInterval = null;
+let breakInterval = null;
+let breakRemaining = 0;
+
+// Фіктивні банери для демо (потім підключимо Firebase)
+const demoBanners = [];
+let adIndex = 0;
+
+function startBoard() {
+  const nameA = document.getElementById('team-a').value.trim() || 'Команда А';
+  const nameB = document.getElementById('team-b').value.trim() || 'Команда Б';
+  periodMin = parseInt(document.getElementById('period-min').value) || 45;
+  breakMin  = parseInt(document.getElementById('break-min').value) || 15;
+
+  document.getElementById('name-a').textContent = nameA;
+  document.getElementById('name-b').textContent = nameB;
+  document.getElementById('screen-setup').style.display = 'none';
+  document.getElementById('screen-board').style.display = 'flex';
+  updateDisplay();
+}
+
+function goal(team, delta) {
+  if (team === 'a') {
+    scoreA = Math.max(0, scoreA + delta);
+    document.getElementById('score-a').textContent = scoreA;
+  } else {
+    scoreB = Math.max(0, scoreB + delta);
+    document.getElementById('score-b').textContent = scoreB;
+  }
+  if (delta > 0) showToast('⚽ ГОЛ!');
+}
+
+function startTimer() {
+  if (running) return;
+  if (period === 5) return;
+  running = true;
+  timerInterval = setInterval(() => {
+    timerSec++;
+    extraSec = Math.max(0, timerSec - periodMin * 60);
+    updateDisplay();
+  }, 1000);
+  showToast('▶ Час пішов');
+}
+
+function stopTimer() {
+  if (!running) return;
+  running = false;
+  clearInterval(timerInterval);
+  showToast('⏸ Зупинено');
+}
+
+function addExtra() {
+  // Додаємо 1 хвилину до ліміту
+  periodMin++;
+  const badge = document.getElementById('extra-badge');
+  const extra = periodMin - parseInt(document.getElementById('period-min').value || 45);
+  badge.textContent = `+${extra} хв доп. часу`;
+  badge.classList.add('active');
+  showToast(`+1 хв доп. часу`);
+}
+
+function nextPeriod() {
+  stopTimer();
+  if (period === 1) {
+    // Кінець тайму 1 → перерва
+    period = 2;
+    timerSec = 0;
+    extraSec = 0;
+    // Скидаємо periodMin до оригінального
+    periodMin = parseInt(document.getElementById('period-min').value || 45);
+    document.getElementById('extra-badge').classList.remove('active');
+    updateDisplay();
+    startBreak();
+    showToast('⏸ Перерва! Реклама вмикається...');
+  } else if (period === 2) {
+    // Кінець перерви → тайм 2
+    clearInterval(breakInterval);
+    document.getElementById('ad-overlay').classList.remove('active');
+    period = 3;
+    timerSec = 0;
+    updateDisplay();
+    showToast('▶ Тайм 2');
+  } else if (period === 3) {
+    // Кінець тайму 2
+    period = 5;
+    updateDisplay();
+    showToast('🏁 Матч завершено!');
+  }
+}
+
+function startBreak() {
+  breakRemaining = breakMin * 60;
+  showAd();
+  breakInterval = setInterval(() => {
+    breakRemaining--;
+    updateBreakDisplay();
+    if (breakRemaining <= 60) {
+      showToast('⚠️ 1 хвилина до кінця перерви!');
+      clearInterval(breakInterval);
+    }
+    if (breakRemaining <= 0) {
+      clearInterval(breakInterval);
+      document.getElementById('ad-overlay').classList.remove('active');
+      period = 3; timerSec = 0;
+      updateDisplay();
+    }
+  }, 1000);
+}
+
+function showAd() {
+  // TODO: завантажити реальні банери з Firebase
+  // Поки показуємо заставку перерви
+  document.getElementById('ad-overlay').classList.add('active');
+  document.getElementById('ad-img').src = '';
+  updateBreakDisplay();
+}
+
+function updateBreakDisplay() {
+  const m = Math.floor(breakRemaining / 60);
+  const s = breakRemaining % 60;
+  document.getElementById('ad-countdown').textContent =
+    `Перерва: ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function updateDisplay() {
+  const m = Math.floor(timerSec / 60);
+  const s = timerSec % 60;
+  const timerEl = document.getElementById('timer-display');
+  const periodEl = document.getElementById('period-label');
+
+  timerEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  timerEl.className = 'timer-display';
+  if (running) timerEl.classList.add('running');
+  if (extraSec > 0) timerEl.classList.add('extra');
+
+  switch(period) {
+    case 1:
+      periodEl.className = 'period-label t1';
+      periodEl.textContent = running ? '● ТАЙМ 1' : '◉ ТАЙМ 1';
+      break;
+    case 2:
+      periodEl.className = 'period-label break';
+      periodEl.textContent = '⏸ ПЕРЕРВА';
+      timerEl.textContent = `${String(breakMin).padStart(2,'0')}:00`;
+      break;
+    case 3:
+      periodEl.className = 'period-label t2';
+      periodEl.textContent = running ? '● ТАЙМ 2' : '◉ ТАЙМ 2';
+      break;
+    case 4:
+      periodEl.className = 'period-label extra';
+      periodEl.textContent = '● ДОДАТКОВИЙ ЧАС';
+      break;
+    case 5:
+      periodEl.className = 'period-label end';
+      periodEl.textContent = '🏁 МАТЧ ЗАВЕРШЕНО';
+      timerEl.className = 'timer-display';
+      break;
+  }
+}
+
+function toggleFs() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen?.().catch(()=>{});
+  } else {
+    document.exitFullscreen?.();
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
