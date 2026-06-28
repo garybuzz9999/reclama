@@ -41,15 +41,38 @@
 </head>
 <body>
 
+<!-- SETUP -->
+<div id="screen-setup" style="
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100dvh;padding:24px;background:#000;
+">
+  <div style="font-size:28px;font-weight:900;letter-spacing:-1px;margin-bottom:4px;">
+    Ad<span style="color:#f5c842;">Screen</span> ⚽
+  </div>
+  <div style="font-size:12px;color:#555;margin-bottom:32px;">Екран табло для глядачів</div>
+  <div style="background:#0f0f0f;border:1px solid #222;border-radius:20px;padding:28px;width:100%;max-width:380px;">
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#555;margin-bottom:8px;">ID матчу</div>
+    <input id="input-match-id"
+      style="width:100%;background:#181818;border:1px solid #222;border-radius:12px;padding:14px;font-size:18px;color:#f5c842;letter-spacing:3px;text-align:center;outline:none;font-family:monospace;margin-bottom:20px;"
+      placeholder="match-001" maxlength="30">
+    <button onclick="connectDisplay()"
+      style="width:100%;background:#f5c842;color:#000;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:800;cursor:pointer;">
+      📺 Підключити екран
+    </button>
+    <div id="setup-err" style="color:#ff4d4d;font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>
+    <a href="https://adscreen.online" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:#333;text-decoration:none;">← На головну adscreen.online</a>
+  </div>
+</div>
+
 <!-- AD -->
-<div class="ad-overlay" id="ad-overlay">
+<div class="ad-overlay" id="ad-overlay" style="display:none;">
   <img class="ad-img" id="ad-img" src="" alt="" style="display:none;">
   <div class="break-clock" id="break-clock">15:00</div>
   <div class="ad-label">Перерва</div>
 </div>
 
 <!-- MAIN -->
-<div class="main" id="main-display">
+<div class="main" id="main-display" style="display:none;">
   <div class="no-match" id="no-match">
     <div class="no-match-icon">⚽</div>
     <div>Очікування матчу...</div>
@@ -92,9 +115,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
-// Get match ID from URL
+// Get match ID from URL or setup screen
 const params = new URLSearchParams(location.search);
-const matchId = params.get('id') || '';
+const urlMatchId = params.get('id') || '';
+
+function connectDisplay() {
+  const input = document.getElementById('input-match-id').value.trim();
+  const err = document.getElementById('setup-err');
+  if (!input) { err.textContent = 'Введіть ID матчу'; return; }
+  document.getElementById('screen-setup').style.display = 'none';
+  document.getElementById('ad-overlay').style.display = '';
+  document.getElementById('main-display').style.display = '';
+  startDisplay(input);
+}
+
+// Auto-connect if ID in URL
+if (urlMatchId) {
+  document.getElementById('screen-setup').style.display = 'none';
+  startDisplay(urlMatchId);
+}
+
+function startDisplay(matchId) {
 document.getElementById('match-id-show').textContent = matchId ? `ID: ${matchId}` : 'Немає ID матчу';
 
 if (!matchId) {
@@ -201,6 +242,7 @@ if (!matchId) {
     const s = breakRemaining%60;
     document.getElementById('break-clock').textContent =
       `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
   }
 }
 </script>
