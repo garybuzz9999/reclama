@@ -245,7 +245,7 @@ async function doLogin() {
 
 window.doLogout = async () => {
   await signOut(auth);
-  showScreen('login');
+  window.location.href = 'https://adscreen.online';
 };
 
 // ── SCREENS / TABS ──
