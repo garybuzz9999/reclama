@@ -461,6 +461,43 @@
     .footer-links a:hover { color: var(--muted); }
     .footer-copy { font-size: 11px; color: var(--hint); }
 
+    /* ── MANUAL ── */
+    #manual { background: #050505; border-top: 1px solid var(--border); }
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px; margin-top: 48px;
+    }
+    .manual-section { }
+    .manual-section-icon { font-size: 24px; margin-bottom: 8px; }
+    .manual-section-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px; font-weight: 900;
+      color: var(--text); margin-bottom: 14px;
+      letter-spacing: -.3px;
+    }
+    .manual-step {
+      display: flex; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .manual-step:last-child { border-bottom: none; }
+    .manual-step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--hint); color: var(--bg);
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .manual-step-text { color: var(--muted); line-height: 1.5; }
+    .manual-step-text strong { color: var(--text); }
+    .manual-tip {
+      margin-top: 10px; padding: 10px; border-radius: 8px;
+      background: rgba(245,200,66,.04);
+      border: 1px solid rgba(245,200,66,.1);
+      font-size: 11px; color: var(--accent); line-height: 1.5;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .nav-links { display: none; }
@@ -759,6 +796,67 @@
       <div class="login-card-desc">Табло рахунку для матчів. Між таймами — реклама спонсорів. Потрібна реєстрація.</div>
       <div class="login-card-btn sport-btn">Зареєструватись →</div>
     </a>
+
+  </div>
+</section>
+
+<!-- MANUAL -->
+<section id="manual">
+  <div class="sec-eyebrow sec-center">Документація</div>
+  <div class="sec-title sec-center">Повний мануал</div>
+  <p class="sec-sub sec-center">Покрокові інструкції для кожного розділу платформи</p>
+
+  <div class="manual-grid">
+
+    <!-- СУПЕР АДМІН -->
+    <div class="manual-section">
+      <div class="manual-section-icon">👑</div>
+      <div class="manual-section-title">Супер Адмін</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">Відкрийте <strong>adscreen.online/admin.html</strong> і увійдіть з даними адміністратора</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text">Вкладка <strong>Клієнти</strong> → введіть назву компанії, email і пароль клієнта, оберіть кількість ліцензій → "Додати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Натисніть 🔑 навпроти клієнта щоб побачити ліцензійні коди → скопіюйте і передайте клієнту</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Вкладка <strong>Ліцензії</strong> — всі коди з статусами: "Вільна" або "Активовано"</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text">Вкладка <strong>Пристрої</strong> — всі підключені екрани по всіх клієнтах</div></div>
+      <div class="manual-tip">💡 Код формату ADS-XXXX-XXXX-001. Один код = один пристрій. Можна додавати необмежено</div>
+    </div>
+
+    <!-- КАБІНЕТ КЛІЄНТА -->
+    <div class="manual-section">
+      <div class="manual-section-icon">🏢</div>
+      <div class="manual-section-title">Кабінет рекламодавця</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">Відкрийте <strong>adscreen.online/client.html</strong> → вкладка "Реєстрація" → заповніть дані → автоматично 3 дні тріалу</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text"><strong>Огляд</strong> — загальна статистика: пристрої, банери, покази, QR-скани</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text"><strong>Пристрої</strong> → оберіть ліцензійний код → введіть назву пристрою → оберіть зону → "Активувати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text"><strong>Банери</strong> → введіть назву → оберіть тривалість і зони → завантажте фото (1920×1080 px) → додайте текст озвучки → "Опублікувати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text"><strong>⚙️ Екран</strong> → оберіть орієнтацію → завантажте фоновий екран (логотип компанії)</div></div>
+      <div class="manual-tip">💡 Банер з'являється на всіх екранах вибраних зон протягом 10 хвилин після публікації</div>
+    </div>
+
+    <!-- ПЛЕЄР -->
+    <div class="manual-section">
+      <div class="manual-section-icon">📺</div>
+      <div class="manual-section-title">Екран / Плеєр</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">На планшеті або ТВ відкрийте <strong>adscreen.online/player.html</strong> в браузері Chrome</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text">Введіть <strong>ліцензійний код</strong> (ADS-XXXX-XXXX-001) який надав адміністратор → оберіть зону → "Запустити екран"</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Кнопка <strong>"▶ Реклама увімкнена"</strong> (для водія/персоналу) — вмикає та вимикає показ банерів</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Кнопки жанрів <strong>[Поп][Джаз][Рок][Реп][Лаунж]</strong> (для клієнта/пасажира) — вибір музики між рекламою</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text">Кнопка <strong>🔇</strong> — вимикає звук. Кнопка <strong>⛶ Екран</strong> — повноекранний режим</div></div>
+      <div class="manual-step"><div class="manual-step-num">6</div><div class="manual-step-text">Код запам'ятовується — при наступному відкритті плеєр запускається автоматично без введення коду</div></div>
+      <div class="manual-tip">💡 Для блокування екрану: Налаштування Android → Безпека → Закріплення додатків → увімкніть → натисніть ■ → закріпіть Chrome</div>
+    </div>
+
+    <!-- СПОРТИВНЕ ТАБЛО -->
+    <div class="manual-section">
+      <div class="manual-section-icon">⚽</div>
+      <div class="manual-section-title">Спортивне табло</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text"><strong>Суддя</strong> відкриває <strong>adscreen.online/scoreboard.html</strong> на телефоні → вводить назви команд, тривалість тайму/перерви і унікальний ID матчу</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text"><strong>Екран глядачів</strong> — відкрийте <strong>adscreen.online/scoreboard-display.html?id=match-001</strong> на планшеті або ТВ (замість match-001 вкажіть ваш ID)</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Суддя натискає <strong>▶ Старт</strong> — таймер починає відлік. <strong>⏸ Стоп</strong> — зупиняє при вилученні або травмі</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Кнопки <strong>+⚽ Гол</strong> — додають гол відповідній команді. <strong>− Скасувати</strong> — прибирають помилковий гол</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text"><strong>+1 хв доп.</strong> — додає хвилину до тайму (таймер стає червоним). <strong>Кінець тайму →</strong> — запускає перерву з рекламою</div></div>
+      <div class="manual-step"><div class="manual-step-num">6</div><div class="manual-step-text">Під час <strong>перерви</strong> — на екрані глядачів автоматично показується рекламний банер і зворотній відлік перерви</div></div>
+      <div class="manual-tip">💡 Посилання для екрану глядачів генерується автоматично в панелі судді — просто скопіюйте і відкрийте на ТВ</div>
+    </div>
 
   </div>
 </section>
