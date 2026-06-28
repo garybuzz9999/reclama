@@ -321,11 +321,11 @@
     <div class="client-row">
       <div class="music-label" id="music-now">🎵 Музика:</div>
       <div class="genre-btns">
-        <button class="genre-btn" data-tag="pop"       onclick="playTag(this,'Поп')">Поп</button>
-        <button class="genre-btn" data-tag="jazz"      onclick="playTag(this,'Джаз')">Джаз</button>
-        <button class="genre-btn" data-tag="rock"      onclick="playTag(this,'Рок')">Рок</button>
-        <button class="genre-btn" data-tag="classical" onclick="playTag(this,'Класика')">Класика</button>
-        <button class="genre-btn" data-tag="lounge"    onclick="playTag(this,'Лаунж')">Лаунж</button>
+        <button class="genre-btn" data-stream="https://stream.traxx.fm:8000/traxx-pop" onclick="playStream(this,'Поп')">Поп</button>
+        <button class="genre-btn" data-stream="https://stream.traxx.fm:8000/traxx-jazz" onclick="playStream(this,'Джаз')">Джаз</button>
+        <button class="genre-btn" data-stream="https://stream.traxx.fm:8000/traxx-rock" onclick="playStream(this,'Рок')">Рок</button>
+        <button class="genre-btn" data-stream="https://stream.traxx.fm:8000/traxx-rap" onclick="playStream(this,'Реп')">Реп</button>
+        <button class="genre-btn" data-stream="https://stream.traxx.fm:8000/traxx-lounge" onclick="playStream(this,'Лаунж')">Лаунж</button>
         <button class="genre-btn mute" onclick="toggleMute(this)">🔇</button>
       </div>
     </div>
