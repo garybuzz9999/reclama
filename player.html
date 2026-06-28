@@ -81,7 +81,11 @@
       align-items:center;justify-content:center;
       background:#000;z-index:1;
       transition:opacity .8s;
+      background-size:cover;background-position:center;
     }
+    .idle-frame.has-bg .idle-logo,
+    .idle-frame.has-bg .idle-zone{display:none;}
+    .idle-frame.has-bg .idle-clock{color:rgba(255,255,255,.15);}
     .idle-logo{
       font-size:clamp(20px,5vw,40px);font-weight:900;
       letter-spacing:-1px;margin-bottom:6px;
@@ -429,6 +433,8 @@ async function initPlayer(zone) {
   setInterval(updateClock, 1000);
   updateClock();
   await loadBanners(zone);
+  const savedCode2 = localStorage.getItem('ads_code');
+  if (savedCode2) loadClientSettings(savedCode2);
   scheduleNext();
   setInterval(() => loadBanners(zone), RELOAD_INTERVAL);
 }
@@ -439,6 +445,24 @@ async function loadBanners(zone) {
     banners = snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
   } catch(e) { banners = []; }
+}
+
+async function loadClientSettings(code) {
+  try {
+    // Знаходимо ліцензію → clientId → налаштування
+    const licSnap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
+    if (licSnap.empty) return;
+    const clientId = licSnap.docs[0].data().clientId;
+    const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const clientSnap = await getDoc(doc(db,'clients',clientId));
+    if (!clientSnap.exists()) return;
+    const settings = clientSnap.data().settings || {};
+    if (settings.bgUrl) {
+      const idle = document.getElementById('idle-frame');
+      idle.style.backgroundImage = `url('${settings.bgUrl}')`;
+      idle.classList.add('has-bg');
+    }
+  } catch(e) {}
 }
 
 // ── AD TOGGLE ──
