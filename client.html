@@ -145,6 +145,24 @@
     .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
     .empty-icon{font-size:32px;margin-bottom:10px;}
     .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
+    .orient-btn{
+      flex:1;background:var(--surface2);border:2px solid var(--border);
+      border-radius:12px;padding:16px 12px;text-align:center;
+      cursor:pointer;transition:all .2s;color:var(--text);
+    }
+    .orient-btn:hover{border-color:var(--accent);}
+    .orient-btn.selected{
+      background:var(--accent-dim);border-color:var(--accent);
+    }
+    .size-row{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 0;border-bottom:1px solid var(--border);
+      font-size:13px;
+    }
+    .size-row:last-child{border-bottom:none;}
+    .size-type{flex:1;color:var(--muted);}
+    .size-val{font-weight:700;color:var(--accent);font-family:'SF Mono','Fira Code',monospace;font-size:12px;}
+    .size-ratio{font-size:11px;color:var(--hint);width:40px;text-align:right;}
     .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
     .toast.show{transform:translateX(-50%) translateY(0);}
   </style>
@@ -207,6 +225,7 @@
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
     <button class="tab" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
+    <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
   </div>
 
   <div class="content">
@@ -409,6 +428,7 @@ onAuthStateChanged(auth, async user => {
       renderTrialUI(daysLeft);
       showScreen('cabinet');
       loadAll();
+      loadSettings();
     } else {
       await signOut(auth);
       showErr('login', 'Акаунт не знайдено');
@@ -478,6 +498,7 @@ window.doRegister = async () => {
     renderTrialUI(TRIAL_DAYS);
     showScreen('cabinet');
     loadAll();
+    loadSettings();
     showToast('✅ Акаунт створено! Тестовий період: 3 дні');
   } catch(e) {
     isRegistering = false;
@@ -815,6 +836,94 @@ function getEmoji(name) {
   if(n.includes('готел'))return'🏨';
   if(n.includes('гаджет')||n.includes('смарт'))return'📱';
   return'🏢';
+}
+
+// ── SETTINGS ──
+let currentOrientation = localStorage.getItem('ads_orientation') || 'landscape';
+
+function setOrientation(orient, btn) {
+  currentOrientation = orient;
+  localStorage.setItem('ads_orientation', orient);
+  document.querySelectorAll('.orient-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  updateSizes(orient);
+  saveSettingsToFirestore();
+  showToast('✅ Орієнтацію збережено');
+}
+
+function updateSizes(orient) {
+  const bannerSize = orient === 'landscape' ? '1920 × 1080 px' : '1080 × 1920 px';
+  const bgSize = orient === 'landscape' ? '1920 × 1080 px' : '1080 × 1920 px';
+  const el1 = document.getElementById('size-banner');
+  const el2 = document.getElementById('size-bg');
+  if (el1) el1.textContent = bannerSize;
+  if (el2) el2.textContent = bgSize;
+}
+
+window.previewBg = input => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('bg-preview');
+    p.src = e.target.result; p.style.display = 'block';
+    document.getElementById('bg-drop-icon').textContent = '✅';
+    document.getElementById('bg-drop-text').innerHTML = `<span>${file.name}</span>`;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.saveBg = async () => {
+  const file = document.getElementById('bg-image').files[0];
+  if (!file) { showToast('⚠️ Оберіть зображення'); return; }
+  showToast('⏳ Завантаження...');
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('key', IMGBB_KEY);
+    const res = await fetch('https://api.imgbb.com/1/upload', { method:'POST', body:formData });
+    const data = await res.json();
+    if (!data.success) throw new Error('Upload failed');
+    const bgUrl = data.data.display_url || data.data.image?.url || data.data.url;
+    await saveSettingsToFirestore({ bgUrl, orientation: currentOrientation });
+    // Show current
+    document.getElementById('bg-current').style.display = 'block';
+    document.getElementById('bg-current-img').src = bgUrl;
+    showToast('✅ Фон збережено!');
+  } catch(e) { showToast('❌ ' + e.message); }
+};
+
+window.removeBg = async () => {
+  await saveSettingsToFirestore({ bgUrl: '', orientation: currentOrientation });
+  document.getElementById('bg-current').style.display = 'none';
+  document.getElementById('bg-preview').style.display = 'none';
+  document.getElementById('bg-image').value = '';
+  document.getElementById('bg-drop-icon').textContent = '🎨';
+  document.getElementById('bg-drop-text').innerHTML = 'Завантажте фонове зображення — <span>оберіть файл</span>';
+  showToast('🗑️ Фон видалено');
+};
+
+async function saveSettingsToFirestore(data) {
+  if (!currentUser) return;
+  const settings = data || { orientation: currentOrientation };
+  await updateDoc(doc(db,'clients',currentUser.uid), { settings });
+}
+
+async function loadSettings() {
+  if (!clientData?.settings) return;
+  const s = clientData.settings;
+  if (s.orientation) {
+    currentOrientation = s.orientation;
+    updateSizes(s.orientation);
+    const btn = document.getElementById('orient-' + s.orientation);
+    if (btn) {
+      document.querySelectorAll('.orient-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    }
+  }
+  if (s.bgUrl) {
+    document.getElementById('bg-current').style.display = 'block';
+    document.getElementById('bg-current-img').src = s.bgUrl;
+  }
 }
 
 function showErr(form,msg){document.getElementById(form+'-err').textContent=msg;}
