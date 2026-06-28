@@ -56,6 +56,20 @@
       color: var(--muted); text-decoration: none; transition: color .2s;
     }
     .nav-links a:hover { color: var(--text); }
+    .nav-divider {
+      width: 1px; height: 20px; background: var(--border); flex-shrink: 0;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-decoration: none; transition: all .2s; white-space: nowrap;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--accent) !important; }
+    .nav-btn.admin { border-color: rgba(245,200,66,.2); color: var(--accent) !important; }
+    .nav-btn.screen { border-color: rgba(61,220,132,.2); color: var(--green) !important; }
+    .nav-btn.screen:hover { border-color: var(--green); }
     .nav-burger {
       display: none; background: none; border: none;
       color: var(--text); font-size: 22px; cursor: pointer;
@@ -447,8 +461,9 @@
         display: flex; flex-direction: column;
         position: fixed; top: 58px; left: 0; right: 0;
         background: var(--surface); border-bottom: 1px solid var(--border);
-        padding: 20px; gap: 16px; z-index: 99;
+        padding: 20px; gap: 12px; z-index: 99;
       }
+      .nav-links.open .nav-divider { display: none; }
       .nav-burger { display: block; }
       .zones-wrap { grid-template-columns: 1fr; }
       .zone-map { max-width: 240px; }
@@ -467,9 +482,11 @@
   <a href="#" class="nav-logo">Ad<span>Screen</span></a>
   <ul class="nav-links" id="nav-links">
     <li><a href="#how">Як працює</a></li>
-    <li><a href="#markets">Для кого</a></li>
     <li><a href="#pricing">Тарифи</a></li>
-    <li><a href="#login-section">Увійти</a></li>
+    <li class="nav-divider"></li>
+    <li><a href="admin.html" class="nav-btn admin">👑 Адмін</a></li>
+    <li><a href="client.html" class="nav-btn">🏢 Кабінет</a></li>
+    <li><a href="player.html" class="nav-btn screen">📺 Екран</a></li>
   </ul>
   <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
 </nav>
