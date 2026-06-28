@@ -394,6 +394,7 @@ const PAUSE_BETWEEN = 10 * 1000; // 10 сек для тесту (5*60*1000 дл�
 const RELOAD_INTERVAL = 10 * 60 * 1000;
 
 let currentZone = 'center';
+let currentClientId = '';
 let banners = [];
 let bannerIndex = 0;
 let adActive = true;
@@ -427,8 +428,11 @@ window.startPlayer = async () => {
   try {
     const snap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
     if (snap.empty) { err.textContent = '❌ Код не знайдено'; return; }
+    const licData = snap.docs[0].data();
+    currentClientId = licData.clientId || '';
     localStorage.setItem('ads_code', code);
     localStorage.setItem('ads_zone', currentZone);
+    localStorage.setItem('ads_client_id', currentClientId);
     showScreen('player');
     initPlayer(currentZone);
   } catch(e) {
@@ -451,7 +455,17 @@ async function initPlayer(zone) {
 
 async function loadBanners(zone) {
   try {
-    const snap = await getDocs(query(collection(db,'banners'), where('status','==','active')));
+    const clientId = currentClientId || localStorage.getItem('ads_client_id') || '';
+    let q;
+    if (clientId) {
+      q = query(collection(db,'banners'),
+        where('status','==','active'),
+        where('clientId','==',clientId)
+      );
+    } else {
+      q = query(collection(db,'banners'), where('status','==','active'));
+    }
+    const snap = await getDocs(q);
     banners = snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
   } catch(e) { banners = []; }
@@ -497,6 +511,8 @@ window.resetPlayer = () => {
   if (!confirm('Скинути налаштування екрану?')) return;
   localStorage.removeItem('ads_code');
   localStorage.removeItem('ads_zone');
+  localStorage.removeItem('ads_client_id');
+  currentClientId = '';
   location.reload();
 };
 
@@ -635,7 +651,9 @@ function showScreen(name) {
 // ── AUTO RESTORE ──
 const savedCode = localStorage.getItem('ads_code');
 const savedZone = localStorage.getItem('ads_zone') || 'center';
+const savedClientId = localStorage.getItem('ads_client_id') || '';
 if (savedCode) {
+  currentClientId = savedClientId;
   document.getElementById('setup-code').value = savedCode;
   currentZone = savedZone;
   document.querySelectorAll('.zone-opt').forEach(b=>{
