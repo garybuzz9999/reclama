@@ -538,6 +538,9 @@ window.resetPlayer = () => {
 function scheduleNext() {
   if (!adActive) return;
   if (bannerTimeout) clearTimeout(bannerTimeout);
+  // Зупиняємо відео якщо грало
+  const video = document.getElementById('banner-video');
+  if (video && !video.paused) video.pause();
   showIdle();
   bannerTimeout = setTimeout(() => {
     if (!adActive) return;
@@ -607,8 +610,13 @@ function showBanner(banner) {
   if (banner.type === 'video') {
     img.style.display = 'none'; video.style.display = 'block';
     video.src = banner.imageUrl || '';
+    // Зупиняємо радіо на час відео
+    const radio = document.getElementById('radio');
+    const wasPlaying = !radio.paused;
+    if (wasPlaying) radio.pause();
     video.oncanplay = () => { video.play(); activate(); };
-    video.onerror = () => scheduleNext();
+    video.onerror = () => { if (wasPlaying) radio.play(); scheduleNext(); };
+    video.onended = () => { if (wasPlaying) radio.play(); };
   } else {
     video.style.display = 'none'; img.style.display = 'block';
     img.src = banner.imageUrl || '';
