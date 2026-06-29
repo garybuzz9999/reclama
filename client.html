@@ -735,9 +735,24 @@ function renderLicenses(licenses) {
   el.innerHTML = licenses.map(l=>`
     <div class="lic-item">
       <div class="lic-code">${l.code}</div>
-      <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+        <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋 Копіювати</button>
+      </div>
     </div>`).join('');
 }
+
+window.copyCode = (code) => {
+  navigator.clipboard.writeText(code).then(() => showToast('✅ Код скопійовано!')).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = code;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('✅ Код скопійовано!');
+  });
+};
 
 function renderActiveBanners(banners) {
   const el = document.getElementById('ov-active-banners');
