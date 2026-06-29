@@ -286,10 +286,7 @@
         <div class="stat-card"><div class="stat-label">Покази</div><div class="stat-value" id="ov-shows">—</div><div class="stat-sub">всього</div></div>
         <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="ov-qr">—</div><div class="stat-sub">переходів</div></div>
       </div>
-      <div class="sec-title">Мої ліцензії</div>
-      <div class="card" id="ov-licenses"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
-      <div class="sec-title">Активні банери</div>
-      <div class="card" id="ov-active-banners"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
+      <div class="card" id="ov-combined"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
     <!-- DEVICES -->
@@ -729,38 +726,102 @@ async function loadAll() {
   renderBanners(banners);
 }
 
+let _allLicenses = [];
+let _allBanners = [];
+
 function renderLicenses(licenses) {
-  const el = document.getElementById('ov-licenses');
-  if (!licenses.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🔑</div>Ліцензій немає</div>'; return; }
-  el.innerHTML = licenses.map(l=>`
-    <div class="lic-item">
-      <div class="lic-code">${l.code}</div>
-      <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}" onclick="copyCode('${l.code}')" style="cursor:pointer;" title="Натисни щоб скопіювати">${l.status==='used'?'● Активовано':'● Вільна'} 📋</span>
-    </div>`).join('');
+  _allLicenses = licenses;
+  renderCombined();
 }
+
+function renderActiveBanners(banners) {
+  _allBanners = banners;
+  renderCombined();
+}
+
+function renderCombined() {
+  const el = document.getElementById('ov-combined');
+  const licenses = _allLicenses;
+  const banners = _allBanners;
+  if (!licenses.length && !banners.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div>';
+    return;
+  }
+  const many = licenses.length > 2;
+  const licsHtml = licenses.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin-bottom:6px;">МОЇ ЛІЦЕНЗІЇ</div>
+    ${many ? `
+      <div class="lic-item" onclick="toggleLicModal()" style="cursor:pointer;">
+        <div class="lic-code">${licenses[0].code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${licenses[0].status==='used'?'badge-accent':'badge-green'}">${licenses[0].status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="event.stopPropagation();copyCode('${licenses[0].code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+          <span style="color:var(--muted);font-size:12px;">+${licenses.length-1} ▼</span>
+        </div>
+      </div>` :
+    licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('')}
+  ` : '';
+
+  const bannersHtml = banners.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin:10px 0 6px;">АКТИВНІ БАНЕРИ</div>
+    ${banners.map(b=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
+        <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
+        <span class="badge badge-green">Live</span>
+      </div>`).join('')}
+  ` : '';
+
+  el.innerHTML = licsHtml + bannersHtml;
+
+  // Модалка якщо багато ліцензій
+  if (many) {
+    if (!document.getElementById('lic-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'lic-modal';
+      modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;';
+      modal.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-weight:700;font-size:16px;">Всі ліцензії</div>
+          <button onclick="toggleLicModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div id="lic-modal-list"></div>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.onclick = e => { if(e.target===modal) toggleLicModal(); };
+    }
+    document.getElementById('lic-modal-list').innerHTML = licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+window.toggleLicModal = () => {
+  const m = document.getElementById('lic-modal');
+  if (m) m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+};
 
 window.copyCode = (code) => {
   navigator.clipboard.writeText(code).then(() => showToast('✅ Код скопійовано!')).catch(() => {
     const el = document.createElement('textarea');
-    el.value = code;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
+    el.value = code; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
     document.body.removeChild(el);
     showToast('✅ Код скопійовано!');
   });
 };
-
-function renderActiveBanners(banners) {
-  const el = document.getElementById('ov-active-banners');
-  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Немає активних банерів</div>'; return; }
-  el.innerHTML = banners.slice(0,3).map(b=>`
-    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
-      <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
-      <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
-      <span class="badge badge-green">Live</span>
-    </div>`).join('');
-}
 
 function renderDevices(devices, licenses) {
   const freeLics = licenses.filter(l=>l.status==='free');
