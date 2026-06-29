@@ -531,10 +531,7 @@ const db   = getFirestore(app);
 const storage = getStorage(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
-const CF_ACCOUNT_ID = '1da63aa2271a97df4190bf732b035483';
-const CF_TOKEN = 'cfut_4lZDXONaHIeaFR1PY95era8zEnUuawTuqfrF8cqi4fa0390a';
-const CF_BUCKET = 'adscreen-media';
-const CF_PUBLIC_URL = 'https://pub-60647f73fdd54a9e85bc96f6e978dbb8.r2.dev';
+const WORKER_URL = 'https://adscreen-upload.ckbbuild.workers.dev';
 const TRIAL_DAYS = 3;
 let currentUser = null;
 let clientData  = null;
@@ -865,29 +862,24 @@ window.addBanner = async () => {
 
     if (imageFile) {
       isVideo = imageFile.type.startsWith('video/');
-      if (isVideo) {
-        showToast('⚠️ Відео поки не підтримується, використайте JPG/PNG');
+      if (isVideo && imageFile.size > 200 * 1024 * 1024) {
+        showToast('⚠️ Відео занадто велике. Максимум 200MB');
         return;
       }
-      // Завантажуємо через ImgBB
+      // Завантажуємо через Worker
+      const idToken = await currentUser.getIdToken();
       const formData = new FormData();
-      formData.append('image', imageFile);
-      formData.append('key', IMGBB_KEY);
-      const res = await fetch('https://api.imgbb.com/1/upload', {
+      formData.append('file', imageFile);
+      formData.append('folder', 'banners');
+      const res = await fetch(`${WORKER_URL}/upload`, {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${idToken}` },
         body: formData
       });
       const data = await res.json();
-      if (!data.success) throw new Error('ImgBB upload failed: ' + JSON.stringify(data));
-      // data.data.url — пряме посилання на зображення
-      // data.data.display_url — теж пряме але без розширення
-      // data.data.image.url — найнадійніше
-      // ImgBB структура: { data: { url, display_url, image: { url, mime, size }, thumb: { url } } }
-      // display_url = пряме посилання на зображення без watermark
-      imageUrl = data.data.display_url;
-      if (!imageUrl) imageUrl = data.data.image?.url;
-      if (!imageUrl) imageUrl = data.data.url;
-      storagePath = data.data.delete_url || null;
+      if (!data.ok) throw new Error(data.error || 'Upload failed');
+      imageUrl = data.url;
+      storagePath = data.key || null;
     }
 
     const voiceText = document.getElementById('bn-voice').value.trim();
@@ -1029,20 +1021,18 @@ window.saveBg = async () => {
   if (!file) { showToast('⚠️ Оберіть зображення'); return; }
   showToast('⏳ Завантаження...');
   try {
-    const fileName = `backgrounds/${currentUser.uid}/${Date.now()}_${file.name}`;
-    const res = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/r2/buckets/${CF_BUCKET}/objects/${fileName}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${CF_TOKEN}`,
-          'Content-Type': file.type
-        },
-        body: file
-      }
-    );
-    if (!res.ok) throw new Error('R2 upload failed: ' + res.status);
-    const bgUrl = `${CF_PUBLIC_URL}/${fileName}`;
+    const idToken = await currentUser.getIdToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'backgrounds');
+    const res = await fetch(`${WORKER_URL}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${idToken}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Upload failed');
+    const bgUrl = data.url;
     await saveSettingsToFirestore({ bgUrl, orientation: currentOrientation });
     // Show current
     document.getElementById('bg-current').style.display = 'block';
