@@ -735,10 +735,7 @@ function renderLicenses(licenses) {
   el.innerHTML = licenses.map(l=>`
     <div class="lic-item">
       <div class="lic-code">${l.code}</div>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
-        <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋 Копіювати</button>
-      </div>
+      <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}" onclick="copyCode('${l.code}')" style="cursor:pointer;" title="Натисни щоб скопіювати">${l.status==='used'?'● Активовано':'● Вільна'} 📋</span>
     </div>`).join('');
 }
 
