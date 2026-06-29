@@ -265,6 +265,7 @@
     <input class="setup-inp" id="setup-code"
       placeholder="ADS-XXXX-XXXX-001" maxlength="20"
       oninput="formatCode(this)">
+    <button onclick="saveCode()" style="width:100%;margin-top:8px;padding:10px;background:#2a2a2a;color:#facc15;border:1px solid #facc15;border-radius:8px;font-size:14px;cursor:pointer;">💾 Запам'ятати код</button>
     <div class="setup-zone-label">Зона показу</div>
     <div class="zone-grid">
       <div class="zone-opt" data-zone="north" onclick="selectZone(this)">⬆️ Північ</div>
@@ -411,6 +412,14 @@ window.formatCode = inp => {
   if (v.length > 8)  v = v.slice(0,8)+'-'+v.slice(8);
   if (v.length > 13) v = v.slice(0,13)+'-'+v.slice(13);
   inp.value = v.slice(0,20);
+};
+
+window.saveCode = () => {
+  const code = document.getElementById('setup-code').value.trim().toUpperCase();
+  if (code.length < 10) { alert('Введіть ліцензійний код'); return; }
+  localStorage.setItem('ads_code', code);
+  localStorage.setItem('ads_zone', currentZone);
+  alert('✅ Код запам\'ятано!');
 };
 
 window.selectZone = btn => {
