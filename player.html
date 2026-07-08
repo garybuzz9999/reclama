@@ -368,7 +368,8 @@
       <button class="btn-toggle-ad on" id="btn-toggle-ad" onclick="toggleAd()">
         ▶ Реклама увімкнена
       </button>
-      <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
+      <button class="btn-shell" id="btn-fullscreen" onclick="toggleFullscreen()">⛶ Екран</button>
+      <button class="btn-shell" id="btn-shell" onclick="toggleShell()">🔒 Шел</button>
       <button class="btn-reset" id="btn-reset" onclick="resetPlayer()" title="Скинути екран">🔄 Скинути екран</button>
     </div>
     <!-- Тайминг (вручну, на цьому пристрої, без Firestore) -->
@@ -853,7 +854,7 @@ if (savedCode) {
 // ── FULLSCREEN ──
 let isFullscreen = false;
 window.toggleFullscreen = () => {
-  const btn = document.getElementById('btn-shell');
+  const btn = document.getElementById('btn-fullscreen');
   if (!isFullscreen) {
     document.documentElement.requestFullscreen?.()
       .then(() => {
@@ -887,7 +888,7 @@ window.toggleFullscreen = () => {
 document.addEventListener('fullscreenchange', () => {
   if (!document.fullscreenElement) {
     isFullscreen = false;
-    const btn = document.getElementById('btn-shell');
+    const btn = document.getElementById('btn-fullscreen');
     if (btn) { btn.textContent = '⛶ Екран'; btn.className = 'btn-shell'; }
     document.getElementById('control-bar').classList.remove('kiosk-hidden');
   }
