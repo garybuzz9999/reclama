@@ -86,6 +86,20 @@
     .idle-frame.has-bg .idle-logo,
     .idle-frame.has-bg .idle-zone{display:none;}
     .idle-frame.has-bg .idle-clock{color:rgba(255,255,255,.15);}
+    .currency-board{
+      position:absolute;inset:0;display:none;
+      flex-direction:column;justify-content:center;align-items:center;
+      background:#003087;padding:24px;box-sizing:border-box;
+    }
+    .currency-board.show{display:flex;}
+    .currency-title{font-size:clamp(18px,4vw,36px);font-weight:900;color:#fff;text-align:center;margin-bottom:4px;letter-spacing:1px;}
+    .currency-date{font-size:clamp(11px,2vw,16px);color:rgba(255,255,255,.7);margin-bottom:16px;}
+    .currency-table{width:100%;max-width:600px;}
+    .currency-header{display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:8px;margin-bottom:8px;font-size:clamp(10px,1.5vw,13px);color:rgba(255,255,255,.6);font-weight:700;text-align:center;}
+    .currency-row{display:grid;grid-template-columns:40px 1fr 1fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.15);align-items:center;}
+    .currency-flag{font-size:clamp(18px,3vw,28px);text-align:center;}
+    .currency-name{font-size:clamp(12px,2vw,18px);font-weight:700;color:#fff;}
+    .currency-val{font-size:clamp(14px,2.5vw,22px);font-weight:900;color:#ff3333;text-align:center;}
     .idle-logo{
       font-size:clamp(20px,5vw,40px);font-weight:900;
       letter-spacing:-1px;margin-bottom:6px;
@@ -296,6 +310,14 @@
       <div class="idle-logo">Ad<span>Screen</span></div>
       <div class="idle-clock" id="idle-clock">00:00</div>
       <div class="idle-zone" id="idle-zone-label">—</div>
+      <div class="currency-board" id="currency-board">
+        <div class="currency-title">ОБМІН ВАЛЮТ</div>
+        <div class="currency-date" id="currency-date"></div>
+        <div class="currency-table">
+          <div class="currency-header"><div></div><div>Валюта</div><div>Купівля</div><div>Продаж</div></div>
+          <div id="currency-rows-display"></div>
+        </div>
+      </div>
       <a href="https://adscreen.online" style="
         position:absolute;bottom:16px;right:16px;
         background:none;border:1px solid #1a1a1a;
@@ -496,8 +518,57 @@ async function loadClientSettings(code) {
       idle.style.backgroundImage = `url('${settings.bgUrl}')`;
       idle.classList.add('has-bg');
     }
+    // Завантажуємо курс валют
+    try {
+      const curSnap = await getDoc(doc(db,'currency',clientId));
+      if (curSnap.exists()) {
+        const cur = curSnap.data();
+        if (cur.active) renderCurrencyBoard(cur);
+        // Слухаємо зміни курсу в реальному часі
+        const { onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        onSnapshot(doc(db,'currency',clientId), snap => {
+          if (snap.exists()) {
+            const d = snap.data();
+            if (d.active) renderCurrencyBoard(d);
+            else hideCurrencyBoard();
+          }
+        });
+      }
   } catch(e) {}
 }
+
+const CURRENCIES_PLAYER = [
+  {code:'USD', flag:'🇺🇸', name:'Долар США'},
+  {code:'EUR', flag:'🇪🇺', name:'Євро'},
+  {code:'PLN', flag:'🇵🇱', name:'Польський злотий'},
+  {code:'GBP', flag:'🇬🇧', name:'Фунт стерлінгів'},
+  {code:'CZK', flag:'🇨🇿', name:'Чеська крона'},
+  {code:'CAD', flag:'🇨🇦', name:'Канадський долар'},
+  {code:'CHF', flag:'🇨🇭', name:'Швейцарський франк'},
+];
+
+function renderCurrencyBoard(data) {
+  const rows = CURRENCIES_PLAYER.filter(c => data[c.code+'_buy'] || data[c.code+'_sell']);
+  if (!rows.length) return;
+  const now = new Date();
+  document.getElementById('currency-date').textContent =
+    now.toLocaleDateString('uk-UA', {day:'2-digit',month:'2-digit',year:'numeric'});
+  document.getElementById('currency-rows-display').innerHTML = rows.map(c => `
+    <div class="currency-row">
+      <div class="currency-flag">${c.flag}</div>
+      <div class="currency-name">${c.name}</div>
+      <div class="currency-val">${data[c.code+'_buy'] ? data[c.code+'_buy'].toFixed(2) : '—'}</div>
+      <div class="currency-val">${data[c.code+'_sell'] ? data[c.code+'_sell'].toFixed(2) : '—'}</div>
+    </div>`).join('');
+  document.getElementById('currency-board').classList.add('show');
+  document.getElementById('idle-frame').classList.add('has-bg');
+}
+
+function hideCurrencyBoard() {
+  document.getElementById('currency-board').classList.remove('show');
+}
+
+
 
 // ── AD TOGGLE ──
 window.toggleAd = () => {
