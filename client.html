@@ -803,20 +803,13 @@ async function loadAll() {
   ]);
   let licenses = lics.docs.map(d=>({id:d.id,...d.data()}));
 
-  // Якщо ліцензій немає — створюємо автоматично з правильним clientId
+  // Якщо ліцензій немає — створюємо одну з правильним clientId
   if (licenses.length === 0) {
-    // Видаляємо старі ліцензії з неправильним clientId якщо є
-    const allLics = await getDocs(collection(db,'licenses'));
-    for (const l of allLics.docs) {
-      if (l.data().clientId !== currentUser.uid && 
-          l.data().code && l.data().code.includes(currentUser.uid.slice(-4).toUpperCase())) {
-        await deleteDoc(l.ref);
-      }
-    }
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let part = '';
     for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
-    const code = `ADS-${currentUser.uid.slice(-4).toUpperCase()}-${part}-001`;
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    const code = `ADS-${uidPart}-${part}-001`;
     const licRef = await addDoc(collection(db,'licenses'), {
       code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
     });
