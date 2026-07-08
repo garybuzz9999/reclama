@@ -539,19 +539,16 @@ async function initPlayer(zone) {
 async function loadBanners(zone) {
   try {
     const clientId = currentClientId || localStorage.getItem('ads_client_id') || '';
-    let q;
-    if (clientId) {
-      q = query(collection(db,'banners'),
-        where('status','==','active'),
-        where('clientId','==',clientId)
-      );
-    } else {
-      q = query(collection(db,'banners'), where('status','==','active'));
-    }
+    if (!clientId) { banners = []; showDebug('⚠ Немає clientId — реклама не завантажена'); return; }
+    const q = query(collection(db,'banners'),
+      where('status','==','active'),
+      where('clientId','==',clientId)
+    );
     const snap = await getDocs(q);
     banners = snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
-  } catch(e) { banners = []; }
+    showDebug(`ID: ${clientId.slice(0,8)}… | Банерів: ${banners.length}`);
+  } catch(e) { banners = []; showDebug('⚠ banners: ' + (e.code||e.message)); }
 }
 
 function applyClientSettings(settings) {
@@ -697,10 +694,11 @@ window.tapReset = () => {
 };
 
 window.resetPlayer = () => {
-  if (!confirm('Скинути налаштування екрану?')) return;
+  if (!confirm('Скинути налаштування екрану? (код, зона і PIN-код будуть видалені)')) return;
   localStorage.removeItem('ads_code');
   localStorage.removeItem('ads_zone');
   localStorage.removeItem('ads_client_id');
+  localStorage.removeItem('ads_pin');
   currentClientId = '';
   location.reload();
 };
