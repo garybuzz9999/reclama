@@ -363,33 +363,40 @@
 
   <!-- Controls -->
   <div class="control-bar" id="control-bar">
-    <!-- Водій -->
+    <!-- Водій — тільки те, що потрібно щодня -->
     <div class="driver-row">
-
       <button class="btn-toggle-ad on" id="btn-toggle-ad" onclick="toggleAd()">
         ▶ Реклама увімкнена
       </button>
-      <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
-      <button class="btn-reset" id="btn-reset" onclick="resetPlayer()" title="Скинути екран">🔄 Скинути екран</button>
+      <button class="btn-shell" id="btn-advanced-toggle" onclick="toggleAdvanced()">⚙</button>
     </div>
-    <!-- Тайминг (вручну, на цьому пристрої, без Firestore) -->
-    <div class="timing-row" style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
-      <div style="flex:1;">
-        <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">1. ЧАС ФОНУ (сек)</label>
-        <input type="number" id="local-bg-time" min="1" step="1" inputmode="numeric"
-          style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
-          border-radius:8px;padding:10px;font-size:16px;">
+
+    <!-- Розширені налаштування — сховані за замовчуванням -->
+    <div id="advanced-panel" style="display:none;">
+      <div class="driver-row" style="margin-top:0;">
+        <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
+        <button class="btn-reset" id="btn-reset" onclick="resetPlayer()" title="Скинути екран">🔄 Скинути екран</button>
       </div>
-      <div style="flex:1;">
-        <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">2. ЧАС РЕКЛАМИ (сек)</label>
-        <input type="number" id="local-pause-time" min="1" step="1" inputmode="numeric"
-          style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
-          border-radius:8px;padding:10px;font-size:16px;">
+      <!-- Тайминг (вручну, на цьому пристрої, без Firestore) -->
+      <div class="timing-row" style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">1. ЧАС ФОНУ (сек)</label>
+          <input type="number" id="local-bg-time" min="1" step="1" inputmode="numeric"
+            style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
+            border-radius:8px;padding:10px;font-size:16px;">
+        </div>
+        <div style="flex:1;">
+          <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">2. ЧАС РЕКЛАМИ (сек)</label>
+          <input type="number" id="local-pause-time" min="1" step="1" inputmode="numeric"
+            style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
+            border-radius:8px;padding:10px;font-size:16px;">
+        </div>
+        <button onclick="saveLocalTiming()"
+          style="flex:0 0 auto;background:var(--accent);color:#000;border:none;border-radius:8px;
+          padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;">✔ OK</button>
       </div>
-      <button onclick="saveLocalTiming()"
-        style="flex:0 0 auto;background:var(--accent);color:#000;border:none;border-radius:8px;
-        padding:10px 16px;font-size:14px;font-weight:800;cursor:pointer;">✔ OK</button>
     </div>
+
     <!-- Клієнт -->
     <div class="client-row">
       <div class="music-label" id="music-now">🎵 Музика:</div>
@@ -853,6 +860,15 @@ if (savedCode) {
 
 // ── FULLSCREEN ──
 let isFullscreen = false;
+// ── ADVANCED PANEL TOGGLE ──
+window.toggleAdvanced = () => {
+  const panel = document.getElementById('advanced-panel');
+  const btn = document.getElementById('btn-advanced-toggle');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.classList.toggle('active', !isOpen);
+};
+
 window.toggleFullscreen = () => {
   const btn = document.getElementById('btn-shell');
   if (!isFullscreen) {
