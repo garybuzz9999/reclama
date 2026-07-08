@@ -194,8 +194,8 @@
     }
     .btn-reset{
       background:#111;border:2px solid #1a1a1a;
-      border-radius:12px;padding:18px 14px;font-size:18px;
-      color:#333;cursor:pointer;flex-shrink:0;transition:all .2s;
+      border-radius:12px;padding:18px 12px;font-size:13px;font-weight:700;
+      color:#666;cursor:pointer;flex-shrink:0;transition:all .2s;white-space:nowrap;
     }
     .btn-reset:hover{border-color:var(--red);color:var(--red);}
     .client-row{
@@ -370,7 +370,7 @@
         ▶ Реклама увімкнена
       </button>
       <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
-      <button class="btn-reset" id="btn-reset" onclick="tapReset()">🔄</button>
+      <button class="btn-reset" id="btn-reset" onclick="resetPlayer()" title="Скинути екран">🔄 Скинути екран</button>
     </div>
     <!-- Тайминг (вручну, на цьому пристрої, без Firestore) -->
     <div class="timing-row" style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
@@ -667,23 +667,6 @@ window.toggleAd = () => {
 };
 
 // ── RESET ──
-let resetTaps = 0;
-let resetTimer = null;
-
-window.tapReset = () => {
-  resetTaps++;
-  clearTimeout(resetTimer);
-  resetTimer = setTimeout(() => { resetTaps = 0; }, 2000);
-
-  const btn = document.getElementById('btn-reset');
-  btn.style.borderColor = `rgba(255,77,77,${resetTaps * 0.2})`;
-
-  if (resetTaps >= 5) {
-    resetTaps = 0;
-    window.resetPlayer();
-  }
-};
-
 window.resetPlayer = () => {
   if (!confirm('Скинути налаштування екрану? (код, зона і PIN-код будуть видалені)')) return;
   localStorage.removeItem('ads_code');
