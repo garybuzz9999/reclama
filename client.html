@@ -352,8 +352,13 @@
         <div class="add-banner-form">
           <div class="form-row">
             <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%"></div>
-            <div class="field"><label>Тривалість (сек)</label>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Тривалість реклами (сек)</label>
               <input class="inp" type="number" id="bn-duration" min="1" step="1" value="30" placeholder="30">
+            </div>
+            <div class="field"><label>Тривалість фону (сек)</label>
+              <input class="inp" type="number" id="bn-bg-duration" min="1" step="1" value="10" placeholder="10">
             </div>
           </div>
           <div class="field">
@@ -1019,6 +1024,7 @@ dropZone.addEventListener('drop', e=>{
 window.addBanner = async () => {
   const title    = document.getElementById('bn-title').value.trim();
   const duration = parseInt(document.getElementById('bn-duration').value);
+  const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
   const zones    = getSelectedZones();
   const imageFile = document.getElementById('bn-image').files[0];
   if (!title) { 
@@ -1030,10 +1036,16 @@ window.addBanner = async () => {
   document.getElementById('bn-title').style.borderColor = '';
   if (!duration || duration < 1) {
     document.getElementById('bn-duration').style.borderColor = 'var(--red)';
-    showToast('⚠️ Введіть тривалість (сек)!');
+    showToast('⚠️ Введіть тривалість реклами (сек)!');
     return;
   }
   document.getElementById('bn-duration').style.borderColor = '';
+  if (!bgDuration || bgDuration < 1) {
+    document.getElementById('bn-bg-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість фону (сек)!');
+    return;
+  }
+  document.getElementById('bn-bg-duration').style.borderColor = '';
   if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
   showToast('⏳ Збереження...');
   try {
@@ -1065,7 +1077,7 @@ window.addBanner = async () => {
 
     const voiceText = document.getElementById('bn-voice').value.trim();
     await addDoc(collection(db,'banners'),{
-      clientId:currentUser.uid, title, duration, zones,
+      clientId:currentUser.uid, title, duration, bgDuration, zones,
       imageUrl, storagePath,
       type: isVideo ? 'video' : 'image',
       voiceText: voiceText || '',
