@@ -151,6 +151,17 @@
     .control-bar{
       background:#080808;border-top:2px solid #1a1a1a;
       padding:14px 14px;flex-shrink:0;
+      transition:all .3s;
+    }
+    .control-bar.kiosk-hidden{
+      display:none;
+    }
+    #kiosk-unlock-btn{
+      position:fixed;bottom:0;right:0;
+      width:44px;height:44px;
+      background:transparent;border:none;
+      cursor:pointer;z-index:9999;
+      opacity:0;
     }
     .driver-row{
       display:flex;align-items:stretch;gap:8px;
@@ -340,8 +351,11 @@
     </div>
   </div>
 
+  <!-- Kiosk unlock button (невидима, внизу справа, 5 натискань) -->
+  <button id="kiosk-unlock-btn" onclick="kioskUnlockTap()"></button>
+
   <!-- Controls -->
-  <div class="control-bar">
+  <div class="control-bar" id="control-bar">
     <!-- Водій -->
     <div class="driver-row">
 
@@ -780,6 +794,9 @@ window.toggleFullscreen = () => {
         isFullscreen = true;
         btn.textContent = '✕ Вікно';
         btn.className = 'btn-shell active';
+        // Kiosk — ховаємо панель
+        document.getElementById('control-bar').classList.add('kiosk-hidden');
+        document.getElementById('kiosk-unlock-btn').style.opacity = '0';
       })
       .catch(() => {
         // Якщо не вдалось — спробуємо через webkit
@@ -788,6 +805,9 @@ window.toggleFullscreen = () => {
         isFullscreen = true;
         btn.textContent = '✕ Вікно';
         btn.className = 'btn-shell active';
+        // Kiosk — ховаємо панель
+        document.getElementById('control-bar').classList.add('kiosk-hidden');
+        document.getElementById('kiosk-unlock-btn').style.opacity = '0';
       });
   } else {
     (document.exitFullscreen || document.webkitExitFullscreen || 
@@ -796,6 +816,7 @@ window.toggleFullscreen = () => {
     isFullscreen = false;
     btn.textContent = '⛶ Екран';
     btn.className = 'btn-shell';
+    document.getElementById('control-bar').classList.remove('kiosk-hidden');
   }
 };
 
@@ -804,6 +825,7 @@ document.addEventListener('fullscreenchange', () => {
     isFullscreen = false;
     const btn = document.getElementById('btn-shell');
     if (btn) { btn.textContent = '⛶ Екран'; btn.className = 'btn-shell'; }
+    document.getElementById('control-bar').classList.remove('kiosk-hidden');
   }
 });
 
