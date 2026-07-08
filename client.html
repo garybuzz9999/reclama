@@ -462,6 +462,36 @@
         </div>
       </div>
 
+      <!-- Тайминг -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec-title" style="margin-bottom:12px;">⏱ Тайминг</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field">
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ТРИВАЛІСТЬ ФОНУ</label>
+            <select class="inp" id="timing-bg" onchange="saveTimings()">
+              <option value="5">5 сек</option>
+              <option value="10" selected>10 сек</option>
+              <option value="15">15 сек</option>
+              <option value="20">20 сек</option>
+              <option value="30">30 сек</option>
+              <option value="60">1 хв</option>
+              <option value="120">2 хв</option>
+            </select>
+          </div>
+          <div class="field">
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ПАУЗА МІЖ РЕКЛАМОЮ</label>
+            <select class="inp" id="timing-pause" onchange="saveTimings()">
+              <option value="3">3 сек</option>
+              <option value="5" selected>5 сек</option>
+              <option value="10">10 сек</option>
+              <option value="15">15 сек</option>
+              <option value="30">30 сек</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Відео грає до кінця незалежно від тайминг банера</div>
+      </div>
+
       <!-- Таблиця розмірів -->
       <div class="card" style="margin-bottom:14px;">
         <div class="sec-title" style="margin-bottom:12px;">Рекомендовані розміри зображень</div>
@@ -1207,6 +1237,17 @@ window.removeBg = async () => {
   showToast('🗑️ Фон видалено');
 };
 
+window.saveTimings = async () => {
+  const bgTime = parseInt(document.getElementById('timing-bg').value);
+  const pauseTime = parseInt(document.getElementById('timing-pause').value);
+  await saveSettingsToFirestore({ 
+    orientation: currentOrientation,
+    bgTime, pauseTime,
+    bgUrl: clientData?.settings?.bgUrl || ''
+  });
+  showToast('✅ Тайминг збережено');
+};
+
 async function saveSettingsToFirestore(data) {
   if (!currentUser) return;
   const settings = data || { orientation: currentOrientation };
@@ -1229,6 +1270,8 @@ async function loadSettings() {
     document.getElementById('bg-current').style.display = 'block';
     document.getElementById('bg-current-img').src = s.bgUrl;
   }
+  if (s.bgTime) document.getElementById('timing-bg').value = s.bgTime;
+  if (s.pauseTime) document.getElementById('timing-pause').value = s.pauseTime;
 }
 
 window.toggleHelp = (id) => {
