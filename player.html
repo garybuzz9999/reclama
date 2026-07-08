@@ -157,11 +157,12 @@
       display:none;
     }
     #kiosk-unlock-btn{
-      position:fixed;bottom:0;right:0;
-      width:44px;height:44px;
-      background:transparent;border:none;
+      position:fixed;bottom:14px;right:14px;
+      width:34px;height:34px;border-radius:50%;
+      background:rgba(255,255,255,.05);
+      border:1.5px solid rgba(255,255,255,.12);
       cursor:pointer;z-index:9999;
-      opacity:0;
+      transition:background .15s,border-color .15s;
     }
     .driver-row{
       display:flex;align-items:stretch;gap:8px;
@@ -428,7 +429,8 @@ const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
-const PAUSE_BETWEEN = 10 * 1000; // 10 сек для тесту (5*60*1000 для продакшну)
+let BG_TIME = 10 * 1000;    // ТРИВАЛІСТЬ ФОНУ — скільки показується фон/годинник між рекламою
+let PAUSE_TIME = 5 * 1000;  // ПАУЗА МІЖ РЕКЛАМОЮ — коротка чорна пауза одразу після банера
 const RELOAD_INTERVAL = 10 * 60 * 1000;
 
 let currentZone = 'center';
@@ -494,7 +496,7 @@ async function initPlayer(zone) {
   updateClock();
   await loadBanners(zone);
   const savedCode2 = localStorage.getItem('ads_code');
-  if (savedCode2) loadClientSettings(savedCode2);
+  if (savedCode2) await loadClientSettings(savedCode2);
   scheduleNext();
   setInterval(() => loadBanners(zone), RELOAD_INTERVAL);
 }
@@ -532,6 +534,8 @@ async function loadClientSettings(code) {
       idle.style.backgroundImage = `url('${settings.bgUrl}')`;
       idle.classList.add('has-bg');
     }
+    if (settings.bgTime)    BG_TIME    = settings.bgTime * 1000;
+    if (settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
     // Завантажуємо курс валют
     try {
       const curSnap = await getDoc(doc(db,'currency',clientId));
@@ -636,13 +640,24 @@ function scheduleNext() {
   // Зупиняємо відео якщо грало
   const video = document.getElementById('banner-video');
   if (video && !video.paused) video.pause();
-  showIdle();
+
+  // Фаза 1: коротка чорна пауза одразу після реклами (ПАУЗА МІЖ РЕКЛАМОЮ)
+  document.getElementById('idle-frame').style.opacity = '0';
+  document.getElementById('banner-frame').classList.remove('active');
+  document.getElementById('banner-progress').style.transition = 'none';
+  document.getElementById('banner-progress').style.width = '0%';
+
   bannerTimeout = setTimeout(() => {
     if (!adActive) return;
-    if (!banners.length) { scheduleNext(); return; }
-    showBanner(banners[bannerIndex % banners.length]);
-    bannerIndex++;
-  }, PAUSE_BETWEEN);
+    // Фаза 2: показ фону/годинника (ТРИВАЛІСТЬ ФОНУ)
+    showIdle();
+    bannerTimeout = setTimeout(() => {
+      if (!adActive) return;
+      if (!banners.length) { scheduleNext(); return; }
+      showBanner(banners[bannerIndex % banners.length]);
+      bannerIndex++;
+    }, BG_TIME);
+  }, PAUSE_TIME);
 }
 
 function showIdle() {
@@ -794,9 +809,8 @@ window.toggleFullscreen = () => {
         isFullscreen = true;
         btn.textContent = '✕ Вікно';
         btn.className = 'btn-shell active';
-        // Kiosk — ховаємо панель
+        // Kiosk — ховаємо панель (кнопка розблокування лишається ледь видимою)
         document.getElementById('control-bar').classList.add('kiosk-hidden');
-        document.getElementById('kiosk-unlock-btn').style.opacity = '0';
       })
       .catch(() => {
         // Якщо не вдалось — спробуємо через webkit
@@ -805,9 +819,8 @@ window.toggleFullscreen = () => {
         isFullscreen = true;
         btn.textContent = '✕ Вікно';
         btn.className = 'btn-shell active';
-        // Kiosk — ховаємо панель
+        // Kiosk — ховаємо панель (кнопка розблокування лишається ледь видимою)
         document.getElementById('control-bar').classList.add('kiosk-hidden');
-        document.getElementById('kiosk-unlock-btn').style.opacity = '0';
       });
   } else {
     (document.exitFullscreen || document.webkitExitFullscreen || 
@@ -828,6 +841,33 @@ document.addEventListener('fullscreenchange', () => {
     document.getElementById('control-bar').classList.remove('kiosk-hidden');
   }
 });
+
+// ── KIOSK UNLOCK (5 натискань по невидимій кнопці) ──
+let kioskTaps = 0;
+let kioskTapTimer = null;
+
+window.kioskUnlockTap = () => {
+  kioskTaps++;
+  clearTimeout(kioskTapTimer);
+  kioskTapTimer = setTimeout(() => {
+    kioskTaps = 0;
+    const btn = document.getElementById('kiosk-unlock-btn');
+    btn.style.background = 'rgba(255,255,255,.05)';
+    btn.style.borderColor = 'rgba(255,255,255,.12)';
+  }, 2000);
+
+  const btn = document.getElementById('kiosk-unlock-btn');
+  btn.style.background = `rgba(255,77,77,${kioskTaps * 0.15})`;
+  btn.style.borderColor = `rgba(255,77,77,${0.2 + kioskTaps * 0.15})`;
+
+  if (kioskTaps >= 5) {
+    kioskTaps = 0;
+    clearTimeout(kioskTapTimer);
+    btn.style.background = 'rgba(255,255,255,.05)';
+    btn.style.borderColor = 'rgba(255,255,255,.12)';
+    document.getElementById('control-bar').classList.remove('kiosk-hidden');
+  }
+};
 
 // ── SHELL / PIN ──
 let shellActive = false;
