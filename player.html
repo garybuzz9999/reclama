@@ -355,6 +355,11 @@
   <!-- Kiosk unlock button (невидима, внизу справа, 5 натискань) -->
   <button id="kiosk-unlock-btn" onclick="kioskUnlockTap()"></button>
 
+  <!-- Debug: показує помилки завантаження налаштувань/курсу прямо на екрані -->
+  <div id="debug-msg" style="position:fixed;bottom:4px;left:4px;font-size:10px;line-height:1.3;
+    color:rgba(255,90,90,.65);z-index:9998;max-width:92vw;pointer-events:none;
+    font-family:monospace;white-space:pre-wrap;"></div>
+
   <!-- Controls -->
   <div class="control-bar" id="control-bar">
     <!-- Водій -->
@@ -365,6 +370,35 @@
       </button>
       <button class="btn-shell" id="btn-shell" onclick="toggleFullscreen()">⛶ Екран</button>
       <button class="btn-reset" id="btn-reset" onclick="tapReset()">🔄</button>
+    </div>
+    <!-- Тайминг (локально, на цьому пристрої, без Firestore) -->
+    <div class="timing-row" style="display:flex;gap:8px;margin-bottom:10px;">
+      <div style="flex:1;">
+        <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ФОН</label>
+        <select id="local-bg-time" onchange="saveLocalTiming()"
+          style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
+          border-radius:8px;padding:8px;font-size:14px;">
+          <option value="5">5 сек</option>
+          <option value="10">10 сек</option>
+          <option value="15">15 сек</option>
+          <option value="20">20 сек</option>
+          <option value="30">30 сек</option>
+          <option value="60">1 хв</option>
+          <option value="120">2 хв</option>
+        </select>
+      </div>
+      <div style="flex:1;">
+        <label style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ПАУЗА</label>
+        <select id="local-pause-time" onchange="saveLocalTiming()"
+          style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);
+          border-radius:8px;padding:8px;font-size:14px;">
+          <option value="3">3 сек</option>
+          <option value="5">5 сек</option>
+          <option value="10">10 сек</option>
+          <option value="15">15 сек</option>
+          <option value="30">30 сек</option>
+        </select>
+      </div>
     </div>
     <!-- Клієнт -->
     <div class="client-row">
@@ -492,6 +526,7 @@ window.startPlayer = async () => {
 async function initPlayer(zone) {
   document.getElementById('status-zone').textContent = ZONES[zone]||zone;
   document.getElementById('idle-zone-label').textContent = ZONES[zone]||zone;
+  loadLocalTiming();
   setInterval(updateClock, 1000);
   updateClock();
   await loadBanners(zone);
@@ -525,25 +560,52 @@ function applyClientSettings(settings) {
     idle.style.backgroundImage = `url('${settings.bgUrl}')`;
     idle.classList.add('has-bg');
   }
-  if (settings.bgTime)    BG_TIME    = settings.bgTime * 1000;
-  if (settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
+  // Локальні тайминги (вибрані прямо на цьому пристрої) завжди мають пріоритет
+  if (!localStorage.getItem('ads_bg_time')    && settings.bgTime)    BG_TIME    = settings.bgTime * 1000;
+  if (!localStorage.getItem('ads_pause_time') && settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
+}
+
+// ── ЛОКАЛЬНИЙ ТАЙМИНГ (незалежно від Firestore) ──
+window.saveLocalTiming = () => {
+  const bg = document.getElementById('local-bg-time').value;
+  const pause = document.getElementById('local-pause-time').value;
+  localStorage.setItem('ads_bg_time', bg);
+  localStorage.setItem('ads_pause_time', pause);
+  BG_TIME = parseInt(bg) * 1000;
+  PAUSE_TIME = parseInt(pause) * 1000;
+  showToast('✅ Тайминг збережено на цьому пристрої');
+};
+
+function loadLocalTiming() {
+  const bg = localStorage.getItem('ads_bg_time');
+  const pause = localStorage.getItem('ads_pause_time');
+  if (bg)    { BG_TIME = parseInt(bg) * 1000; document.getElementById('local-bg-time').value = bg; }
+  else document.getElementById('local-bg-time').value = String(BG_TIME/1000);
+  if (pause) { PAUSE_TIME = parseInt(pause) * 1000; document.getElementById('local-pause-time').value = pause; }
+  else document.getElementById('local-pause-time').value = String(PAUSE_TIME/1000);
+}
+
+function showDebug(msg) {
+  const el = document.getElementById('debug-msg');
+  if (el) el.textContent = msg;
 }
 
 async function loadClientSettings(code) {
   try {
     // Знаходимо ліцензію → clientId → налаштування
     const licSnap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
-    if (licSnap.empty) return;
+    if (licSnap.empty) { showDebug('⚠ Ліцензію не знайдено за кодом'); return; }
     const clientId = licSnap.docs[0].data().clientId;
     const { getDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const clientSnap = await getDoc(doc(db,'clients',clientId));
-    if (!clientSnap.exists()) return;
+    if (!clientSnap.exists()) { showDebug('⚠ Клієнта не знайдено: ' + clientId); return; }
     applyClientSettings(clientSnap.data().settings || {});
 
     // Слухаємо зміни налаштувань (тайминг, фон) у реальному часі — без перезавантаження екрана
-    onSnapshot(doc(db,'clients',clientId), snap => {
-      if (snap.exists()) applyClientSettings(snap.data().settings || {});
-    });
+    onSnapshot(doc(db,'clients',clientId),
+      snap => { if (snap.exists()) applyClientSettings(snap.data().settings || {}); },
+      err  => showDebug('⚠ settings: ' + err.code + ' ' + err.message)
+    );
 
     // Завантажуємо курс валют
     try {
@@ -558,10 +620,12 @@ async function loadClientSettings(code) {
             if (d.active) renderCurrencyBoard(d);
             else hideCurrencyBoard();
           }
-        });
+        }, err => showDebug('⚠ currency: ' + err.code + ' ' + err.message));
       }
-    } catch(e) {}
-  } catch(e) {}
+    } catch(e) { showDebug('⚠ currency: ' + (e.code||e.message)); }
+  } catch(e) {
+    showDebug('⚠ settings: ' + (e.code || e.message));
+  }
 }
 
 const CURRENCIES_PLAYER = [
