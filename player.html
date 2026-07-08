@@ -695,6 +695,8 @@ window.resetPlayer = () => {
 };
 
 // ── SCHEDULE ──
+let lastBannerBgDuration = null; // тривалість фону, задана на конкретному банері (сек)
+
 function scheduleNext() {
   if (!adActive) return;
   if (bannerTimeout) clearTimeout(bannerTimeout);
@@ -708,6 +710,11 @@ function scheduleNext() {
   document.getElementById('banner-progress').style.transition = 'none';
   document.getElementById('banner-progress').style.width = '0%';
 
+  // Якщо у щойно показаного банера задана своя "тривалість фону" — використовуємо її,
+  // інакше беремо загальний ЧАС ФОНУ, вручну виставлений на екрані
+  const bgDur = lastBannerBgDuration ? lastBannerBgDuration * 1000 : BG_TIME;
+  lastBannerBgDuration = null;
+
   bannerTimeout = setTimeout(() => {
     if (!adActive) return;
     // Фаза 2: показ фону/годинника (ТРИВАЛІСТЬ ФОНУ)
@@ -717,7 +724,7 @@ function scheduleNext() {
       if (!banners.length) { scheduleNext(); return; }
       showBanner(banners[bannerIndex % banners.length]);
       bannerIndex++;
-    }, BG_TIME);
+    }, bgDur);
   }, PAUSE_TIME);
 }
 
@@ -774,6 +781,7 @@ function showBanner(banner) {
     if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 800);
     bannerTimeout = setTimeout(() => {
       window.speechSynthesis?.cancel();
+      lastBannerBgDuration = banner.bgDuration || null;
       scheduleNext();
     }, dur);
   };
