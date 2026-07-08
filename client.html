@@ -352,12 +352,8 @@
         <div class="add-banner-form">
           <div class="form-row">
             <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%"></div>
-            <div class="field"><label>Тривалість</label>
-              <select class="inp" id="bn-duration">
-                <option value="15">15 сек</option><option value="20">20 сек</option>
-                <option value="30" selected>30 сек</option><option value="45">45 сек</option>
-                <option value="60">1 хв</option>
-              </select>
+            <div class="field"><label>Тривалість (сек)</label>
+              <input class="inp" type="number" id="bn-duration" min="1" step="1" value="30" placeholder="30">
             </div>
           </div>
           <div class="field">
@@ -1032,6 +1028,12 @@ window.addBanner = async () => {
     return; 
   }
   document.getElementById('bn-title').style.borderColor = '';
+  if (!duration || duration < 1) {
+    document.getElementById('bn-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість (сек)!');
+    return;
+  }
+  document.getElementById('bn-duration').style.borderColor = '';
   if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
   showToast('⏳ Збереження...');
   try {
