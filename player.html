@@ -519,23 +519,32 @@ async function loadBanners(zone) {
   } catch(e) { banners = []; }
 }
 
+function applyClientSettings(settings) {
+  if (settings.bgUrl) {
+    const idle = document.getElementById('idle-frame');
+    idle.style.backgroundImage = `url('${settings.bgUrl}')`;
+    idle.classList.add('has-bg');
+  }
+  if (settings.bgTime)    BG_TIME    = settings.bgTime * 1000;
+  if (settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
+}
+
 async function loadClientSettings(code) {
   try {
     // Знаходимо ліцензію → clientId → налаштування
     const licSnap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
     if (licSnap.empty) return;
     const clientId = licSnap.docs[0].data().clientId;
-    const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const { getDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const clientSnap = await getDoc(doc(db,'clients',clientId));
     if (!clientSnap.exists()) return;
-    const settings = clientSnap.data().settings || {};
-    if (settings.bgUrl) {
-      const idle = document.getElementById('idle-frame');
-      idle.style.backgroundImage = `url('${settings.bgUrl}')`;
-      idle.classList.add('has-bg');
-    }
-    if (settings.bgTime)    BG_TIME    = settings.bgTime * 1000;
-    if (settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
+    applyClientSettings(clientSnap.data().settings || {});
+
+    // Слухаємо зміни налаштувань (тайминг, фон) у реальному часі — без перезавантаження екрана
+    onSnapshot(doc(db,'clients',clientId), snap => {
+      if (snap.exists()) applyClientSettings(snap.data().settings || {});
+    });
+
     // Завантажуємо курс валют
     try {
       const curSnap = await getDoc(doc(db,'currency',clientId));
@@ -543,7 +552,6 @@ async function loadClientSettings(code) {
         const cur = curSnap.data();
         if (cur.active) renderCurrencyBoard(cur);
         // Слухаємо зміни курсу в реальному часі
-        const { onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         onSnapshot(doc(db,'currency',clientId), snap => {
           if (snap.exists()) {
             const d = snap.data();
