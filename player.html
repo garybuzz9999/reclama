@@ -350,6 +350,7 @@
         </div>
       </div>
       <div class="match-board" id="match-board">
+        <div class="match-sport-label" id="match-sport-label" style="font-size:clamp(11px,2vw,16px);color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;"></div>
         <div class="match-teams">
           <div class="match-team">
             <div class="match-team-name" id="match-name-a">—</div>
@@ -799,13 +800,14 @@ function endMatchTimeoutAd() {
 }
 
 function renderMatchBoard(d) {
+  document.getElementById('match-sport-label').textContent = d.sportLabel || '';
   document.getElementById('match-name-a').textContent = d.nameA || '—';
   document.getElementById('match-name-b').textContent = d.nameB || '—';
   document.getElementById('match-score-a').textContent = d.scoreA || 0;
   document.getElementById('match-score-b').textContent = d.scoreB || 0;
 
   matchLocalTimer = d.timerSec || 0;
-  matchLocalRunning = d.running && d.period !== 2;
+  matchLocalRunning = d.running && d.phase !== 'break';
   clearInterval(matchLocalInterval);
   if (matchLocalRunning) {
     matchLocalInterval = setInterval(() => {
@@ -814,7 +816,7 @@ function renderMatchBoard(d) {
     }, 1000);
   }
   updateMatchTimer(matchLocalTimer);
-  updateMatchPeriod(d.period);
+  updateMatchPeriod(d.phase, d.currentPeriodNum);
 
   document.getElementById('match-board').classList.add('show');
   document.getElementById('idle-frame').classList.add('has-bg');
@@ -825,12 +827,11 @@ function updateMatchTimer(sec) {
   document.getElementById('match-timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
 }
 
-function updateMatchPeriod(period) {
-  const map = {1:['● ТАЙМ 1','mp1'],2:['⏸ ПЕРЕРВА','mp2'],3:['● ТАЙМ 2','mp3'],4:['● ДОД. ЧАС','mpe'],5:['🏁 ФІНАЛ','mpf']};
-  const [text, cls] = map[period] || ['—','mpf'];
+function updateMatchPeriod(phase, periodNum) {
   const el = document.getElementById('match-period');
-  el.textContent = text;
-  el.className = 'match-period ' + cls;
+  if (phase === 'play') { el.textContent = `● ПЕРІОД ${periodNum}`; el.className = 'match-period mp1'; }
+  else if (phase === 'break') { el.textContent = '⏸ ПЕРЕРВА'; el.className = 'match-period mp2'; }
+  else { el.textContent = '🏁 ФІНАЛ'; el.className = 'match-period mpf'; }
 }
 
 function hideMatchBoard() {
