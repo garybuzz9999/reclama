@@ -416,20 +416,35 @@
 
 <script>
   // Глобальний перехоплювач помилок — щоб будь-яка помилка JS (включно з падінням
-  // завантаження Firebase з CDN) одразу показувалась на екрані, а не мовчки ламала плеєр
+  // завантаження Firebase з CDN) одразу показувалась на екрані, а не мовчки ламала плеєр.
+  // capture:true — інакше помилки завантаження ресурсів (напр. якщо не завантажиться
+  // сам скрипт Firebase з мережі) НЕ будуть спливати і НЕ будуть спіймані.
   window.addEventListener('error', (e) => {
     const el = document.getElementById('debug-msg');
-    if (el) el.textContent = '💥 JS помилка: ' + (e.message || e.error?.message || 'невідомо') +
-      (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '');
-  });
+    if (!el) return;
+    if (e.target && e.target !== window && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+      el.textContent = '💥 Не завантажився файл: ' + (e.target.src || e.target.href || '?');
+    } else {
+      el.textContent = '💥 JS помилка: ' + (e.message || e.error?.message || 'невідомо') +
+        (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '');
+    }
+  }, true);
   window.addEventListener('unhandledrejection', (e) => {
     const el = document.getElementById('debug-msg');
     if (el) el.textContent = '💥 Promise помилка: ' + (e.reason?.message || e.reason || 'невідомо');
+  });
+  // Контрольна позначка: якщо це так і лишиться на екрані — значить, модуль з Firebase
+  // взагалі не почав виконуватись (найімовірніше — не завантажився з мережі)
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('debug-msg');
+    if (el && !el.textContent) el.textContent = '⏳ Очікування Firebase...';
   });
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, getDocs, collection, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+document.getElementById('debug-msg').textContent = '✅ Firebase завантажено';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
@@ -442,6 +457,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+
 
 const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід'};
 let BG_TIME = 10 * 1000;    // ТРИВАЛІСТЬ ФОНУ — скільки показується фон/годинник між рекламою
