@@ -106,15 +106,19 @@
   <div class="logo">Ad<span>Screen</span> ⚽</div>
   <div class="logo-sub">Панель судді · Керування матчем</div>
   <div class="card">
+    <div class="lbl">Вид / назва матчу (необов'язково)</div>
+    <input class="inp" id="sport-label" placeholder="Футбол, Баскетбол, Турнір...">
     <div class="lbl">Назви команд</div>
     <div class="row" style="margin-bottom:12px;">
       <input class="inp" id="team-a" placeholder="Господарі" maxlength="16" style="margin-bottom:0;">
       <input class="inp" id="team-b" placeholder="Гості" maxlength="16" style="margin-bottom:0;">
     </div>
+    <div class="lbl">Кількість періодів</div>
+    <input class="num-inp" id="total-periods" type="number" value="2" min="1" max="10" style="width:100%;margin-bottom:12px;">
     <div class="lbl">Тривалість (хвилин)</div>
     <div class="half">
       <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Тайм</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Період</div>
         <input class="num-inp" id="period-min" type="number" value="45" min="1" max="90">
       </div>
       <div>
@@ -122,7 +126,7 @@
         <input class="num-inp" id="break-min" type="number" value="15" min="1" max="30">
       </div>
     </div>
-    <button class="btn-go" onclick="startMatch()">⚽ Почати матч</button>
+    <button class="btn-go" onclick="startMatch()">🏁 Почати матч</button>
     <a href="https://adscreen.online" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;">← На головну adscreen.online</a>
   </div>
 </div>
@@ -151,7 +155,7 @@
       </div>
     </div>
     <div class="preview-timer" id="prev-timer">00:00</div>
-    <div class="preview-period p1" id="prev-period">● ТАЙМ 1</div>
+    <div class="preview-period p1" id="prev-period">● ПЕРІОД 1</div>
   </div>
 
   <!-- Goals -->
@@ -159,12 +163,12 @@
     <div class="goal-title">Рахунок</div>
     <div class="goal-row">
       <div class="goal-team">
-        <button class="btn-goal-plus" onclick="goal('a',1)">+⚽ Гол</button>
+        <button class="btn-goal-plus" onclick="goal('a',1)">+1 Очко</button>
         <button class="btn-goal-minus" onclick="goal('a',-1)">− Скасувати</button>
       </div>
       <div class="goal-sep">vs</div>
       <div class="goal-team">
-        <button class="btn-goal-plus" onclick="goal('b',1)">+⚽ Гол</button>
+        <button class="btn-goal-plus" onclick="goal('b',1)">+1 Очко</button>
         <button class="btn-goal-minus" onclick="goal('b',-1)">− Скасувати</button>
       </div>
     </div>
@@ -184,7 +188,7 @@
       <button class="btn-extra" onclick="addExtra(1)">+1 хв</button>
     </div>
     <div class="timer-row">
-      <button class="btn-t yellow" onclick="nextPeriod()">Кінець тайму →</button>
+      <button class="btn-t yellow" onclick="nextPeriod()">Наступний період →</button>
       <button class="btn-t gray" onclick="resetMatch()">🔄 Скинути</button>
     </div>
     <div class="timer-row">
@@ -265,8 +269,12 @@ async function resumeSavedMatch() {
     const d = snap.data();
     matchId = savedId;
     nameA = d.nameA; nameB = d.nameB;
+    sportLabel = d.sportLabel || '';
     scoreA = d.scoreA || 0; scoreB = d.scoreB || 0;
-    period = d.period || 1; timerSec = d.timerSec || 0;
+    totalPeriods = d.totalPeriods || 2;
+    currentPeriodNum = d.currentPeriodNum || 1;
+    phase = d.phase || 'play';
+    timerSec = d.timerSec || 0;
     extraMin = d.extraMin || 0; running = false; // таймер завжди відновлюється зупиненим
     periodMin = d.periodMin || 45; breakMin = d.breakMin || 15;
 
@@ -315,13 +323,16 @@ function genMatchCode() {
 
 let scoreA = 0, scoreB = 0;
 let periodMin = 45, breakMin = 15;
-let period = 1;
+let totalPeriods = 2;
+let currentPeriodNum = 1;
+let phase = 'play'; // 'play' | 'break' | 'final'
 let timerSec = 0;
 let extraMin = 0;
 let running = false;
 let timerInterval = null;
 let matchId = '';
 let nameA = '', nameB = '';
+let sportLabel = '';
 let timeoutEnd = 0;
 
 window.uploadTimeoutBanner = async () => {
@@ -378,10 +389,15 @@ window.uploadTimeoutBanner = async () => {
 
 window.startMatch = () => {
   if (!currentUser) { return; }
+  sportLabel = document.getElementById('sport-label').value.trim();
   nameA = document.getElementById('team-a').value.trim() || 'Господарі';
   nameB = document.getElementById('team-b').value.trim() || 'Гості';
+  totalPeriods = Math.max(1, parseInt(document.getElementById('total-periods').value) || 2);
   periodMin = parseInt(document.getElementById('period-min').value) || 45;
   breakMin  = parseInt(document.getElementById('break-min').value) || 15;
+  currentPeriodNum = 1;
+  phase = 'play';
+  scoreA = 0; scoreB = 0; timerSec = 0; extraMin = 0; running = false;
   matchId   = genMatchCode();
   localStorage.setItem('ref_match_id', matchId);
 
@@ -401,11 +417,11 @@ window.goal = (team, delta) => {
   else scoreB = Math.max(0, scoreB + delta);
   updatePreview();
   pushState();
-  if (delta > 0) showToast('⚽ ГОЛ!');
+  if (delta > 0) showToast('🏆 +1 очко!');
 };
 
 window.startTimer = () => {
-  if (running || period === 5) return;
+  if (running || phase === 'final') return;
   running = true;
   timerInterval = setInterval(() => {
     timerSec++;
@@ -457,16 +473,18 @@ window.addExtra = (delta) => {
 
 window.nextPeriod = () => {
   stopTimer();
-  if (period === 1) {
-    period = 2; timerSec = 0; extraMin = 0;
-    document.getElementById('extra-val').textContent = '0';
-    showToast('⏸ Перерва');
-  } else if (period === 2) {
-    period = 3; timerSec = 0;
-    showToast('▶ Тайм 2');
-  } else if (period === 3) {
-    period = 5;
-    showToast('🏁 Матч завершено!');
+  if (phase === 'play') {
+    if (currentPeriodNum < totalPeriods) {
+      phase = 'break'; timerSec = 0; extraMin = 0;
+      document.getElementById('extra-val').textContent = '0';
+      showToast('⏸ Перерва');
+    } else {
+      phase = 'final';
+      showToast('🏁 Матч завершено!');
+    }
+  } else if (phase === 'break') {
+    phase = 'play'; currentPeriodNum++; timerSec = 0;
+    showToast(`▶ Період ${currentPeriodNum}`);
   }
   updatePreview();
   pushState();
@@ -476,7 +494,7 @@ window.resetMatch = () => {
   if (!confirm('Скинути матч?')) return;
   stopTimer();
   scoreA = scoreB = timerSec = extraMin = 0;
-  period = 1;
+  currentPeriodNum = 1; phase = 'play';
   document.getElementById('extra-val').textContent = '0';
   updatePreview();
   pushState();
@@ -496,10 +514,9 @@ function updatePreview() {
   document.getElementById('prev-timer').textContent =
     `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   const el = document.getElementById('prev-period');
-  const labels = {1:'● ТАЙМ 1',2:'⏸ ПЕРЕРВА',3:'● ТАЙМ 2',4:'● ДОД. ЧАС',5:'🏁 ФІНАЛ'};
-  const classes = {1:'p1',2:'p2',3:'p3',4:'pe',5:'pf'};
-  el.textContent = labels[period];
-  el.className = 'preview-period ' + classes[period];
+  if (phase === 'play') { el.textContent = `● ПЕРІОД ${currentPeriodNum}`; el.className = 'preview-period p1'; }
+  else if (phase === 'break') { el.textContent = '⏸ ПЕРЕРВА'; el.className = 'preview-period p2'; }
+  else { el.textContent = '🏁 ФІНАЛ'; el.className = 'preview-period pf'; }
 }
 
 async function pushState() {
@@ -507,8 +524,9 @@ async function pushState() {
   try {
     await setDoc(doc(db, 'matches', matchId), {
       clientId: currentUser.uid,
-      nameA, nameB, scoreA, scoreB,
-      period, timerSec, extraMin, running,
+      sportLabel, nameA, nameB, scoreA, scoreB,
+      totalPeriods, currentPeriodNum, phase,
+      timerSec, extraMin, running,
       periodMin, breakMin, timeoutEnd,
       updatedAt: serverTimestamp()
     });
