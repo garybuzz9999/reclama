@@ -184,6 +184,9 @@
       <button class="btn-t yellow" onclick="nextPeriod()">Кінець тайму →</button>
       <button class="btn-t gray" onclick="resetMatch()">🔄 Скинути</button>
     </div>
+    <div class="timer-row">
+      <button class="btn-t blue" onclick="callTimeout()" id="btn-timeout">📺 Тайм-аут (реклама 30с)</button>
+    </div>
   </div>
 
   <!-- Match code -->
@@ -193,14 +196,28 @@
     <div id="match-code" style="font-size:24px;font-weight:900;color:var(--accent);letter-spacing:3px;font-family:monospace;margin-bottom:10px;">—</div>
     <button class="btn-copy-link" onclick="copyLink()">📋 Копіювати код</button>
   </div>
+
+  <!-- Timeout banner upload -->
+  <div class="display-link" style="margin-top:14px;background:rgba(77,159,255,.06);border-color:rgba(77,159,255,.15);">
+    <div class="display-link-title" style="color:var(--blue);">🖼 Банер для тайм-ауту</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">
+      Розмір — <b style="color:var(--text);">горизонтальний, 1920×1080</b> (звичайне широкоформатне фото/відео 16:9).
+      Саме такий банер покажеться на екрані табло під час тайм-ауту.
+    </div>
+    <input type="file" id="timeout-banner-file" accept="image/*,video/*" style="width:100%;margin-bottom:10px;font-size:12px;color:var(--muted);">
+    <button class="btn-copy-link" style="background:var(--blue);width:100%;" onclick="uploadTimeoutBanner()" id="btn-upload-timeout">⬆️ Завантажити банер</button>
+    <div id="timeout-banner-status" style="font-size:11px;color:var(--muted);margin-top:8px;"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const WORKER_URL = 'https://adscreen-upload.ckbbuild.workers.dev';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
@@ -260,6 +277,59 @@ let running = false;
 let timerInterval = null;
 let matchId = '';
 let nameA = '', nameB = '';
+let timeoutEnd = 0;
+
+window.uploadTimeoutBanner = async () => {
+  const fileInput = document.getElementById('timeout-banner-file');
+  const status = document.getElementById('timeout-banner-status');
+  const btn = document.getElementById('btn-upload-timeout');
+  const file = fileInput.files[0];
+  if (!file) { status.textContent = '⚠️ Оберіть файл'; status.style.color = 'var(--red)'; return; }
+  if (!currentUser) { status.textContent = '⚠️ Потрібен вхід'; return; }
+
+  const isVideo = file.type.startsWith('video/');
+  if (isVideo && file.size > 200 * 1024 * 1024) {
+    status.textContent = '⚠️ Відео занадто велике (макс. 200MB)'; status.style.color = 'var(--red)'; return;
+  }
+
+  btn.disabled = true;
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ Завантаження...';
+  try {
+    const idToken = await currentUser.getIdToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'banners');
+    const res = await fetch(`${WORKER_URL}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${idToken}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Помилка завантаження');
+
+    await addDoc(collection(db,'banners'), {
+      clientId: currentUser.uid,
+      title: 'Тайм-аут',
+      duration: 30, bgDuration: 5,
+      zones: ['all'], deviceCodes: [],
+      imageUrl: data.url, storagePath: data.key || null,
+      type: isVideo ? 'video' : 'image',
+      voiceText: '', status: 'active', shows: 0, qrScans: 0,
+      timeoutOnly: true,
+      createdAt: serverTimestamp()
+    });
+
+    status.style.color = 'var(--green)';
+    status.textContent = '✅ Банер завантажено і готовий до показу';
+    fileInput.value = '';
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+};
 
 window.startMatch = () => {
   if (!currentUser) { return; }
@@ -298,6 +368,30 @@ window.startTimer = () => {
   }, 1000);
   pushState();
   showToast('▶ Час пішов');
+};
+
+window.callTimeout = () => {
+  if (timeoutEnd > Date.now()) return; // вже триває
+  stopTimer();
+  timeoutEnd = Date.now() + 30000;
+  pushState();
+  showToast('📺 Тайм-аут: реклама 30с');
+  const btn = document.getElementById('btn-timeout');
+  btn.disabled = true;
+  let left = 30;
+  btn.textContent = `📺 Реклама... ${left}с`;
+  const iv = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(iv);
+      btn.disabled = false;
+      btn.textContent = '📺 Тайм-аут (реклама 30с)';
+      timeoutEnd = 0;
+      pushState();
+    } else {
+      btn.textContent = `📺 Реклама... ${left}с`;
+    }
+  }, 1000);
 };
 
 window.stopTimer = () => {
@@ -369,7 +463,7 @@ async function pushState() {
       clientId: currentUser.uid,
       nameA, nameB, scoreA, scoreB,
       period, timerSec, extraMin, running,
-      periodMin, breakMin,
+      periodMin, breakMin, timeoutEnd,
       updatedAt: serverTimestamp()
     });
   } catch(e) { console.error(e); }
