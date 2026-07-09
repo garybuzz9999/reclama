@@ -294,7 +294,10 @@
     <div class="page" id="page-devices">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div class="sec-title" style="margin-bottom:0;">Пристрої</div>
-        <button class="help-btn" onclick="toggleHelp('help-devices')">? Допомога</button>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-add-license" class="help-btn" onclick="addNewLicense()">➕ Ще один пристрій</button>
+          <button class="help-btn" onclick="toggleHelp('help-devices')">? Допомога</button>
+        </div>
       </div>
       <div class="help-panel" id="help-devices">
         <div class="help-title">📱 Як підключити планшет або телевізор</div>
@@ -373,6 +376,13 @@
               <button class="zone-btn" data-zone="west" onclick="toggleZone(this)">⬅️ Захід</button>
               <button class="zone-btn" data-zone="east" onclick="toggleZone(this)">➡️ Схід</button>
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Конкретні пристрої (необов'язково)</label>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Якщо обрати один чи кілька пристроїв — банер покажеться ТІЛЬКИ на них, незалежно від зони вище</div>
+            <div class="zones-picker" id="devices-picker">
+              <div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>
             </div>
           </div>
           <div class="field">
@@ -795,6 +805,30 @@ window.showTab = (name, btn) => {
   if (name === 'currency') loadCurrency();
 };
 
+window.addNewLicense = async () => {
+  const btn = document.getElementById('btn-add-license');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Створення...'; }
+  try {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    // Порядковий номер ліцензії, щоб не було колізій з попередніми кодами
+    const existing = await getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid)));
+    const num = String(existing.size + 1).padStart(3,'0');
+    const code = `ADS-${uidPart}-${part}-${num}`;
+    await addDoc(collection(db,'licenses'), {
+      code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+    showToast('✅ Новий код створено: ' + code);
+    await loadAll();
+  } catch(e) {
+    showToast('⚠️ Помилка створення ліцензії');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '➕ Ще один пристрій'; }
+  }
+};
+
 // ── LOAD ALL ──
 async function loadAll() {
   const [lics, devs, bans] = await Promise.all([
@@ -830,6 +864,7 @@ async function loadAll() {
   renderLicenses(licenses);
   renderActiveBanners(active);
   renderDevices(devices, licenses);
+  renderDevicePicker(devices);
   renderBanners(banners);
 }
 
@@ -996,6 +1031,25 @@ function getSelectedZones() {
   return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
 }
 
+function getSelectedDevices() {
+  return [...document.querySelectorAll('.device-btn.selected')].map(b=>b.dataset.code);
+}
+
+window.toggleDevice = (btn) => {
+  btn.classList.toggle('selected');
+};
+
+function renderDevicePicker(devices) {
+  const el = document.getElementById('devices-picker');
+  if (!devices.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>';
+    return;
+  }
+  el.innerHTML = devices.map(d=>`
+    <button class="zone-btn device-btn" data-code="${d.code}" onclick="toggleDevice(this)">📱 ${d.name}</button>
+  `).join('');
+}
+
 window.previewImage = input => {
   const file = input.files[0]; if (!file) return;
   document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
@@ -1026,6 +1080,7 @@ window.addBanner = async () => {
   const duration = parseInt(document.getElementById('bn-duration').value);
   const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
   const zones    = getSelectedZones();
+  const deviceCodes = getSelectedDevices();
   const imageFile = document.getElementById('bn-image').files[0];
   if (!title) { 
     document.getElementById('bn-title').style.borderColor = 'var(--red)';
@@ -1077,7 +1132,7 @@ window.addBanner = async () => {
 
     const voiceText = document.getElementById('bn-voice').value.trim();
     await addDoc(collection(db,'banners'),{
-      clientId:currentUser.uid, title, duration, bgDuration, zones,
+      clientId:currentUser.uid, title, duration, bgDuration, zones, deviceCodes,
       imageUrl, storagePath,
       type: isVideo ? 'video' : 'image',
       voiceText: voiceText || '',
@@ -1108,6 +1163,7 @@ function renderBanners(banners) {
       <div class="banner-info">
         <div class="banner-title">${b.title}</div>
         <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
+        ${(b.deviceCodes && b.deviceCodes.length) ? `<div class="banner-zones">${b.deviceCodes.map(c=>`<span class="zone-chip" style="background:var(--accent-dim);color:var(--accent);">📱 ${c}</span>`).join('')}</div>` : ''}
         <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів · ${b.qrScans||0} QR</div>
         <div class="banner-actions">
           <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
