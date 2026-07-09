@@ -530,25 +530,13 @@ function applyClientSettings(settings) {
   if (!localStorage.getItem('ads_pause_time') && settings.pauseTime) PAUSE_TIME = settings.pauseTime * 1000;
 }
 
-// ── ЛОКАЛЬНИЙ ТАЙМИНГ (незалежно від Firestore) ──
-window.saveLocalTiming = () => {
-  const bg = parseInt(document.getElementById('local-bg-time').value);
-  const pause = parseInt(document.getElementById('local-pause-time').value);
-  if (!bg || bg < 1 || !pause || pause < 1) { showToast('⚠ Введіть число секунд > 0'); return; }
-  localStorage.setItem('ads_bg_time', bg);
-  localStorage.setItem('ads_pause_time', pause);
-  BG_TIME = bg * 1000;
-  PAUSE_TIME = pause * 1000;
-  showToast('✅ Тайминг збережено на цьому пристрої');
-};
-
+// ── ЛОКАЛЬНИЙ ТАЙМИНГ (незалежно від Firestore; поля тайминга прибрані з інтерфейсу,
+// але значення, збережені раніше на цьому пристрої, як і раніше застосовуються) ──
 function loadLocalTiming() {
   const bg = localStorage.getItem('ads_bg_time');
   const pause = localStorage.getItem('ads_pause_time');
-  if (bg)    { BG_TIME = parseInt(bg) * 1000; document.getElementById('local-bg-time').value = bg; }
-  else document.getElementById('local-bg-time').value = String(BG_TIME/1000);
-  if (pause) { PAUSE_TIME = parseInt(pause) * 1000; document.getElementById('local-pause-time').value = pause; }
-  else document.getElementById('local-pause-time').value = String(PAUSE_TIME/1000);
+  if (bg)    BG_TIME    = parseInt(bg) * 1000;
+  if (pause) PAUSE_TIME = parseInt(pause) * 1000;
 }
 
 function showDebug(msg) {
