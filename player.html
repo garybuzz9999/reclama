@@ -537,13 +537,21 @@ async function loadBanners(zone) {
   try {
     const clientId = currentClientId || localStorage.getItem('ads_client_id') || '';
     if (!clientId) { banners = []; showDebug('⚠ Немає clientId — реклама не завантажена'); return; }
+    const myCode = localStorage.getItem('ads_code') || '';
     const q = query(collection(db,'banners'),
       where('status','==','active'),
       where('clientId','==',clientId)
     );
     const snap = await getDocs(q);
     banners = snap.docs.map(d=>({id:d.id,...d.data()}))
-      .filter(b => b.zones && (b.zones.includes('all') || b.zones.includes(zone)));
+      .filter(b => {
+        // Якщо банер прив'язаний до конкретних пристроїв — показуємо лише на них,
+        // незалежно від зони
+        if (b.deviceCodes && b.deviceCodes.length) {
+          return b.deviceCodes.includes(myCode);
+        }
+        return b.zones && (b.zones.includes('all') || b.zones.includes(zone));
+      });
     showDebug(`ID: ${clientId.slice(0,8)}… | Банерів: ${banners.length}`);
   } catch(e) { banners = []; showDebug('⚠ banners: ' + (e.code||e.message)); }
 }
