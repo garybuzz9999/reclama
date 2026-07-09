@@ -608,6 +608,7 @@ async function loadBanners(zone) {
     );
     const snap = await getDocs(q);
     banners = snap.docs.map(d=>({id:d.id,...d.data()}))
+      .filter(b => !b.timeoutOnly)
       .filter(b => {
         // Якщо банер прив'язаний до конкретних пристроїв — показуємо лише на них,
         // незалежно від зони
@@ -716,6 +717,7 @@ function hideCurrencyBoard() {
 
 // ── ТАБЛО МАТЧУ (⚽) ──
 let matchLocalTimer = 0, matchLocalRunning = false, matchLocalInterval = null, matchLastPeriod = 0;
+let matchTimeoutActive = false, matchTimeoutRevertTimer = null, lastMatchData = null;
 
 window.promptMatchCode = () => {
   const current = localStorage.getItem('ads_match_code') || '';
@@ -739,8 +741,61 @@ function subscribeMatch(code) {
   if (matchUnsub) { matchUnsub(); matchUnsub = null; }
   matchUnsub = onSnapshot(doc(db, 'matches', code), snap => {
     if (!snap.exists()) { hideMatchBoard(); return; }
-    renderMatchBoard(snap.data());
+    const d = snap.data();
+    lastMatchData = d;
+    const now = Date.now();
+    if (d.timeoutEnd && d.timeoutEnd > now) {
+      if (!matchTimeoutActive) startMatchTimeoutAd(d.clientId, d.timeoutEnd - now);
+    } else if (matchTimeoutActive) {
+      // Тайм-аут скасовано достроково з панелі судді
+      clearTimeout(matchTimeoutRevertTimer);
+      endMatchTimeoutAd();
+    } else {
+      renderMatchBoard(d);
+    }
   }, err => showDebug('⚠ табло: ' + (err.code||err.message)));
+}
+
+async function startMatchTimeoutAd(clientId, ms) {
+  matchTimeoutActive = true;
+  hideMatchBoard();
+  const bannerFrame = document.getElementById('banner-frame');
+  bannerFrame.style.display = '';
+  try {
+    if (clientId) {
+      const snap = await getDocs(query(collection(db,'banners'), where('status','==','active'), where('clientId','==',clientId)));
+      const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+      const ads = all.filter(b => b.timeoutOnly).length ? all.filter(b => b.timeoutOnly) : all;
+      if (ads.length) showTimeoutBanner(ads[Math.floor(Math.random()*ads.length)]);
+    }
+  } catch(e) {}
+  matchTimeoutRevertTimer = setTimeout(endMatchTimeoutAd, Math.max(ms, 0));
+}
+
+// Легкий показ одного банера під час тайм-ауту — без запуску звичайної ротації реклами
+function showTimeoutBanner(banner) {
+  const img = document.getElementById('banner-img');
+  const video = document.getElementById('banner-video');
+  const frame = document.getElementById('banner-frame');
+  frame.classList.add('active');
+  if (banner.type === 'video') {
+    img.style.display = 'none'; video.style.display = 'block';
+    video.src = banner.imageUrl || '';
+    video.oncanplay = () => video.play();
+    video.onended = () => { video.currentTime = 0; video.play(); }; // луп на час тайм-ауту
+  } else {
+    video.style.display = 'none'; img.style.display = 'block';
+    img.src = banner.imageUrl || '';
+  }
+}
+
+function endMatchTimeoutAd() {
+  matchTimeoutActive = false;
+  document.getElementById('banner-frame').classList.remove('active');
+  document.getElementById('banner-frame').style.display = 'none';
+  const video = document.getElementById('banner-video');
+  if (video && !video.paused) video.pause();
+  if (lastMatchData) renderMatchBoard(lastMatchData);
 }
 
 function renderMatchBoard(d) {
