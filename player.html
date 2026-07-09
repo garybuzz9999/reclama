@@ -414,6 +414,19 @@
   <button class="pin-cancel" id="pin-cancel" onclick="closePinModal()">Скасувати</button>
 </div>
 
+<script>
+  // Глобальний перехоплювач помилок — щоб будь-яка помилка JS (включно з падінням
+  // завантаження Firebase з CDN) одразу показувалась на екрані, а не мовчки ламала плеєр
+  window.addEventListener('error', (e) => {
+    const el = document.getElementById('debug-msg');
+    if (el) el.textContent = '💥 JS помилка: ' + (e.message || e.error?.message || 'невідомо') +
+      (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '');
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    const el = document.getElementById('debug-msg');
+    if (el) el.textContent = '💥 Promise помилка: ' + (e.reason?.message || e.reason || 'невідомо');
+  });
+</script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, getDocs, collection, query, where, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
