@@ -307,6 +307,10 @@
       placeholder="ADS-XXXX-XXXX-001" maxlength="20"
       oninput="formatCode(this)">
     <button onclick="saveCode()" style="width:100%;margin-top:8px;padding:10px;background:#2a2a2a;color:#facc15;border:1px solid #facc15;border-radius:8px;font-size:14px;cursor:pointer;">💾 Запам'ятати код</button>
+    <div class="setup-label" style="margin-top:16px;">Код табло (необов'язково)</div>
+    <input class="setup-inp" id="setup-match-code"
+      placeholder="MATCH-XXXX-XXXX" maxlength="20"
+      style="text-transform:uppercase;">
     <div class="setup-zone-label">Зона показу</div>
     <div class="zone-grid">
       <div class="zone-opt" data-zone="north" onclick="selectZone(this)">⬆️ Північ</div>
@@ -530,9 +534,22 @@ window.selectZone = btn => {
 // ── START ──
 window.startPlayer = async () => {
   const code = document.getElementById('setup-code').value.trim().toUpperCase();
+  const matchCode = document.getElementById('setup-match-code').value.trim().toUpperCase();
   const err  = document.getElementById('setup-err');
   err.textContent = '';
-  if (code.length < 10) { err.textContent = 'Введіть ліцензійний код'; return; }
+
+  // Якщо є код табло, а рекламний код НЕ вказаний — окремий режим "тільки табло", без реклами
+  if (matchCode && code.length < 10) {
+    localStorage.setItem('ads_match_code', matchCode);
+    localStorage.removeItem('ads_code');
+    localStorage.removeItem('ads_zone');
+    localStorage.removeItem('ads_client_id');
+    showScreen('player');
+    initMatchOnly();
+    return;
+  }
+
+  if (code.length < 10) { err.textContent = 'Введіть ліцензійний код або код табло'; return; }
   err.textContent = '⏳ Перевірка...';
   try {
     const snap = await getDocs(query(collection(db,'licenses'), where('code','==',code)));
@@ -542,12 +559,27 @@ window.startPlayer = async () => {
     localStorage.setItem('ads_code', code);
     localStorage.setItem('ads_zone', currentZone);
     localStorage.setItem('ads_client_id', currentClientId);
+    if (matchCode) localStorage.setItem('ads_match_code', matchCode);
+    else localStorage.removeItem('ads_match_code');
     showScreen('player');
     initPlayer(currentZone);
   } catch(e) {
     err.textContent = '❌ Помилка: ' + e.message;
   }
 };
+
+// ── РЕЖИМ "ТІЛЬКИ ТАБЛО" (без реклами) ──
+function initMatchOnly() {
+  document.getElementById('status-zone').textContent = '⚽ Табло';
+  document.getElementById('idle-zone-label').textContent = '';
+  setInterval(updateClock, 1000);
+  updateClock();
+  // Реклама в цьому режимі не показується взагалі
+  document.getElementById('banner-frame').style.display = 'none';
+  document.getElementById('idle-frame').style.opacity = '1';
+  const code = localStorage.getItem('ads_match_code');
+  if (code) subscribeMatch(code);
+}
 
 // ── INIT ──
 async function initPlayer(zone) {
@@ -946,15 +978,21 @@ function showScreen(name) {
 const savedCode = localStorage.getItem('ads_code');
 const savedZone = localStorage.getItem('ads_zone') || 'center';
 const savedClientId = localStorage.getItem('ads_client_id') || '';
+const savedMatchOnlyCode = localStorage.getItem('ads_match_code');
 if (savedCode) {
   currentClientId = savedClientId;
   document.getElementById('setup-code').value = savedCode;
+  if (savedMatchOnlyCode) document.getElementById('setup-match-code').value = savedMatchOnlyCode;
   currentZone = savedZone;
   document.querySelectorAll('.zone-opt').forEach(b=>{
     b.classList.toggle('selected', b.dataset.zone === savedZone);
   });
   showScreen('player');
   initPlayer(savedZone);
+} else if (savedMatchOnlyCode) {
+  document.getElementById('setup-match-code').value = savedMatchOnlyCode;
+  showScreen('player');
+  initMatchOnly();
 }
 
 window.hideControlPanel = () => {
