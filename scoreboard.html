@@ -133,6 +133,9 @@
     <div class="ref-logo">Ad<span>Screen</span> ⚽ Суддя</div>
     <div><span class="status-dot"></span><span class="match-id" id="match-id-display">—</span></div>
   </div>
+  <div style="text-align:right;margin-top:-10px;margin-bottom:14px;">
+    <a href="javascript:void(0)" onclick="newMatch()" style="font-size:12px;color:var(--muted);text-decoration:none;">🔁 Новий матч (інший код)</a>
+  </div>
 
   <!-- Score preview -->
   <div class="score-preview">
@@ -214,7 +217,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, addDoc, collection, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const WORKER_URL = 'https://adscreen-upload.ckbbuild.workers.dev';
@@ -238,13 +241,55 @@ onAuthStateChanged(auth, (user) => {
   currentUser = user;
   if (user) {
     document.getElementById('screen-login').style.display = 'none';
-    document.getElementById('screen-setup').style.display = 'flex';
+    resumeSavedMatch();
   } else {
     document.getElementById('screen-login').style.display = 'flex';
     document.getElementById('screen-setup').style.display = 'none';
     document.getElementById('screen-ref').style.display = 'none';
   }
 });
+
+async function resumeSavedMatch() {
+  const savedId = localStorage.getItem('ref_match_id');
+  if (!savedId) {
+    document.getElementById('screen-setup').style.display = 'flex';
+    return;
+  }
+  try {
+    const snap = await getDoc(doc(db, 'matches', savedId));
+    if (!snap.exists() || snap.data().clientId !== currentUser.uid) {
+      localStorage.removeItem('ref_match_id');
+      document.getElementById('screen-setup').style.display = 'flex';
+      return;
+    }
+    const d = snap.data();
+    matchId = savedId;
+    nameA = d.nameA; nameB = d.nameB;
+    scoreA = d.scoreA || 0; scoreB = d.scoreB || 0;
+    period = d.period || 1; timerSec = d.timerSec || 0;
+    extraMin = d.extraMin || 0; running = false; // таймер завжди відновлюється зупиненим
+    periodMin = d.periodMin || 45; breakMin = d.breakMin || 15;
+
+    document.getElementById('prev-name-a').textContent = nameA;
+    document.getElementById('prev-name-b').textContent = nameB;
+    document.getElementById('match-id-display').textContent = matchId;
+    document.getElementById('match-code').textContent = matchId;
+    document.getElementById('extra-val').textContent = extraMin;
+    updatePreview();
+
+    document.getElementById('screen-setup').style.display = 'none';
+    document.getElementById('screen-ref').style.display = 'block';
+  } catch(e) {
+    document.getElementById('screen-setup').style.display = 'flex';
+  }
+}
+
+window.newMatch = () => {
+  if (!confirm('Почати новий матч? Поточний код табло перестане оновлюватись.')) return;
+  localStorage.removeItem('ref_match_id');
+  stopTimer();
+  location.reload();
+};
 
 window.doLogin = async () => {
   const email = document.getElementById('login-email').value.trim();
@@ -338,6 +383,7 @@ window.startMatch = () => {
   periodMin = parseInt(document.getElementById('period-min').value) || 45;
   breakMin  = parseInt(document.getElementById('break-min').value) || 15;
   matchId   = genMatchCode();
+  localStorage.setItem('ref_match_id', matchId);
 
   document.getElementById('prev-name-a').textContent = nameA;
   document.getElementById('prev-name-b').textContent = nameB;
