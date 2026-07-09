@@ -86,8 +86,23 @@
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="screen-login" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;">
+  <div class="logo">Ad<span>Screen</span> ⚽</div>
+  <div class="logo-sub">Панель судді · Вхід в акаунт</div>
+  <div class="card">
+    <div class="lbl">Email</div>
+    <input class="inp" id="login-email" type="email" placeholder="you@example.com">
+    <div class="lbl">Пароль</div>
+    <input class="inp" id="login-pass" type="password" placeholder="••••••••">
+    <button class="btn-go" onclick="doLogin()">Увійти</button>
+    <div id="login-err" style="color:var(--red);font-size:13px;text-align:center;margin-top:10px;min-height:18px;"></div>
+    <a href="https://adscreen.online/client.html" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;">Ще немає акаунту? Зареєструйтесь у кабінеті клієнта →</a>
+  </div>
+</div>
+
 <!-- SETUP -->
-<div id="screen-setup">
+<div id="screen-setup" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100dvh;padding:24px;">
   <div class="logo">Ad<span>Screen</span> ⚽</div>
   <div class="logo-sub">Панель судді · Керування матчем</div>
   <div class="card">
@@ -107,8 +122,6 @@
         <input class="num-inp" id="break-min" type="number" value="15" min="1" max="30">
       </div>
     </div>
-    <div class="lbl">ID матчу (для синхронізації з екраном)</div>
-    <input class="inp" id="match-id" placeholder="наприклад: match-001" style="font-family:monospace;font-size:13px;">
     <button class="btn-go" onclick="startMatch()">⚽ Почати матч</button>
     <a href="https://adscreen.online" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;">← На головну adscreen.online</a>
   </div>
@@ -173,11 +186,12 @@
     </div>
   </div>
 
-  <!-- Display link -->
+  <!-- Match code -->
   <div class="display-link">
-    <div class="display-link-title">📺 Посилання для екрану глядачів</div>
-    <div class="display-link-url" id="display-url">—</div>
-    <button class="btn-copy-link" onclick="copyLink()">📋 Копіювати</button>
+    <div class="display-link-title">📺 Код табло для екрану</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">Введіть цей код на екрані (плеєрі), де потрібно показати табло — так само, як код для реклами</div>
+    <div id="match-code" style="font-size:24px;font-weight:900;color:var(--accent);letter-spacing:3px;font-family:monospace;margin-bottom:10px;">—</div>
+    <button class="btn-copy-link" onclick="copyLink()">📋 Копіювати код</button>
   </div>
 </div>
 
@@ -186,6 +200,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
@@ -196,8 +211,45 @@ const firebaseConfig = {
   appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
 };
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const db   = getFirestore(app);
+const auth = getAuth(app);
+
+let currentUser = null;
+
+onAuthStateChanged(auth, (user) => {
+  currentUser = user;
+  if (user) {
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-setup').style.display = 'flex';
+  } else {
+    document.getElementById('screen-login').style.display = 'flex';
+    document.getElementById('screen-setup').style.display = 'none';
+    document.getElementById('screen-ref').style.display = 'none';
+  }
+});
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  const err   = document.getElementById('login-err');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'Введіть email і пароль'; return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.textContent = 'Невірний email або пароль';
+  }
+};
+
+function genMatchCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let part1 = '', part2 = '';
+  for (let i=0; i<4; i++) part1 += chars[Math.floor(Math.random()*chars.length)];
+  for (let i=0; i<4; i++) part2 += chars[Math.floor(Math.random()*chars.length)];
+  return `MATCH-${part1}-${part2}`;
+}
+
 
 let scoreA = 0, scoreB = 0;
 let periodMin = 45, breakMin = 15;
@@ -210,19 +262,17 @@ let matchId = '';
 let nameA = '', nameB = '';
 
 window.startMatch = () => {
+  if (!currentUser) { return; }
   nameA = document.getElementById('team-a').value.trim() || 'Господарі';
   nameB = document.getElementById('team-b').value.trim() || 'Гості';
   periodMin = parseInt(document.getElementById('period-min').value) || 45;
   breakMin  = parseInt(document.getElementById('break-min').value) || 15;
-  matchId   = document.getElementById('match-id').value.trim() ||
-              'match-' + Date.now().toString(36);
+  matchId   = genMatchCode();
 
   document.getElementById('prev-name-a').textContent = nameA;
   document.getElementById('prev-name-b').textContent = nameB;
   document.getElementById('match-id-display').textContent = matchId;
-
-  const displayUrl = `${location.origin}${location.pathname.replace('scoreboard.html','scoreboard-display.html')}?id=${matchId}`;
-  document.getElementById('display-url').textContent = displayUrl;
+  document.getElementById('match-code').textContent = matchId;
 
   document.getElementById('screen-setup').style.display = 'none';
   document.getElementById('screen-ref').style.display = 'block';
@@ -294,8 +344,8 @@ window.resetMatch = () => {
 };
 
 window.copyLink = () => {
-  const url = document.getElementById('display-url').textContent;
-  navigator.clipboard.writeText(url).then(() => showToast('📋 Посилання скопійовано!'));
+  const code = document.getElementById('match-code').textContent;
+  navigator.clipboard.writeText(code).then(() => showToast('📋 Код скопійовано!'));
 };
 
 function updatePreview() {
@@ -313,9 +363,10 @@ function updatePreview() {
 }
 
 async function pushState() {
-  if (!matchId) return;
+  if (!matchId || !currentUser) return;
   try {
     await setDoc(doc(db, 'matches', matchId), {
+      clientId: currentUser.uid,
       nameA, nameB, scoreA, scoreB,
       period, timerSec, extraMin, running,
       periodMin, breakMin,
