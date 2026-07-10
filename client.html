@@ -456,58 +456,28 @@
         <div class="help-tip">💡 Фоновий екран — це ваша "заставка" яку бачать глядачі між рекламою. Поставте логотип!</div>
       </div>
 
-      <!-- Орієнтація -->
-      <div class="card" style="margin-bottom:14px;">
-        <div class="sec-title" style="margin-bottom:12px;">Орієнтація планшета / ТВ</div>
-        <div style="display:flex;gap:10px;">
-          <button class="orient-btn selected" id="orient-landscape" onclick="setOrientation('landscape',this)">
-            <div style="font-size:28px;margin-bottom:6px;">🖥</div>
-            <div style="font-size:14px;font-weight:700;">Горизонтальна</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;">1920 × 1080 px</div>
-          </button>
-          <button class="orient-btn" id="orient-portrait" onclick="setOrientation('portrait',this)">
-            <div style="font-size:28px;margin-bottom:6px;">📱</div>
-            <div style="font-size:14px;font-weight:700;">Вертикальна</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:4px;">1080 × 1920 px</div>
-          </button>
-        </div>
-      </div>
-
       <!-- Тайминг -->
       <div class="card" style="margin-bottom:14px;">
         <div class="sec-title" style="margin-bottom:12px;">⏱ Тайминг</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
           <div class="field">
-            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ТРИВАЛІСТЬ ФОНУ</label>
-            <select class="inp" id="timing-bg" onchange="saveTimings()">
-              <option value="5">5 сек</option>
-              <option value="10" selected>10 сек</option>
-              <option value="15">15 сек</option>
-              <option value="20">20 сек</option>
-              <option value="30">30 сек</option>
-              <option value="60">1 хв</option>
-              <option value="120">2 хв</option>
-            </select>
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ТРИВАЛІСТЬ ФОНУ (сек)</label>
+            <input class="inp" type="number" id="timing-bg" min="1" step="1" value="10" onchange="saveTimings()">
           </div>
           <div class="field">
-            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ПАУЗА МІЖ РЕКЛАМОЮ</label>
-            <select class="inp" id="timing-pause" onchange="saveTimings()">
-              <option value="3">3 сек</option>
-              <option value="5" selected>5 сек</option>
-              <option value="10">10 сек</option>
-              <option value="15">15 сек</option>
-              <option value="30">30 сек</option>
-            </select>
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ПАУЗА МІЖ РЕКЛАМОЮ (сек)</label>
+            <input class="inp" type="number" id="timing-pause" min="1" step="1" value="5" onchange="saveTimings()">
           </div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Відео грає до кінця незалежно від тайминг банера</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Відео грає до кінця незалежно від тайминг банера. Ці значення — типові за замовчуванням; для кожного банера окремо можна задати свою тривалість у вкладці «Банери».</div>
       </div>
 
       <!-- Таблиця розмірів -->
       <div class="card" style="margin-bottom:14px;">
-        <div class="sec-title" style="margin-bottom:12px;">Рекомендовані розміри зображень</div>
-        <div class="size-row"><div class="size-type">🖼 Банер реклами</div><div class="size-val" id="size-banner">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
-        <div class="size-row"><div class="size-type">🎨 Фоновий екран</div><div class="size-val" id="size-bg">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
+        <div class="sec-title" style="margin-bottom:4px;">Рекомендовані розміри зображень</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">При додаванні банера можна одразу завантажити всі варіанти — плеєр сам обере потрібний під конкретний екран.</div>
+        <div class="size-row"><div class="size-type">🖥 Горизонтальний банер/фон</div><div class="size-val">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
+        <div class="size-row"><div class="size-type">📱 Вертикальний банер/фон</div><div class="size-val">1080 × 1920 px</div><div class="size-ratio">9:16</div></div>
         <div class="size-row"><div class="size-type">□ Квадрат (універсальний)</div><div class="size-val">1080 × 1080 px</div><div class="size-ratio">1:1</div></div>
         <div class="size-row"><div class="size-type">📁 Макс. розмір файлу</div><div class="size-val">32 MB</div><div class="size-ratio">JPG/PNG</div></div>
       </div>
@@ -1232,27 +1202,6 @@ function getEmoji(name) {
 }
 
 // ── SETTINGS ──
-let currentOrientation = localStorage.getItem('ads_orientation') || 'landscape';
-
-function setOrientation(orient, btn) {
-  currentOrientation = orient;
-  localStorage.setItem('ads_orientation', orient);
-  document.querySelectorAll('.orient-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-  updateSizes(orient);
-  saveSettingsToFirestore();
-  showToast('✅ Орієнтацію збережено');
-}
-
-function updateSizes(orient) {
-  const bannerSize = orient === 'landscape' ? '1920 × 1080 px' : '1080 × 1920 px';
-  const bgSize = orient === 'landscape' ? '1920 × 1080 px' : '1080 × 1920 px';
-  const el1 = document.getElementById('size-banner');
-  const el2 = document.getElementById('size-bg');
-  if (el1) el1.textContent = bannerSize;
-  if (el2) el2.textContent = bgSize;
-}
-
 window.previewBg = input => {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -1282,7 +1231,7 @@ window.saveBg = async () => {
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'Upload failed');
     const bgUrl = data.url;
-    await saveSettingsToFirestore({ bgUrl, orientation: currentOrientation });
+    await saveSettingsToFirestore({ bgUrl });
     // Show current
     document.getElementById('bg-current').style.display = 'block';
     document.getElementById('bg-current-img').src = bgUrl;
@@ -1291,7 +1240,7 @@ window.saveBg = async () => {
 };
 
 window.removeBg = async () => {
-  await saveSettingsToFirestore({ bgUrl: '', orientation: currentOrientation });
+  await saveSettingsToFirestore({ bgUrl: '' });
   document.getElementById('bg-current').style.display = 'none';
   document.getElementById('bg-preview').style.display = 'none';
   document.getElementById('bg-image').value = '';
@@ -1303,8 +1252,11 @@ window.removeBg = async () => {
 window.saveTimings = async () => {
   const bgTime = parseInt(document.getElementById('timing-bg').value);
   const pauseTime = parseInt(document.getElementById('timing-pause').value);
+  if (!bgTime || bgTime < 1 || !pauseTime || pauseTime < 1) {
+    showToast('⚠️ Введіть коректну кількість секунд (більше 0)');
+    return;
+  }
   await saveSettingsToFirestore({ 
-    orientation: currentOrientation,
     bgTime, pauseTime,
     bgUrl: clientData?.settings?.bgUrl || ''
   });
@@ -1313,22 +1265,13 @@ window.saveTimings = async () => {
 
 async function saveSettingsToFirestore(data) {
   if (!currentUser) return;
-  const settings = data || { orientation: currentOrientation };
+  const settings = data || {};
   await updateDoc(doc(db,'clients',currentUser.uid), { settings });
 }
 
 async function loadSettings() {
   if (!clientData?.settings) return;
   const s = clientData.settings;
-  if (s.orientation) {
-    currentOrientation = s.orientation;
-    updateSizes(s.orientation);
-    const btn = document.getElementById('orient-' + s.orientation);
-    if (btn) {
-      document.querySelectorAll('.orient-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-    }
-  }
   if (s.bgUrl) {
     document.getElementById('bg-current').style.display = 'block';
     document.getElementById('bg-current-img').src = s.bgUrl;
