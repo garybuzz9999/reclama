@@ -86,6 +86,8 @@
     .idle-frame.has-bg .idle-logo,
     .idle-frame.has-bg .idle-zone{display:none;}
     .idle-frame.has-bg .idle-clock{color:rgba(255,255,255,.15);}
+    .idle-frame.has-bg .default-ad-content{display:none;}
+    .default-ad-content{display:flex;flex-direction:column;align-items:center;}
     .currency-board{
       position:absolute;inset:0;display:none;
       flex-direction:column;justify-content:center;align-items:center;
@@ -314,6 +316,9 @@
     <input class="setup-inp" id="setup-match-code"
       placeholder="MATCH-XXXX-XXXX" maxlength="20"
       style="text-transform:uppercase;">
+    <div class="setup-label" style="margin-top:16px;">Філія для курсу валют (необов'язково)</div>
+    <input class="setup-inp" id="setup-branch-name"
+      placeholder="Напр. Київ-Центр">
     <div class="setup-zone-label">Зона показу</div>
     <div class="zone-grid">
       <div class="zone-opt" data-zone="north" onclick="selectZone(this)">⬆️ Північ</div>
@@ -344,6 +349,14 @@
       <div class="idle-logo">Ad<span>Screen</span></div>
       <div class="idle-clock" id="idle-clock">00:00</div>
       <div class="idle-zone" id="idle-zone-label">—</div>
+      <div class="default-ad-content" id="default-ad-content">
+        <div style="font-size:clamp(12px,1.6vw,15px);color:rgba(255,255,255,.55);text-align:center;max-width:80%;margin:10px auto 0;">
+          Ваша реклама на цифрових екранах по всьому місту
+        </div>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://adscreen.online"
+          style="width:clamp(90px,12vw,150px);height:auto;border-radius:10px;border:3px solid rgba(255,255,255,.8);margin-top:14px;">
+        <div style="font-size:clamp(10px,1.3vw,13px);color:rgba(255,255,255,.4);margin-top:8px;">adscreen.online</div>
+      </div>
       <div class="currency-board" id="currency-board">
         <div class="currency-title">ОБМІН ВАЛЮТ</div>
         <div class="currency-date" id="currency-date"></div>
@@ -580,6 +593,9 @@ window.startPlayer = async () => {
     localStorage.setItem('ads_code', code);
     localStorage.setItem('ads_zone', currentZone);
     localStorage.setItem('ads_client_id', currentClientId);
+    const branchName = document.getElementById('setup-branch-name').value.trim();
+    if (branchName) localStorage.setItem('ads_branch_name', branchName);
+    else localStorage.removeItem('ads_branch_name');
     if (matchCode) localStorage.setItem('ads_match_code', matchCode);
     else localStorage.removeItem('ads_match_code');
     showScreen('player');
@@ -684,20 +700,27 @@ async function loadClientSettings(code) {
       err  => showDebug('⚠ settings: ' + err.code + ' ' + err.message)
     );
 
-    // Завантажуємо курс валют
+    // Завантажуємо курс валют — саме тієї філії, яку вказали на цьому екрані
     try {
-      const curSnap = await getDoc(doc(db,'currency',clientId));
-      if (curSnap.exists()) {
-        const cur = curSnap.data();
-        if (cur.active) renderCurrencyBoard(cur);
-        // Слухаємо зміни курсу в реальному часі
-        onSnapshot(doc(db,'currency',clientId), snap => {
-          if (snap.exists()) {
-            const d = snap.data();
-            if (d.active) renderCurrencyBoard(d);
-            else hideCurrencyBoard();
-          }
-        }, err => showDebug('⚠ currency: ' + err.code + ' ' + err.message));
+      const branchName = localStorage.getItem('ads_branch_name');
+      if (branchName) {
+        const branchQ = query(collection(db,'currency',clientId,'branches'), where('name','==',branchName));
+        const branchSnap = await getDocs(branchQ);
+        if (!branchSnap.empty) {
+          const branchDoc = branchSnap.docs[0];
+          const cur = branchDoc.data();
+          if (cur.active) renderCurrencyBoard(cur);
+          // Слухаємо зміни курсу цієї філії в реальному часі
+          onSnapshot(doc(db,'currency',clientId,'branches',branchDoc.id), snap => {
+            if (snap.exists()) {
+              const d = snap.data();
+              if (d.active) renderCurrencyBoard(d);
+              else hideCurrencyBoard();
+            }
+          }, err => showDebug('⚠ currency: ' + err.code + ' ' + err.message));
+        } else {
+          showDebug('⚠ Філію "' + branchName + '" не знайдено');
+        }
       }
     } catch(e) { showDebug('⚠ currency: ' + (e.code||e.message)); }
   } catch(e) {
@@ -1136,6 +1159,8 @@ if (savedCode) {
   currentClientId = savedClientId;
   document.getElementById('setup-code').value = savedCode;
   if (savedMatchOnlyCode) document.getElementById('setup-match-code').value = savedMatchOnlyCode;
+  const savedBranchName = localStorage.getItem('ads_branch_name');
+  if (savedBranchName) document.getElementById('setup-branch-name').value = savedBranchName;
   currentZone = savedZone;
   document.querySelectorAll('.zone-opt').forEach(b=>{
     b.classList.toggle('selected', b.dataset.zone === savedZone);
