@@ -344,6 +344,7 @@
         </div>
       </div>
       <div class="sec-title">Мої пристрої</div>
+      <input class="inp" id="device-search" oninput="filterDevices()" placeholder="🔎 Пошук за назвою, категорією, зоною..." style="margin-bottom:12px;">
       <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
@@ -525,8 +526,15 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     const snap = await getDoc(doc(db, 'clients', user.uid));
     if (snap.exists()) {
+      const data = snap.data();
+      if (data.role && data.role !== 'owner') {
+        await signOut(auth);
+        const names = {advertiser:'Рекламодавця (advertiser.html)', exchange:'Обмінника (exchange.html)'};
+        showErr('login', `Цей акаунт зареєстрований як ${names[data.role]||data.role}. Увійдіть через відповідний кабінет.`);
+        return;
+      }
       currentUser = user;
-      clientData  = { id: user.uid, ...snap.data() };
+      clientData  = { id: user.uid, ...data };
       document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
       const daysLeft = trialDaysLeft(clientData.trialEnd);
       renderTrialUI(daysLeft);
@@ -580,6 +588,7 @@ window.doRegister = async () => {
       name: company, city, email,
       emoji: getEmoji(company),
       status: 'trial',
+      role: 'owner',
       trialEnd: Timestamp.fromDate(trialEnd),
       licenseCount: 1,
       createdAt: serverTimestamp()
@@ -620,11 +629,34 @@ function showScreen(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + n).classList.add('active');
 }
+const CATEGORY_LABELS = {
+  cafe:'☕ Кафе/ресторан', barbershop:'💈 Барбершоп', beauty:'💅 Б\'юті',
+  spa:'🧖 Спа', gym:'🏋️ Спортзал', mall:'🛍️ ТРЦ/магазин', other:'📍 Інше'
+};
+
+let _allDevices = [];
+
 function renderDevices(devices, licenses) {
+  _allDevices = devices;
   const freeLics = licenses.filter(l=>l.status==='free');
   const sel = document.getElementById('act-code');
   sel.innerHTML = '<option value="">— Оберіть код —</option>' +
     freeLics.map(l=>`<option value="${l.id}">${l.code}</option>`).join('');
+  renderDeviceList(devices);
+}
+
+window.filterDevices = () => {
+  const q = document.getElementById('device-search').value.trim().toLowerCase();
+  if (!q) { renderDeviceList(_allDevices); return; }
+  const filtered = _allDevices.filter(d =>
+    (d.name||'').toLowerCase().includes(q) ||
+    (CATEGORY_LABELS[d.category]||'').toLowerCase().includes(q) ||
+    (ZONES[d.zone]||d.zone||'').toLowerCase().includes(q)
+  );
+  renderDeviceList(filtered);
+};
+
+function renderDeviceList(devices) {
   const el = document.getElementById('devices-list');
   if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
   el.innerHTML = devices.map(d=>`
@@ -632,8 +664,9 @@ function renderDevices(devices, licenses) {
       <div class="device-icon">📱</div>
       <div class="device-info">
         <div class="device-name">${d.name}</div>
-        <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}</div>
+        <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.hours ? ' · 🕐 '+d.hours : ''}</div>
       </div>
+      ${d.mapsUrl ? `<a href="${d.mapsUrl}" target="_blank" style="color:var(--blue);font-size:18px;text-decoration:none;margin-right:8px;" title="Google Maps">📍</a>` : ''}
       <span class="zone-chip-blue">${ZONES[d.zone]||d.zone}</span>
       <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
       <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
