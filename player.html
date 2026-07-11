@@ -466,8 +466,11 @@
   window.addEventListener('error', (e) => {
     const el = document.getElementById('debug-msg');
     if (!el) return;
-    if (e.target && e.target !== window && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
-      el.textContent = '💥 Не завантажився файл: ' + (e.target.src || e.target.href || '?');
+    const t = e.target;
+    if (t && t !== window && (t.tagName === 'SCRIPT' || t.tagName === 'LINK')) {
+      el.textContent = '💥 Не завантажився файл: ' + (t.src || t.href || '?');
+    } else if (t && t !== window && (t.tagName === 'IMG' || t.tagName === 'VIDEO' || t.tagName === 'AUDIO')) {
+      el.textContent = `💥 Не завантажився ${t.tagName.toLowerCase()}: ` + (t.src || t.currentSrc || '?');
     } else {
       el.textContent = '💥 JS помилка: ' + (e.message || e.error?.message || 'невідомо') +
         (e.filename ? ` (${e.filename.split('/').pop()}:${e.lineno})` : '');
