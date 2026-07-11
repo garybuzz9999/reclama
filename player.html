@@ -916,18 +916,20 @@ function showIdle() {
 // ── TTS ──
 function speak(text) {
   if (!text || !window.speechSynthesis) return;
-  if (currentUtterance) window.speechSynthesis.cancel();
+  const radio = document.getElementById('radio');
+  if (currentUtterance) {
+    window.speechSynthesis.cancel();
+    radio.volume = 1; // на випадок, якщо скасована фраза не встигла відновити гучність сама
+  }
   const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'uk-UA'; utt.rate = 0.9; utt.pitch = 1; utt.volume = 1;
   const trySpeak = () => {
     const voices = window.speechSynthesis.getVoices();
     const uk = voices.find(v => v.lang.startsWith('uk'));
     if (uk) utt.voice = uk;
-    const radio = document.getElementById('radio');
-    const prev = radio.volume;
     radio.volume = 0.15;
-    utt.onend = () => { currentUtterance = null; radio.volume = prev; };
-    utt.onerror = () => { currentUtterance = null; radio.volume = prev; };
+    utt.onend = () => { currentUtterance = null; radio.volume = 1; };
+    utt.onerror = () => { currentUtterance = null; radio.volume = 1; };
     currentUtterance = utt;
     window.speechSynthesis.speak(utt);
   };
@@ -970,9 +972,16 @@ function showBanner(banner) {
     const radio = document.getElementById('radio');
     const wasPlaying = !radio.paused;
     if (wasPlaying) radio.pause();
+    const resumeRadio = () => {
+      if (!wasPlaying) return;
+      // Радіостанції часто рвуть з'єднання після паузи — просто play()
+      // на старому потоці зависає. Перепідключаємось з нуля.
+      radio.load();
+      radio.play().catch(() => setTimeout(() => radio.play().catch(()=>{}), 1500));
+    };
     video.oncanplay = () => { video.play(); activate(); };
-    video.onerror = () => { if (wasPlaying) radio.play(); scheduleNext(); };
-    video.onended = () => { if (wasPlaying) radio.play(); };
+    video.onerror = () => { resumeRadio(); scheduleNext(); };
+    video.onended = () => { resumeRadio(); };
   } else {
     video.style.display = 'none'; img.style.display = 'block';
     img.src = banner.imageUrl || '';
