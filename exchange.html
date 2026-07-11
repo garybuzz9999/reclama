@@ -257,7 +257,6 @@
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
-    <button class="tab" id="tab-banners" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
     <button class="tab" id="tab-currency" onclick="showTab('currency',this)">💱 Курс</button>
@@ -337,87 +336,6 @@
       <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
-    <!-- BANNERS -->
-    <div class="page" id="page-banners">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="sec-title" style="margin-bottom:0;">Банери</div>
-        <button class="help-btn" onclick="toggleHelp('help-banners')">? Допомога</button>
-      </div>
-      <div class="help-panel" id="help-banners">
-        <div class="help-title">🖼 Як додати рекламний банер</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Назва банера</strong> — для вашої зручності, глядачі її не бачать. Наприклад "Піца -20% Червень"</div></div>
-        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Тривалість</strong> — скільки секунд показується банер. Рекомендуємо <strong>30 сек</strong> — достатньо щоб запам'ятати</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Зони показу</strong> — оберіть райони де хочете показувати рекламу. Якщо ваш заклад на Центрі — обирайте "Центр". "Всі зони" — максимальне охоплення</div></div>
-        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>Зображення</strong> — завантажте фото банера. Рекомендований розмір: <strong>1920×1080 px</strong> (горизонтальний) або <strong>1080×1920 px</strong> (вертикальний). Формат: JPG або PNG до 32MB</div></div>
-        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Текст озвучки</strong> — необов'язково. Введіть текст який буде вимовлятись вголос коли з'явиться банер. Наприклад: "Увага! Піца зі знижкою 20% тільки сьогодні!"</div></div>
-        <div class="help-step"><div class="help-step-num">6</div><div class="help-step-text">Натисніть <strong>Опублікувати</strong> → банер з'явиться на всіх підключених екранах протягом 10 хвилин</div></div>
-        <div class="help-tip">💡 Банер можна <strong>призупинити</strong> (⏸) щоб тимчасово не показувати, або <strong>видалити</strong> (🗑️). Завантажуйте якісні зображення — нечіткі банери відлякують клієнтів</div>
-      </div>
-      <div class="sec-title">Додати банер</div>
-      <div class="card" style="margin-bottom:20px;">
-        <div class="add-banner-form">
-          <div class="form-row">
-            <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%"></div>
-          </div>
-          <div class="form-row">
-            <div class="field"><label>Тривалість реклами (сек)</label>
-              <input class="inp" type="number" id="bn-duration" min="1" step="1" value="30" placeholder="30">
-            </div>
-            <div class="field"><label>Тривалість фону (сек)</label>
-              <input class="inp" type="number" id="bn-bg-duration" min="1" step="1" value="10" placeholder="10">
-            </div>
-          </div>
-          <div class="field">
-            <label>Текст озвучки (необов'язково)</label>
-            <input class="inp" id="bn-voice" placeholder="Увага! Піца зі знижкою 20% тільки сьогодні! Телефонуйте зараз!">
-          </div>
-          <div class="field"><label>Зони показу</label>
-            <div class="zones-picker" id="zones-picker">
-              <button class="zone-btn" data-zone="center" onclick="toggleZone(this)">🏙 Центр</button>
-              <button class="zone-btn" data-zone="north" onclick="toggleZone(this)">⬆️ Північ</button>
-              <button class="zone-btn" data-zone="south" onclick="toggleZone(this)">⬇️ Південь</button>
-              <button class="zone-btn" data-zone="west" onclick="toggleZone(this)">⬅️ Захід</button>
-              <button class="zone-btn" data-zone="east" onclick="toggleZone(this)">➡️ Схід</button>
-              <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
-            </div>
-          </div>
-          <div class="field">
-            <label>Конкретні пристрої (необов'язково)</label>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Якщо обрати один чи кілька пристроїв — банер покажеться ТІЛЬКИ на них, незалежно від зони вище</div>
-            <div class="zones-picker" id="devices-picker">
-              <div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>
-            </div>
-          </div>
-          <div class="field">
-            <label>Зображення (JPG/PNG)</label>
-            <div style="display:flex;gap:8px;margin-bottom:8px;">
-              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
-                <div style="font-size:10px;color:var(--muted);">Горизонтальний</div>
-                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1920×1080</div>
-              </div>
-              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
-                <div style="font-size:10px;color:var(--muted);">Вертикальний</div>
-                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1920</div>
-              </div>
-              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
-                <div style="font-size:10px;color:var(--muted);">Квадрат</div>
-                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1080</div>
-              </div>
-            </div>
-            <div class="file-drop" id="file-drop">
-              <input type="file" id="bn-image" accept="*/*" onchange="previewImage(this)">
-              <div class="file-drop-icon" id="drop-icon">🖼</div>
-              <div class="file-drop-text" id="drop-text">Фото або відео — <span>оберіть файл</span></div>
-            </div>
-            <img class="file-preview" id="file-preview" src="" alt="">
-          </div>
-
-          <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
-        </div>
-      </div>
-      <div class="sec-title">Мої банери</div>
-      <div id="banners-grid"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
-    </div>
 
     <!-- STATS -->
     <div class="page" id="page-stats">
@@ -646,8 +564,15 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     const snap = await getDoc(doc(db, 'clients', user.uid));
     if (snap.exists()) {
+      const data = snap.data();
+      if (data.role && data.role !== 'exchange') {
+        await signOut(auth);
+        const names = {advertiser:'Рекламодавця (advertiser.html)', owner:'Власника екрана (owner.html)'};
+        showErr('login', `Цей акаунт зареєстрований як ${names[data.role]||data.role}. Увійдіть через відповідний кабінет.`);
+        return;
+      }
       currentUser = user;
-      clientData  = { id: user.uid, ...snap.data() };
+      clientData  = { id: user.uid, ...data };
       document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
       const daysLeft = trialDaysLeft(clientData.trialEnd);
       renderTrialUI(daysLeft);
@@ -701,6 +626,7 @@ window.doRegister = async () => {
       name: company, city, email,
       emoji: getEmoji(company),
       status: 'trial',
+      role: 'exchange',
       trialEnd: Timestamp.fromDate(trialEnd),
       licenseCount: 1,
       createdAt: serverTimestamp()
@@ -932,8 +858,6 @@ async function loadAll() {
   renderActiveBanners(active);
   renderDevices(devices, licenses);
   populateBranchSelect();
-  renderDevicePicker(devices);
-  renderBanners(banners);
 }
 
 let _allLicenses = [];
@@ -1090,184 +1014,6 @@ window.removeDevice = async (deviceId, licenseId) => {
   await deleteDoc(doc(db,'devices',deviceId));
   if (licenseId) await updateDoc(doc(db,'licenses',licenseId),{status:'free'});
   showToast('🗑️ Пристрій деактивовано');
-  loadAll();
-};
-
-// ── BANNERS ──
-window.toggleZone = btn => {
-  const zone = btn.dataset.zone;
-  if (zone==='all') {
-    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
-    btn.classList.add('selected');
-  } else {
-    document.querySelector('[data-zone="all"]').classList.remove('selected');
-    btn.classList.toggle('selected');
-    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b=>b.classList.contains('selected'));
-    if (!any) document.querySelector('[data-zone="all"]').classList.add('selected');
-  }
-};
-
-function getSelectedZones() {
-  if (document.querySelector('[data-zone="all"]').classList.contains('selected')) return ['all'];
-  return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
-}
-
-function getSelectedDevices() {
-  return [...document.querySelectorAll('.device-btn.selected')].map(b=>b.dataset.code);
-}
-
-window.toggleDevice = (btn) => {
-  btn.classList.toggle('selected');
-};
-
-function renderDevicePicker(devices) {
-  const el = document.getElementById('devices-picker');
-  if (!devices.length) {
-    el.innerHTML = '<div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>';
-    return;
-  }
-  el.innerHTML = devices.map(d=>`
-    <button class="zone-btn device-btn" data-code="${d.code}" onclick="toggleDevice(this)">📱 ${d.name}</button>
-  `).join('');
-}
-
-window.previewImage = input => {
-  const file = input.files[0]; if (!file) return;
-  document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
-  document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
-  const reader = new FileReader();
-  reader.onload = e => {
-    const p = document.getElementById('file-preview');
-    p.src = e.target.result; p.style.display='block';
-  };
-  reader.readAsDataURL(file);
-};
-
-const dropZone = document.getElementById('file-drop');
-dropZone.addEventListener('dragover', e=>{e.preventDefault();dropZone.classList.add('over');});
-dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('over'));
-dropZone.addEventListener('drop', e=>{
-  e.preventDefault(); dropZone.classList.remove('over');
-  const file = e.dataTransfer.files[0];
-  if (file&&file.type.startsWith('image/')) {
-    const dt=new DataTransfer(); dt.items.add(file);
-    document.getElementById('bn-image').files=dt.files;
-    window.previewImage(document.getElementById('bn-image'));
-  }
-});
-
-window.addBanner = async () => {
-  const title    = document.getElementById('bn-title').value.trim();
-  const duration = parseInt(document.getElementById('bn-duration').value);
-  const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
-  const zones    = getSelectedZones();
-  const deviceCodes = getSelectedDevices();
-  const imageFile = document.getElementById('bn-image').files[0];
-  if (!title) { 
-    document.getElementById('bn-title').style.borderColor = 'var(--red)';
-    document.getElementById('bn-title').focus();
-    showToast('⚠️ Введіть назву банера!'); 
-    return; 
-  }
-  document.getElementById('bn-title').style.borderColor = '';
-  if (!duration || duration < 1) {
-    document.getElementById('bn-duration').style.borderColor = 'var(--red)';
-    showToast('⚠️ Введіть тривалість реклами (сек)!');
-    return;
-  }
-  document.getElementById('bn-duration').style.borderColor = '';
-  if (!bgDuration || bgDuration < 1) {
-    document.getElementById('bn-bg-duration').style.borderColor = 'var(--red)';
-    showToast('⚠️ Введіть тривалість фону (сек)!');
-    return;
-  }
-  document.getElementById('bn-bg-duration').style.borderColor = '';
-  if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
-  showToast('⏳ Збереження...');
-  try {
-    let imageUrl = '';
-    let storagePath = null;
-    let isVideo = false;
-
-    if (imageFile) {
-      isVideo = imageFile.type.startsWith('video/');
-      if (isVideo && imageFile.size > 200 * 1024 * 1024) {
-        showToast('⚠️ Відео занадто велике. Максимум 200MB');
-        return;
-      }
-      // Завантажуємо через Worker
-      const idToken = await currentUser.getIdToken();
-      const formData = new FormData();
-      formData.append('file', imageFile);
-      formData.append('folder', 'banners');
-      const res = await fetch(`${WORKER_URL}/upload`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${idToken}` },
-        body: formData
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || 'Upload failed');
-      imageUrl = data.url;
-      storagePath = data.key || null;
-    }
-
-    const voiceText = document.getElementById('bn-voice').value.trim();
-    await addDoc(collection(db,'banners'),{
-      clientId:currentUser.uid, title, duration, bgDuration, zones, deviceCodes,
-      imageUrl, storagePath,
-      type: isVideo ? 'video' : 'image',
-      voiceText: voiceText || '',
-      status:'active', shows:0, qrScans:0,
-      createdAt:serverTimestamp()
-    });
-    document.getElementById('bn-title').value='';
-    document.getElementById('bn-image').value='';
-
-    document.getElementById('bn-voice').value='';
-    const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
-    document.getElementById('drop-icon').textContent='🖼';
-    document.getElementById('drop-text').innerHTML='Перетягніть або <span>оберіть файл</span>';
-    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
-    document.querySelector('[data-zone="all"]').classList.add('selected');
-    showToast('✅ Банер опубліковано!');
-    loadAll();
-  } catch(e) { showToast('❌ '+e.message); }
-};
-
-function renderBanners(banners) {
-  const el = document.getElementById('banners-grid');
-  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
-  el.innerHTML=`<div class="banner-grid">${banners.map(b=>`
-    <div class="banner-card">
-      ${b.imageUrl ? (b.type==='video' ? `<video class="banner-img" src="${b.imageUrl}" muted autoplay loop></video>` : `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`) : '<div class="banner-img-ph">🖼</div>'}
-      <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
-      <div class="banner-info">
-        <div class="banner-title">${b.title}</div>
-        <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
-        ${(b.deviceCodes && b.deviceCodes.length) ? `<div class="banner-zones">${b.deviceCodes.map(c=>`<span class="zone-chip" style="background:var(--accent-dim);color:var(--accent);">📱 ${c}</span>`).join('')}</div>` : ''}
-        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів · ${b.qrScans||0} QR</div>
-        <div class="banner-actions">
-          <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
-            ${b.status==='active'?'⏸ Пауза':'▶️ Старт'}
-          </button>
-          <button class="btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️ Видалити</button>
-        </div>
-      </div>
-    </div>`).join('')}</div>`;
-}
-
-window.toggleBanner = async (id,current) => {
-  const s = current==='active'?'paused':'active';
-  await updateDoc(doc(db,'banners',id),{status:s});
-  showToast(s==='active'?'▶️ Активовано':'⏸ Призупинено');
-  loadAll();
-};
-
-window.deleteBanner = async (id,storagePath) => {
-  if (!confirm('Видалити банер?')) return;
-  await deleteDoc(doc(db,'banners',id));
-  if (storagePath) try { await deleteObject(ref(storage,storagePath)); } catch(e){}
-  showToast('🗑️ Видалено');
   loadAll();
 };
 
