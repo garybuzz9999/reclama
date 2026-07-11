@@ -415,8 +415,18 @@
     🔊 Тапніть, щоб увімкнути звук
   </button>
 
+  <!-- Бігуча стрічка: без геолокації покази не рахуються -->
+  <div id="geo-ticker" style="display:none;position:fixed;bottom:0;left:0;right:0;
+    background:rgba(178,0,0,.92);color:#fff;font-size:14px;font-weight:700;
+    padding:8px 0;z-index:9997;overflow:hidden;white-space:nowrap;">
+    <div style="display:inline-block;padding-left:100%;animation:geo-scroll 18s linear infinite;">
+      ⚠ УВІМКНІТЬ ГЕОЛОКАЦІЮ В БРАУЗЕРІ — без цього покази реклами не рахуються і не оплачуються ⚠ УВІМКНІТЬ ГЕОЛОКАЦІЮ В БРАУЗЕРІ — без цього покази реклами не рахуються і не оплачуються
+    </div>
+  </div>
+  <style>@keyframes geo-scroll{0%{transform:translateX(0);}100%{transform:translateX(-100%);}}</style>
+
   <!-- Debug: показує помилки завантаження налаштувань/курсу прямо на екрані -->
-  <div id="debug-msg" style="position:fixed;bottom:4px;left:4px;font-size:10px;line-height:1.3;
+  <div id="debug-msg" style="position:fixed;bottom:40px;left:4px;font-size:10px;line-height:1.3;
     color:rgba(255,90,90,.65);z-index:9998;max-width:92vw;pointer-events:none;
     font-family:monospace;white-space:pre-wrap;"></div>
 
@@ -504,7 +514,7 @@
 </script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, getDocs, collection, query, where, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, getDocs, collection, query, where, updateDoc, doc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 document.getElementById('debug-msg').textContent = '✅ Firebase завантажено';
 
@@ -632,6 +642,88 @@ async function initPlayer(zone) {
   setInterval(() => loadBanners(zone), RELOAD_INTERVAL);
   const savedMatchCode = localStorage.getItem('ads_match_code');
   if (savedMatchCode) subscribeMatch(savedMatchCode);
+  checkGeolocationDaily();
+}
+
+// ── ГЕОЛОКАЦІЯ ──
+// Без підтвердженої сьогодні геолокації покази НЕ рахуються (немає доказу — немає оплати).
+// Час перевірки — випадковий на кожен день, щоб його не можна було "підловити" й одразу вимкнути.
+let geoConfirmedToday = false;
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+function getOrPickTodayGeoTime() {
+  const key = 'ads_geo_time_' + todayKey();
+  let t = localStorage.getItem(key);
+  if (!t) {
+    // Випадкова хвилина в межах доби (0–1439), стабільна на весь день
+    t = String(Math.floor(Math.random() * 24 * 60));
+    localStorage.setItem(key, t);
+  }
+  return parseInt(t); // хвилин від півночі
+}
+
+function checkGeolocationDaily() {
+  const myCode = localStorage.getItem('ads_code');
+  if (!myCode || !navigator.geolocation) { geoConfirmedToday = false; updateGeoTicker(); return; }
+
+  const confirmedKey = 'ads_geo_confirmed_' + todayKey();
+  if (localStorage.getItem(confirmedKey)) {
+    geoConfirmedToday = true;
+    updateGeoTicker();
+    return;
+  }
+
+  geoConfirmedToday = false;
+  updateGeoTicker();
+
+  const targetMinute = getOrPickTodayGeoTime();
+  const now = new Date();
+  const nowMinute = now.getHours() * 60 + now.getMinutes();
+
+  const tryNow = () => {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const devSnap = await getDocs(query(collection(db,'devices'), where('code','==',myCode)));
+          if (!devSnap.empty) {
+            await updateDoc(doc(db,'devices',devSnap.docs[0].id), {
+              lastGeoLat: pos.coords.latitude,
+              lastGeoLng: pos.coords.longitude,
+              lastGeoAt: serverTimestamp(),
+              lastGeoAccuracy: pos.coords.accuracy
+            });
+          }
+          localStorage.setItem(confirmedKey, '1');
+          geoConfirmedToday = true;
+          updateGeoTicker();
+        } catch(e) { showDebug('⚠ geo: ' + (e.code||e.message)); }
+      },
+      (err) => {
+        // Немає дозволу — покази не рахуються, тікер лишається, спробуємо ще раз за годину
+        geoConfirmedToday = false;
+        updateGeoTicker();
+        setTimeout(checkGeolocationDaily, 60 * 60 * 1000);
+      },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 0 }
+    );
+  };
+
+  if (nowMinute >= targetMinute) {
+    tryNow();
+  } else {
+    // Чекаємо до випадкової хвилини сьогодні
+    setTimeout(tryNow, (targetMinute - nowMinute) * 60 * 1000);
+  }
+}
+
+function updateGeoTicker() {
+  const el = document.getElementById('geo-ticker');
+  if (!el) return;
+  el.style.display = geoConfirmedToday ? 'none' : 'block';
 }
 
 async function loadBanners(zone) {
@@ -639,12 +731,21 @@ async function loadBanners(zone) {
     const clientId = currentClientId || localStorage.getItem('ads_client_id') || '';
     if (!clientId) { banners = []; showDebug('⚠ Немає clientId — реклама не завантажена'); return; }
     const myCode = localStorage.getItem('ads_code') || '';
+
+    // Дізнаємось власну категорію закладу (якщо цей пристрій — власник екрана з категорією)
+    let myCategory = null;
+    try {
+      const devSnap = await getDocs(query(collection(db,'devices'), where('code','==',myCode)));
+      if (!devSnap.empty) myCategory = devSnap.docs[0].data().category || null;
+    } catch(e) {}
+
+    // 1) Банери власного акаунту
     const q = query(collection(db,'banners'),
       where('status','==','active'),
       where('clientId','==',clientId)
     );
     const snap = await getDocs(q);
-    banners = snap.docs.map(d=>({id:d.id,...d.data()}))
+    let ownBanners = snap.docs.map(d=>({id:d.id,...d.data()}))
       .filter(b => !b.timeoutOnly)
       .filter(b => {
         // Якщо банер прив'язаний до конкретних пристроїв — показуємо лише на них,
@@ -654,6 +755,24 @@ async function loadBanners(zone) {
         }
         return b.zones && (b.zones.includes('all') || b.zones.includes(zone));
       });
+
+    // 2) Банери БУДЬ-ЯКИХ рекламодавців, що таргетують саме нашу категорію закладу
+    let categoryBanners = [];
+    if (myCategory) {
+      try {
+        const catQ = query(collection(db,'banners'),
+          where('status','==','active'),
+          where('categories','array-contains',myCategory)
+        );
+        const catSnap = await getDocs(catQ);
+        categoryBanners = catSnap.docs.map(d=>({id:d.id,...d.data()})).filter(b => !b.timeoutOnly);
+      } catch(e) {}
+    }
+
+    // Об'єднуємо, уникаючи дублів (якщо раптом банер і свій, і категорійний одночасно)
+    const seen = new Set(ownBanners.map(b=>b.id));
+    banners = [...ownBanners, ...categoryBanners.filter(b => !seen.has(b.id))];
+
     showDebug(`ID: ${clientId.slice(0,8)}… | Банерів: ${banners.length}`);
   } catch(e) { banners = []; showDebug('⚠ banners: ' + (e.code||e.message)); }
 }
@@ -922,6 +1041,7 @@ window.resetPlayer = () => {
   localStorage.removeItem('ads_client_id');
   localStorage.removeItem('ads_pin');
   localStorage.removeItem('ads_match_code');
+  localStorage.removeItem('ads_geo_last_check');
   currentClientId = '';
   location.reload();
 };
@@ -1012,7 +1132,7 @@ function showBanner(banner) {
       progress.style.transition = `width ${dur}ms linear`;
       progress.style.width = '100%';
     }));
-    try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){}
+    if (geoConfirmedToday) { try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){} }
     if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 800);
     bannerTimeout = setTimeout(() => {
       window.speechSynthesis?.cancel();
@@ -1051,7 +1171,7 @@ function showBanner(banner) {
       video.play();
       document.getElementById('idle-frame').style.opacity = '0';
       frame.classList.add('active');
-      try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){}
+      if (geoConfirmedToday) { try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){} }
       if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 800);
       // Прогрес-бар синхронізуємо з РЕАЛЬНОЮ тривалістю відео, а не з полем "тривалість"
       const realDur = (video.duration && isFinite(video.duration)) ? video.duration * 1000 : dur;
