@@ -659,8 +659,9 @@ function getOrPickTodayGeoTime() {
   const key = 'ads_geo_time_' + todayKey();
   let t = localStorage.getItem(key);
   if (!t) {
-    // Випадкова хвилина в межах доби (0–1439), стабільна на весь день
-    t = String(Math.floor(Math.random() * 24 * 60));
+    // Випадкова хвилина між 10:00 (600) і 16:00 (960) — у ці години заклад точно працює
+    const WINDOW_START = 10 * 60, WINDOW_END = 16 * 60;
+    t = String(WINDOW_START + Math.floor(Math.random() * (WINDOW_END - WINDOW_START)));
     localStorage.setItem(key, t);
   }
   return parseInt(t); // хвилин від півночі
