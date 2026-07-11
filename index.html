@@ -1,143 +1,894 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AdScreen — Вхід</title>
-<style>
-  :root{
-    --bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;
-    --border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;
-    --accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);
-    --text:#f0f0f0;--muted:#888;--hint:#555;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
-    background:var(--bg);color:var(--text);min-height:100dvh;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    padding:32px 20px;
-  }
-  .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:center;}
-  .logo-name{font-size:34px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;text-align:center;}
-  .logo-name span{color:var(--accent);}
-  .subtitle{font-size:14px;color:var(--muted);margin-bottom:36px;text-align:center;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen — Реклама там де клієнт нікуди не дінеться</title>
+  <meta name="description" content="Рекламні монітори для таксі, кафе, спортзалів і клінік. Таргетинг по районах. Підключення за 15 хвилин.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #080808;
+      --surface: #111;
+      --surface2: #181818;
+      --border: #1e1e1e;
+      --accent: #f5c842;
+      --accent2: #ffd95a;
+      --text: #f0f0f0;
+      --muted: #777;
+      --hint: #333;
+      --green: #3ddc84;
+      --red: #ff4d4d;
+      --blue: #4d9fff;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
 
-  .card{
-    background:var(--surface);border:1px solid var(--border);border-radius:18px;
-    padding:28px;width:100%;max-width:420px;
-  }
-  .field-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;margin-bottom:6px;display:block;}
-  .inp{
-    width:100%;background:var(--surface2);border:1px solid var(--border);
-    border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);
-    outline:none;transition:border-color .2s;margin-bottom:22px;
-  }
-  .inp:focus{border-color:var(--accent2);}
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 6vw; height: 58px;
+      background: rgba(8,8,8,.9);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 16px; font-weight: 900;
+      color: var(--text); text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex; align-items: center; gap: 24px; list-style: none;
+    }
+    .nav-links a {
+      font-size: 13px; font-weight: 500;
+      color: var(--muted); text-decoration: none; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-divider {
+      width: 1px; height: 20px; background: var(--border); flex-shrink: 0;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px;
+      font-size: 12px; font-weight: 700; color: var(--muted);
+      text-decoration: none; transition: all .2s; white-space: nowrap;
+    }
+    .nav-btn:hover { border-color: var(--accent); color: var(--accent) !important; }
+    .nav-btn.admin { border-color: rgba(245,200,66,.2); color: var(--accent) !important; }
+    .nav-btn.screen { border-color: rgba(61,220,132,.2); color: var(--green) !important; }
+    .nav-btn.screen:hover { border-color: var(--green); }
+    .nav-burger {
+      display: none; background: none; border: none;
+      color: var(--text); font-size: 22px; cursor: pointer;
+    }
 
-  .role-title{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.05em;margin-bottom:12px;}
-  .role-grid{display:flex;flex-direction:column;gap:10px;}
-  .role-btn{
-    display:flex;align-items:center;gap:14px;
-    background:var(--surface2);border:1.5px solid var(--border);
-    border-radius:12px;padding:14px 16px;cursor:pointer;
-    text-decoration:none;color:var(--text);transition:all .15s;
-  }
-  .role-btn:hover{border-color:var(--accent);background:var(--accent-dim);}
-  .role-icon{font-size:24px;flex-shrink:0;width:32px;text-align:center;}
-  .role-text{display:flex;flex-direction:column;gap:2px;}
-  .role-name{font-size:15px;font-weight:700;}
-  .role-desc{font-size:12px;color:var(--muted);}
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 100px 6vw 60px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(245,200,66,.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(245,200,66,.06);
+      border: 1px solid rgba(245,200,66,.15);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 11px; font-weight: 700;
+      letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 32px;
+    }
+    .hero-eyebrow::before {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: var(--accent);
+      animation: blink 2s infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; } 50% { opacity: .3; }
+    }
+    .hero h1 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(28px, 5.5vw, 64px);
+      font-weight: 900; line-height: 1.06;
+      letter-spacing: -2px; margin-bottom: 20px;
+      max-width: 860px;
+    }
+    .hero h1 em {
+      font-style: normal; color: var(--accent);
+    }
+    .hero-sub {
+      font-size: clamp(14px, 1.8vw, 17px);
+      color: var(--muted); max-width: 520px;
+      line-height: 1.7; margin-bottom: 48px;
+    }
 
-  .divider{
-    border:none;border-top:1px solid var(--border);margin:22px 0;
-    position:relative;
-  }
-  .divider-label{
-    position:absolute;top:-9px;left:50%;transform:translateX(-50%);
-    background:var(--surface);padding:0 10px;font-size:11px;color:var(--hint);
-    text-transform:uppercase;letter-spacing:.05em;
-  }
+    /* ── MOCKUP ── */
+    .hero-mockup {
+      width: 100%; max-width: 680px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,.7);
+      margin-bottom: 60px;
+    }
+    .mockup-bar {
+      background: #0a0a0a; padding: 10px 14px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .mockup-dots { display: flex; gap: 5px; }
+    .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .mockup-dot:nth-child(1) { background: #ff5f57; }
+    .mockup-dot:nth-child(2) { background: #febc2e; }
+    .mockup-dot:nth-child(3) { background: #28c840; }
+    .mockup-url {
+      flex: 1; background: var(--surface2);
+      border-radius: 5px; padding: 4px 10px;
+      font-size: 11px; color: var(--hint); font-family: monospace;
+    }
+    .mockup-live {
+      font-size: 9px; font-weight: 700; color: var(--green);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .mockup-live::before {
+      content: ''; width: 5px; height: 5px;
+      border-radius: 50%; background: var(--green);
+      animation: blink 1.5s infinite;
+    }
+    .mockup-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .mockup-stat {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 12px;
+    }
+    .mockup-stat-label {
+      font-size: 9px; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--hint); margin-bottom: 5px;
+    }
+    .mockup-stat-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 20px; font-weight: 900; color: var(--accent);
+    }
+    .mockup-banner {
+      grid-column: 1/-1;
+      background: linear-gradient(90deg, rgba(245,200,66,.1), rgba(245,200,66,.03));
+      border: 1px solid rgba(245,200,66,.15);
+      border-radius: 8px; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .mockup-banner-title { font-size: 12px; font-weight: 600; color: var(--accent); }
+    .mockup-banner-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .mockup-badge {
+      background: rgba(61,220,132,.1); border: 1px solid rgba(61,220,132,.2);
+      border-radius: 20px; padding: 3px 8px;
+      font-size: 9px; font-weight: 700; color: var(--green);
+    }
 
-  .service-row{display:flex;gap:10px;}
-  .service-btn{
-    flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
-    background:var(--surface2);border:1.5px solid var(--border);
-    border-radius:12px;padding:14px 8px;cursor:pointer;
-    text-decoration:none;color:var(--muted);font-size:12px;font-weight:700;
-    transition:all .15s;
-  }
-  .service-btn:hover{border-color:var(--accent);color:var(--text);}
-  .service-icon{font-size:20px;}
-</style>
+    /* ── SECTION ── */
+    section { padding: 80px 6vw; }
+    .sec-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
+    }
+    .sec-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(22px, 3.5vw, 38px);
+      font-weight: 900; letter-spacing: -1px;
+      line-height: 1.1; margin-bottom: 14px;
+    }
+    .sec-sub {
+      font-size: 15px; color: var(--muted);
+      line-height: 1.7; max-width: 500px;
+    }
+    .sec-center { text-align: center; }
+    .sec-center .sec-sub { margin: 0 auto; }
+
+    /* ── HOW ── */
+    #how { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .how-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 1px; margin-top: 48px;
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .how-step {
+      background: var(--bg); padding: 28px 24px;
+      border-right: 1px solid var(--border); transition: background .2s;
+    }
+    .how-step:last-child { border-right: none; }
+    .how-step:hover { background: var(--surface2); }
+    .how-num {
+      font-size: 10px; font-weight: 900; color: var(--accent);
+      letter-spacing: 2px; margin-bottom: 14px;
+    }
+    .how-icon { font-size: 28px; margin-bottom: 12px; }
+    .how-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .how-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── MARKETS ── */
+    .markets-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px,1fr));
+      gap: 8px; margin-top: 48px;
+    }
+    .market-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 16px; text-align: center;
+      transition: all .2s; cursor: default;
+    }
+    .market-card:hover {
+      border-color: rgba(245,200,66,.3);
+      transform: translateY(-2px);
+    }
+    .market-icon { font-size: 32px; margin-bottom: 10px; }
+    .market-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .market-time { font-size: 10px; color: var(--muted); }
+    .market-pill {
+      display: inline-block; margin-top: 7px;
+      font-size: 9px; font-weight: 700; padding: 2px 7px;
+      border-radius: 20px; background: rgba(245,200,66,.08);
+      color: var(--accent); border: 1px solid rgba(245,200,66,.15);
+    }
+
+    /* ── ZONES ── */
+    #zones { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .zones-wrap {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 60px; align-items: center; margin-top: 48px;
+    }
+    .zone-map {
+      aspect-ratio: 1; max-width: 320px; margin: 0 auto;
+      position: relative;
+    }
+    .zone-circle {
+      width: 100%; height: 100%; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      position: relative; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .zone-h { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--border); }
+    .zone-v { position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--border); }
+    .zone-center {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(245,200,66,.1); border: 2px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: .5px; z-index: 2;
+    }
+    .zone-lbl {
+      position: absolute; font-size: 10px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 1px;
+    }
+    .zone-lbl.n { top: 10%; left: 50%; transform: translateX(-50%); }
+    .zone-lbl.s { bottom: 10%; left: 50%; transform: translateX(-50%); }
+    .zone-lbl.w { left: 6%; top: 50%; transform: translateY(-50%); }
+    .zone-lbl.e { right: 6%; top: 50%; transform: translateY(-50%); }
+    .zones-list { list-style: none; }
+    .zones-list li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 14px 0; border-bottom: 1px solid var(--border);
+    }
+    .zones-list li:last-child { border-bottom: none; }
+    .zones-list-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+    .zones-list-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+    .zones-list-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+      gap: 10px; margin-top: 48px;
+    }
+    .pricing-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 26px; position: relative;
+      transition: border-color .2s;
+    }
+    .pricing-card:hover { border-color: rgba(245,200,66,.3); }
+    .pricing-card.featured {
+      background: rgba(245,200,66,.03);
+      border-color: rgba(245,200,66,.25);
+    }
+    .pricing-badge {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #000;
+      font-size: 9px; font-weight: 800; letter-spacing: 1px;
+      text-transform: uppercase; padding: 3px 10px; border-radius: 20px;
+      white-space: nowrap;
+    }
+    .pricing-name {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px; font-weight: 900;
+      letter-spacing: 1px; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .pricing-price {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 32px; font-weight: 900;
+      letter-spacing: -1px; color: var(--text); margin-bottom: 3px;
+    }
+    .pricing-price span { font-size: 14px; color: var(--muted); font-weight: 400; }
+    .pricing-desc { font-size: 11px; color: var(--muted); margin-bottom: 20px; }
+    .pricing-features { list-style: none; margin-bottom: 24px; }
+    .pricing-features li {
+      display: flex; gap: 8px; align-items: flex-start;
+      font-size: 12px; padding: 6px 0;
+      border-bottom: 1px solid var(--border); color: var(--text);
+    }
+    .pricing-features li:last-child { border-bottom: none; }
+    .pricing-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .pricing-features li.no { color: var(--hint); }
+    .pricing-features li.no::before { content: '—'; color: var(--hint); }
+    .btn-pricing {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 11px; font-size: 13px; font-weight: 700;
+      color: var(--text); cursor: pointer; text-align: center;
+      text-decoration: none; display: block; transition: all .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .btn-pricing:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-pricing.featured { background: var(--accent); border-color: var(--accent); color: #000; }
+    .btn-pricing.featured:hover { background: var(--accent2); }
+
+    /* ── STATS ── */
+    #stats { }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 1px; margin-top: 48px;
+      border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .stat-block {
+      background: var(--surface); padding: 28px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-block:last-child { border-right: none; }
+    .stat-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 36px; font-weight: 900;
+      letter-spacing: -2px; color: var(--accent); margin-bottom: 6px;
+    }
+    .stat-lbl { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+    /* ── LOGIN SECTION ── */
+    #login-section {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .login-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 12px; margin-top: 48px;
+    }
+    .login-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      text-align: center; transition: all .25s;
+      text-decoration: none; color: var(--text);
+      display: block;
+    }
+    .login-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-3px);
+      background: rgba(245,200,66,.03);
+    }
+    .login-card-icon {
+      font-size: 40px; margin-bottom: 14px;
+      display: block;
+    }
+    .login-card-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 14px; font-weight: 900;
+      margin-bottom: 6px; letter-spacing: -.3px;
+    }
+    .login-card-desc {
+      font-size: 12px; color: var(--muted);
+      line-height: 1.6; margin-bottom: 18px;
+    }
+    .login-card-btn {
+      display: inline-block;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 20px;
+      font-size: 12px; font-weight: 700; color: var(--text);
+      transition: all .2s;
+    }
+    .login-card:hover .login-card-btn {
+      background: var(--accent); border-color: var(--accent); color: #000;
+    }
+    .login-card.super .login-card-icon { filter: grayscale(0); }
+    .login-card.player .login-card-btn {
+      background: rgba(61,220,132,.08);
+      border-color: rgba(61,220,132,.2); color: var(--green);
+    }
+    .login-card.player:hover .login-card-btn {
+      background: var(--green); border-color: var(--green); color: #000;
+    }
+    .login-card.sport .login-card-btn {
+      background: rgba(77,159,255,.08);
+      border-color: rgba(77,159,255,.2); color: var(--blue);
+    }
+    .login-card.sport:hover .login-card-btn {
+      background: var(--blue); border-color: var(--blue); color: #000;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #050505; border-top: 1px solid var(--border);
+      padding: 32px 6vw;
+      display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
+    }
+    .footer-logo {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 14px; font-weight: 900;
+      color: var(--text); text-decoration: none;
+    }
+    .footer-logo span { color: var(--accent); }
+    .footer-links {
+      display: flex; gap: 20px; list-style: none;
+    }
+    .footer-links a {
+      font-size: 11px; color: var(--hint);
+      text-decoration: none; transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--muted); }
+    .footer-copy { font-size: 11px; color: var(--hint); }
+
+    /* ── MANUAL ── */
+    #manual { background: #050505; border-top: 1px solid var(--border); }
+    .manual-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 32px; margin-top: 48px;
+    }
+    .manual-section { }
+    .manual-section-icon { font-size: 24px; margin-bottom: 8px; }
+    .manual-section-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px; font-weight: 900;
+      color: var(--text); margin-bottom: 14px;
+      letter-spacing: -.3px;
+    }
+    .manual-step {
+      display: flex; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .manual-step:last-child { border-bottom: none; }
+    .manual-step-num {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--hint); color: var(--bg);
+      font-size: 10px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .manual-step-text { color: var(--muted); line-height: 1.5; }
+    .manual-step-text strong { color: var(--text); }
+    .manual-tip {
+      margin-top: 10px; padding: 10px; border-radius: 8px;
+      background: rgba(245,200,66,.04);
+      border: 1px solid rgba(245,200,66,.1);
+      font-size: 11px; color: var(--accent); line-height: 1.5;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 58px; left: 0; right: 0;
+        background: var(--surface); border-bottom: 1px solid var(--border);
+        padding: 20px; gap: 12px; z-index: 99;
+      }
+      .nav-links.open .nav-divider { display: none; }
+      .nav-burger { display: block; }
+      .zones-wrap { grid-template-columns: 1fr; }
+      .zone-map { max-width: 240px; }
+      .how-step { border-right: none; border-bottom: 1px solid var(--border); }
+      .how-step:last-child { border-bottom: none; }
+      footer { flex-direction: column; text-align: center; }
+      .stat-block { border-right: none; border-bottom: 1px solid var(--border); }
+      .stat-block:last-child { border-bottom: none; }
+    }
+  </style>
 </head>
 <body>
 
-  <div class="logo-mark">Платформа цифрової реклами</div>
-  <div class="logo-name">Ad<span>Screen</span></div>
-  <div class="subtitle">Оберіть, як ви користуєтесь AdScreen</div>
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Ad<span>Screen</span></a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#how">Як працює</a></li>
+    <li><a href="#pricing">Тарифи</a></li>
+    <li class="nav-divider"></li>
+    <li><a href="admin.html" class="nav-btn admin">👑 Адмін</a></li>
+    <li><a href="client.html" class="nav-btn">🏢 Кабінет</a></li>
+    <li><a href="player.html" class="nav-btn screen">📺 Екран</a></li>
+    <li><a href="scoreboard.html" class="nav-btn" style="border-color:rgba(77,159,255,.2);color:var(--blue);">⚽ Табло</a></li>
+  </ul>
+  <button class="nav-burger" onclick="document.getElementById('nav-links').classList.toggle('open')">☰</button>
+</nav>
 
-  <div class="card">
-    <label class="field-label">Email</label>
-    <input class="inp" type="email" id="entry-email" placeholder="you@example.com">
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Captive Audience Advertising</div>
+  <h1>Реклама там де клієнт <em>нікуди не дінеться</em></h1>
+  <p class="hero-sub">Планшет у таксі, екран у спортзалі, монітор у кав'ярні — ваш банер побачать від початку до кінця. З озвучкою. З таргетингом по районах.</p>
 
-    <div class="role-title">Я хочу...</div>
-    <div class="role-grid">
-      <a class="role-btn" href="client.html?role=advertiser">
-        <div class="role-icon">📢</div>
-        <div class="role-text">
-          <div class="role-name">Рекламодавець</div>
-          <div class="role-desc">Запускати рекламу на екранах</div>
-        </div>
-      </a>
-      <a class="role-btn" href="client.html?role=owner">
-        <div class="role-icon">🏢</div>
-        <div class="role-text">
-          <div class="role-name">Власник екрана</div>
-          <div class="role-desc">Показувати рекламу у своєму закладі</div>
-        </div>
-      </a>
-      <a class="role-btn" href="client.html?role=exchange">
-        <div class="role-icon">💱</div>
-        <div class="role-text">
-          <div class="role-name">Обмінник</div>
-          <div class="role-desc">Табло курсу валют + реклама</div>
-        </div>
-      </a>
-      <a class="role-btn" href="scoreboard.html">
-        <div class="role-icon">⚽</div>
-        <div class="role-text">
-          <div class="role-name">Табло</div>
-          <div class="role-desc">Безкоштовне табло для школи/турніру</div>
-        </div>
-      </a>
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <div class="mockup-dots">
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+        <div class="mockup-dot"></div>
+      </div>
+      <div class="mockup-url">adscreen — кабінет клієнта</div>
+      <div class="mockup-live">Live</div>
     </div>
-
-    <div class="divider"><span class="divider-label">Інше</span></div>
-
-    <div class="service-row">
-      <a class="service-btn" href="player.html">
-        <div class="service-icon">📺</div>
-        Екран
-      </a>
-      <a class="service-btn" href="admin.html">
-        <div class="service-icon">🔐</div>
-        Адмін
-      </a>
+    <div class="mockup-body">
+      <div class="mockup-stat">
+        <div class="mockup-stat-label">Пристрої</div>
+        <div class="mockup-stat-val">12</div>
+      </div>
+      <div class="mockup-stat">
+        <div class="mockup-stat-label">Банери</div>
+        <div class="mockup-stat-val">5</div>
+      </div>
+      <div class="mockup-stat">
+        <div class="mockup-stat-label">Покази</div>
+        <div class="mockup-stat-val">847</div>
+      </div>
+      <div class="mockup-stat">
+        <div class="mockup-stat-label">QR-сканів</div>
+        <div class="mockup-stat-val" style="color:var(--green)">34</div>
+      </div>
+      <div class="mockup-banner">
+        <div>
+          <div class="mockup-banner-title">🍕 Піца -20% — замовте по QR прямо зараз!</div>
+          <div class="mockup-banner-sub">Центр · 30 сек · Всі зони · озвучка увімкнена</div>
+        </div>
+        <div class="mockup-badge">● Live</div>
+      </div>
     </div>
   </div>
 
+  <a href="#login-section" style="display:inline-block;background:var(--accent);color:#000;border-radius:10px;padding:14px 36px;font-size:15px;font-weight:800;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+    Почати безкоштовно →
+  </a>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="sec-eyebrow sec-center">Як це працює</div>
+  <div class="sec-title sec-center">Від реєстрації до першого показу — 15 хвилин</div>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-num">01</div>
+      <div class="how-icon">🔑</div>
+      <div class="how-title">Реєстрація і тріал</div>
+      <div class="how-desc">Зареєструйтесь — автоматично отримаєте 3 дні повного доступу і одну ліцензію безкоштовно.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">02</div>
+      <div class="how-icon">📱</div>
+      <div class="how-title">Підключіть екран</div>
+      <div class="how-desc">Відкрийте плеєр на планшеті або ТВ, введіть ліцензійний код, оберіть зону міста — готово.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">03</div>
+      <div class="how-icon">🖼</div>
+      <div class="how-title">Завантажте банер</div>
+      <div class="how-desc">Додайте зображення, текст озвучки і зони показу. Банер з'явиться на екранах миттєво.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-num">04</div>
+      <div class="how-icon">🔊</div>
+      <div class="how-title">Реклама з озвучкою</div>
+      <div class="how-desc">Музика тихішає — голос озвучує вашу рекламу — музика повертається. Клієнт чує і бачить.</div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETS -->
+<section id="markets">
+  <div class="sec-eyebrow">Для кого</div>
+  <div class="sec-title">Де працює AdScreen</div>
+  <p class="sec-sub">Будь-яке місце де людина сидить і не може піти — ідеальний майданчик.</p>
+  <div class="markets-grid">
+    <div class="market-card"><div class="market-icon">🚕</div><div class="market-name">Таксі</div><div class="market-time">10–30 хв</div><div class="market-pill">Таргетинг по зоні</div></div>
+    <div class="market-card"><div class="market-icon">💪</div><div class="market-name">Спортзал</div><div class="market-time">30–60 хв</div><div class="market-pill">Найдовший контакт</div></div>
+    <div class="market-card"><div class="market-icon">☕</div><div class="market-name">Кав'ярня</div><div class="market-time">20–40 хв</div><div class="market-pill">Локальна аудиторія</div></div>
+    <div class="market-card"><div class="market-icon">✂️</div><div class="market-name">Перукарня</div><div class="market-time">30–60 хв</div><div class="market-pill">Висока увага</div></div>
+    <div class="market-card"><div class="market-icon">🏥</div><div class="market-name">Клініка</div><div class="market-time">15–60 хв</div><div class="market-pill">Платоспроможна ЦА</div></div>
+    <div class="market-card"><div class="market-icon">🚗</div><div class="market-name">Автомийка</div><div class="market-time">15–30 хв</div><div class="market-pill">Постійні клієнти</div></div>
+    <div class="market-card"><div class="market-icon">🏨</div><div class="market-name">Готель</div><div class="market-time">Лобі та ліфти</div><div class="market-pill">Преміум аудиторія</div></div>
+    <div class="market-card"><div class="market-icon">📱</div><div class="market-name">Магазин</div><div class="market-time">Демо-зони</div><div class="market-pill">Корпоративний план</div></div>
+  </div>
+</section>
+
+<!-- ZONES -->
+<section id="zones">
+  <div class="zones-wrap">
+    <div>
+      <div class="sec-eyebrow">Таргетинг</div>
+      <div class="sec-title">Реклама тільки для потрібного району</div>
+      <ul class="zones-list">
+        <li>
+          <div class="zones-list-icon">🏙</div>
+          <div>
+            <div class="zones-list-title">5 зон міста</div>
+            <div class="zones-list-desc">Центр, Північ, Південь, Захід, Схід — платіть тільки за свої зони.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">🍕</div>
+          <div>
+            <div class="zones-list-title">Піца по дорозі додому</div>
+            <div class="zones-list-desc">Таксі їде на Північ → пасажир бачить і чує рекламу доставки → сканує QR → замовляє. Піца і пасажир приїжджають одночасно.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">💰</div>
+          <div>
+            <div class="zones-list-title">Без GPS і геолокації</div>
+            <div class="zones-list-desc">Водій вибирає зону вручну. Просто і надійно — без дозволів і складних налаштувань.</div>
+          </div>
+        </li>
+        <li>
+          <div class="zones-list-icon">🔊</div>
+          <div>
+            <div class="zones-list-title">Озвучка реклами</div>
+            <div class="zones-list-desc">Між музикою — голос озвучує ваш банер. Клієнт чує рекламу навіть якщо не дивиться на екран.</div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="zone-map">
+      <div class="zone-circle">
+        <div class="zone-h"></div>
+        <div class="zone-v"></div>
+        <div class="zone-lbl n">Північ</div>
+        <div class="zone-lbl s">Південь</div>
+        <div class="zone-lbl w">Захід</div>
+        <div class="zone-lbl e">Схід</div>
+        <div class="zone-center">Центр</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="sec-eyebrow sec-center">Чому це працює</div>
+  <div class="sec-title sec-center">Цифри говорять самі</div>
+  <div class="stats-row">
+    <div class="stat-block">
+      <div class="stat-val">3×</div>
+      <div class="stat-lbl">Вища конверсія ніж онлайн-реклама</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">100%</div>
+      <div class="stat-lbl">Переглядів до кінця — немає кнопки "Пропустити"</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">20 хв</div>
+      <div class="stat-lbl">Середній час контакту з рекламою в таксі</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-val">$0</div>
+      <div class="stat-lbl">Вартість запуску MVP — починайте без витрат</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="sec-eyebrow sec-center">Тарифи</div>
+  <div class="sec-title sec-center">Прозора ціна</div>
+  <p class="sec-sub sec-center">Перші 3 дні безкоштовно — без карти</p>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-name">Старт</div>
+      <div class="pricing-price">500 <span>грн/міс</span></div>
+      <div class="pricing-desc">1 зона · Для локального бізнесу</div>
+      <ul class="pricing-features">
+        <li>1 зона показу</li>
+        <li>До 3 банерів</li>
+        <li>Озвучка банерів</li>
+        <li>Статистика показів</li>
+        <li class="no">Пріоритетний показ</li>
+        <li class="no">Відеобанери</li>
+      </ul>
+      <a href="client.html" class="btn-pricing">Спробувати безкоштовно</a>
+    </div>
+    <div class="pricing-card featured">
+      <div class="pricing-badge">Популярний</div>
+      <div class="pricing-name">Стандарт</div>
+      <div class="pricing-price">1200 <span>грн/міс</span></div>
+      <div class="pricing-desc">3 зони · Для мереж</div>
+      <ul class="pricing-features">
+        <li>3 зони на вибір</li>
+        <li>До 10 банерів</li>
+        <li>Озвучка банерів</li>
+        <li>Детальна статистика</li>
+        <li>Пріоритетний показ</li>
+        <li class="no">Відеобанери</li>
+      </ul>
+      <a href="client.html" class="btn-pricing featured">Підключитись</a>
+    </div>
+    <div class="pricing-card">
+      <div class="pricing-name">Місто</div>
+      <div class="pricing-price">2000 <span>грн/міс</span></div>
+      <div class="pricing-desc">Всі 5 зон · Максимум</div>
+      <ul class="pricing-features">
+        <li>Всі 5 зон міста</li>
+        <li>Необмежено банерів</li>
+        <li>Озвучка банерів</li>
+        <li>Повна аналітика</li>
+        <li>Пріоритетний показ</li>
+        <li>Відеобанери</li>
+      </ul>
+      <a href="client.html" class="btn-pricing">Підключитись</a>
+    </div>
+  </div>
+</section>
+
+<!-- LOGIN SECTION -->
+<section id="login-section">
+  <div class="sec-eyebrow sec-center">Вхід</div>
+  <div class="sec-title sec-center">Оберіть свій розділ</div>
+  <p class="sec-sub sec-center">Три рівні доступу — кожен зі своїм інтерфейсом</p>
+  <div class="login-cards">
+
+    <a href="admin.html" class="login-card super">
+      <span class="login-card-icon">👑</span>
+      <div class="login-card-title">Супер Адмін</div>
+      <div class="login-card-desc">Керування клієнтами, ліцензіями і всією платформою. Тільки для власника системи.</div>
+      <div class="login-card-btn">Увійти →</div>
+    </a>
+
+    <a href="app.html" class="login-card">
+      <span class="login-card-icon">🏢</span>
+      <div class="login-card-title">Рекламодавець</div>
+      <div class="login-card-desc">Завантажте банери, налаштуйте зони і озвучку. Перші 3 дні безкоштовно після реєстрації.</div>
+      <div style="font-size:10px;color:var(--hint);margin-bottom:10px;">⚠️ Для входу потрібна реєстрація</div>
+      <div class="login-card-btn">Увійти або зареєструватись →</div>
+    </a>
+
+    <a href="player.html" class="login-card player">
+      <span class="login-card-icon">📺</span>
+      <div class="login-card-title">Екран / Плеєр</div>
+      <div class="login-card-desc">Для планшета або телевізора. Введіть ліцензійний код і запустіть показ реклами.</div>
+      <div style="font-size:10px;color:var(--hint);margin-bottom:10px;">⚠️ Потрібен ліцензійний код від адміна</div>
+      <div class="login-card-btn">Відкрити плеєр →</div>
+    </a>
+
+    <a href="scoreboard.html" class="login-card sport">
+      <span class="login-card-icon">⚽</span>
+      <div class="login-card-title">Спортивне табло</div>
+      <div class="login-card-desc">Табло рахунку для матчів. Між таймами — реклама спонсорів. Потрібна реєстрація.</div>
+      <div class="login-card-btn sport-btn">Зареєструватись →</div>
+    </a>
+
+  </div>
+</section>
+
+<!-- MANUAL -->
+<section id="manual">
+  <div class="sec-eyebrow sec-center">Документація</div>
+  <div class="sec-title sec-center">Повний мануал</div>
+  <p class="sec-sub sec-center">Покрокові інструкції для кожного розділу платформи</p>
+
+  <div class="manual-grid">
+
+    <!-- СУПЕР АДМІН -->
+    <div class="manual-section">
+      <div class="manual-section-icon">👑</div>
+      <div class="manual-section-title">Супер Адмін</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">Відкрийте <strong>adscreen.online/admin.html</strong> і увійдіть з даними адміністратора</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text">Вкладка <strong>Клієнти</strong> → введіть назву компанії, email і пароль клієнта, оберіть кількість ліцензій → "Додати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Натисніть 🔑 навпроти клієнта щоб побачити ліцензійні коди → скопіюйте і передайте клієнту</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Вкладка <strong>Ліцензії</strong> — всі коди з статусами: "Вільна" або "Активовано"</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text">Вкладка <strong>Пристрої</strong> — всі підключені екрани по всіх клієнтах</div></div>
+      <div class="manual-tip">💡 Код формату ADS-XXXX-XXXX-001. Один код = один пристрій. Можна додавати необмежено</div>
+    </div>
+
+    <!-- КАБІНЕТ КЛІЄНТА -->
+    <div class="manual-section">
+      <div class="manual-section-icon">🏢</div>
+      <div class="manual-section-title">Кабінет рекламодавця</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">Відкрийте <strong>adscreen.online/client.html</strong> → вкладка "Реєстрація" → заповніть дані → автоматично 3 дні тріалу</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text"><strong>Огляд</strong> — загальна статистика: пристрої, банери, покази, QR-скани</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text"><strong>Пристрої</strong> → оберіть ліцензійний код → введіть назву пристрою → оберіть зону → "Активувати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text"><strong>Банери</strong> → введіть назву → оберіть тривалість і зони → завантажте фото (1920×1080 px) → додайте текст озвучки → "Опублікувати"</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text"><strong>⚙️ Екран</strong> → оберіть орієнтацію → завантажте фоновий екран (логотип компанії)</div></div>
+      <div class="manual-tip">💡 Банер з'являється на всіх екранах вибраних зон протягом 10 хвилин після публікації</div>
+    </div>
+
+    <!-- ПЛЕЄР -->
+    <div class="manual-section">
+      <div class="manual-section-icon">📺</div>
+      <div class="manual-section-title">Екран / Плеєр</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text">На планшеті або ТВ відкрийте <strong>adscreen.online/player.html</strong> в браузері Chrome</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text">Введіть <strong>ліцензійний код</strong> (ADS-XXXX-XXXX-001) який надав адміністратор → оберіть зону → "Запустити екран"</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Кнопка <strong>"▶ Реклама увімкнена"</strong> (для водія/персоналу) — вмикає та вимикає показ банерів</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Кнопки жанрів <strong>[Поп][Джаз][Рок][Реп][Лаунж]</strong> (для клієнта/пасажира) — вибір музики між рекламою</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text">Кнопка <strong>🔇</strong> — вимикає звук. Кнопка <strong>⛶ Екран</strong> — повноекранний режим</div></div>
+      <div class="manual-step"><div class="manual-step-num">6</div><div class="manual-step-text">Код запам'ятовується — при наступному відкритті плеєр запускається автоматично без введення коду</div></div>
+      <div class="manual-tip">💡 Для блокування екрану: Налаштування Android → Безпека → Закріплення додатків → увімкніть → натисніть ■ → закріпіть Chrome</div>
+    </div>
+
+    <!-- СПОРТИВНЕ ТАБЛО -->
+    <div class="manual-section">
+      <div class="manual-section-icon">⚽</div>
+      <div class="manual-section-title">Спортивне табло</div>
+      <div class="manual-step"><div class="manual-step-num">1</div><div class="manual-step-text"><strong>Суддя</strong> відкриває <strong>adscreen.online/scoreboard.html</strong> на телефоні → вводить назви команд, тривалість тайму/перерви і унікальний ID матчу</div></div>
+      <div class="manual-step"><div class="manual-step-num">2</div><div class="manual-step-text"><strong>Екран глядачів</strong> — відкрийте <strong>adscreen.online/scoreboard-display.html?id=match-001</strong> на планшеті або ТВ (замість match-001 вкажіть ваш ID)</div></div>
+      <div class="manual-step"><div class="manual-step-num">3</div><div class="manual-step-text">Суддя натискає <strong>▶ Старт</strong> — таймер починає відлік. <strong>⏸ Стоп</strong> — зупиняє при вилученні або травмі</div></div>
+      <div class="manual-step"><div class="manual-step-num">4</div><div class="manual-step-text">Кнопки <strong>+⚽ Гол</strong> — додають гол відповідній команді. <strong>− Скасувати</strong> — прибирають помилковий гол</div></div>
+      <div class="manual-step"><div class="manual-step-num">5</div><div class="manual-step-text"><strong>+1 хв доп.</strong> — додає хвилину до тайму (таймер стає червоним). <strong>Кінець тайму →</strong> — запускає перерву з рекламою</div></div>
+      <div class="manual-step"><div class="manual-step-num">6</div><div class="manual-step-text">Під час <strong>перерви</strong> — на екрані глядачів автоматично показується рекламний банер і зворотній відлік перерви</div></div>
+      <div class="manual-tip">💡 Посилання для екрану глядачів генерується автоматично в панелі судді — просто скопіюйте і відкрийте на ТВ</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <a href="#" class="footer-logo">Ad<span>Screen</span></a>
+  <ul class="footer-links">
+    <li><a href="#how">Як працює</a></li>
+    <li><a href="#pricing">Тарифи</a></li>
+    <li><a href="#login-section">Увійти</a></li>
+    <li><a href="mailto:ckbbuild@gmail.com">Контакти</a></li>
+  </ul>
+  <div class="footer-copy">© 2024 AdScreen</div>
+</footer>
+
 <script>
-  // Email (якщо введений) прокидається в наступний кабінет, щоб не вводити двічі
-  document.querySelectorAll('.role-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const email = document.getElementById('entry-email').value.trim();
-      if (email) {
-        const url = new URL(btn.href);
-        url.searchParams.set('email', email);
-        btn.href = url.toString();
+  // Scroll animation
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
       }
     });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.how-step, .market-card, .pricing-card, .stat-block, .login-card').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(16px)';
+    el.style.transition = 'opacity .5s ease, transform .5s ease';
+    observer.observe(el);
   });
 </script>
 </body>
