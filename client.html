@@ -257,7 +257,7 @@
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
-    <button class="tab" onclick="showTab('banners',this)">Банери</button>
+    <button class="tab" id="tab-banners" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
     <button class="tab" id="tab-currency" onclick="showTab('currency',this)">💱 Курс</button>
@@ -328,6 +328,21 @@
           <div class="field"><label>Філія (для курсу валют, необов'язково)</label>
             <select class="inp" id="act-branch"><option value="">— Без філії —</option></select>
           </div>
+          <div class="field owner-only-field" style="display:none;"><label>Категорія закладу</label>
+            <select class="inp" id="act-category">
+              <option value="cafe">☕ Кафе / ресторан</option>
+              <option value="barbershop">💈 Барбершоп</option>
+              <option value="beauty">💅 Б'юті-салон</option>
+              <option value="spa">🧖 Спа</option>
+              <option value="gym">🏋️ Спортзал</option>
+              <option value="mall">🛍️ ТРЦ / магазин</option>
+              <option value="other">📍 Інше</option>
+            </select>
+          </div>
+          <div class="field owner-only-field" style="display:none;"><label>Години роботи</label>
+            <input class="inp" id="act-hours" placeholder="Пн-Пт 9:00–21:00, Сб-Нд 10:00–18:00"></div>
+          <div class="field owner-only-field" style="display:none;"><label>Посилання на Google Maps</label>
+            <input class="inp" id="act-maps" placeholder="https://maps.app.goo.gl/..."></div>
           <div class="field" style="align-self:flex-end;">
             <button class="btn-activate" onclick="activateDevice()">Активувати</button>
           </div>
@@ -666,7 +681,12 @@ onAuthStateChanged(auth, async user => {
 function applyRoleUI() {
   const role = new URLSearchParams(location.search).get('role');
   const currencyTab = document.getElementById('tab-currency');
+  const bannersTab = document.getElementById('tab-banners');
   if (currencyTab) currencyTab.style.display = (role === 'advertiser' || role === 'owner') ? 'none' : '';
+  if (bannersTab) bannersTab.style.display = (role === 'owner') ? 'none' : '';
+  document.querySelectorAll('.owner-only-field').forEach(el => {
+    el.style.display = (role === 'owner') ? '' : 'none';
+  });
 }
 
 // ── LOGIN ──
@@ -1077,15 +1097,22 @@ window.activateDevice = async () => {
   const name  = document.getElementById('act-name').value.trim();
   const zone  = document.getElementById('act-zone').value;
   const branchId = document.getElementById('act-branch').value || null;
+  const role = new URLSearchParams(location.search).get('role');
   if (!licId) { showToast('⚠️ Оберіть ліцензійний код'); return; }
   if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
   const licSnap = await getDoc(doc(db,'licenses',licId));
   const lic = licSnap.data();
-  await addDoc(collection(db,'devices'), {
+  const deviceData = {
     clientId:currentUser.uid, licenseId:licId,
     code:lic.code, name, zone, branchId,
     activatedAt:serverTimestamp(), online:true
-  });
+  };
+  if (role === 'owner') {
+    deviceData.category = document.getElementById('act-category').value;
+    deviceData.hours = document.getElementById('act-hours').value.trim();
+    deviceData.mapsUrl = document.getElementById('act-maps').value.trim();
+  }
+  await addDoc(collection(db,'devices'), deviceData);
   await updateDoc(doc(db,'licenses',licId), {status:'used'});
   document.getElementById('act-name').value='';
   showToast(`✅ "${name}" активовано!`);
