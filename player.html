@@ -655,19 +655,25 @@ function todayKey() {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-function getOrPickTodayGeoTime() {
+function getOrPickTodayGeoTime(startMin, endMin) {
   const key = 'ads_geo_time_' + todayKey();
   let t = localStorage.getItem(key);
   if (!t) {
-    // Випадкова хвилина між 10:00 (600) і 16:00 (960) — у ці години заклад точно працює
-    const WINDOW_START = 10 * 60, WINDOW_END = 16 * 60;
-    t = String(WINDOW_START + Math.floor(Math.random() * (WINDOW_END - WINDOW_START)));
+    // Випадкова хвилина в межах заявлених годин роботи закладу
+    const lo = Math.min(startMin, endMin), hi = Math.max(startMin, endMin);
+    t = String(hi > lo ? lo + Math.floor(Math.random() * (hi - lo)) : lo);
     localStorage.setItem(key, t);
   }
   return parseInt(t); // хвилин від півночі
 }
 
-function checkGeolocationDaily() {
+function parseHHMM(s) {
+  if (!s || !s.includes(':')) return null;
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+
+async function checkGeolocationDaily() {
   const myCode = localStorage.getItem('ads_code');
   if (!myCode || !navigator.geolocation) { geoConfirmedToday = false; updateGeoTicker(); return; }
 
@@ -681,7 +687,22 @@ function checkGeolocationDaily() {
   geoConfirmedToday = false;
   updateGeoTicker();
 
-  const targetMinute = getOrPickTodayGeoTime();
+  // Дізнаємось заявлені години роботи цього конкретного пристрою (якщо вказані власником)
+  let WINDOW_START = 10 * 60, WINDOW_END = 16 * 60; // фолбек для старих пристроїв без графіка
+  try {
+    const devSnap = await getDocs(query(collection(db,'devices'), where('code','==',myCode)));
+    if (!devSnap.empty) {
+      const dev = devSnap.docs[0].data();
+      if (dev.is24h) {
+        WINDOW_START = 0; WINDOW_END = 24 * 60;
+      } else if (dev.hoursStart && dev.hoursEnd) {
+        const s = parseHHMM(dev.hoursStart), e = parseHHMM(dev.hoursEnd);
+        if (s !== null && e !== null && e > s) { WINDOW_START = s; WINDOW_END = e; }
+      }
+    }
+  } catch(e) {}
+
+  const targetMinute = getOrPickTodayGeoTime(WINDOW_START, WINDOW_END);
   const now = new Date();
   const nowMinute = now.getHours() * 60 + now.getMinutes();
 
