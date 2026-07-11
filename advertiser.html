@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdScreen — Кабінет клієнта</title>
+  <style>
+    :root{--bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;--border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;--accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);--text:#f0f0f0;--muted:#888;--hint:#555;--green:#3ddc84;--green-dim:rgba(61,220,132,.08);--green-border:rgba(61,220,132,.2);--red:#ff4d4d;--red-dim:rgba(255,77,77,.08);--blue:#4d9fff;--blue-dim:rgba(77,159,255,.08);}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    .screen{display:none;min-height:100vh;}.screen.active{display:flex;flex-direction:column;}
+    #screen-login{align-items:center;justify-content:center;}
+    .login-wrap{width:100%;max-width:380px;padding:24px;}
+    .logo{text-align:center;margin-bottom:32px;}
+    .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px;}
+    .logo-name{font-size:28px;font-weight:800;letter-spacing:-1px;}
+    .logo-name span{color:var(--accent);}
+    .logo-sub{font-size:13px;color:var(--hint);margin-top:6px;}
+    .login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;}
+    .login-tabs{display:flex;background:var(--surface2);border-radius:10px;padding:4px;margin-bottom:20px;gap:4px;}
+    .login-tab{flex:1;background:none;border:none;border-radius:7px;padding:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .login-tab.on{background:var(--surface);color:var(--text);}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--hint);margin-bottom:6px;}
+    .inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);outline:none;transition:border-color .2s;}
+    .inp:focus{border-color:var(--accent2);}
+    .inp::placeholder{color:var(--hint);}
+    select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23555' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+    select.inp option{background:var(--surface2);}
+    .btn-primary{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.88;}
+    .err-msg{color:var(--red);font-size:12px;text-align:center;margin-top:10px;min-height:18px;}
+
+    /* TRIAL BANNER */
+    .trial-banner{margin:0 0 16px;border-radius:12px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .trial-banner.ok{background:var(--green-dim);border:1px solid var(--green-border);}
+    .trial-banner.warn{background:rgba(255,200,0,.08);border:1px solid rgba(255,200,0,.2);}
+    .trial-banner.expired{background:var(--red-dim);border:1px solid rgba(255,77,77,.2);}
+    .trial-banner-text{font-size:13px;font-weight:600;}
+    .trial-banner-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+    .trial-banner.ok .trial-banner-text{color:var(--green);}
+    .trial-banner.warn .trial-banner-text{color:#ffc800;}
+    .trial-banner.expired .trial-banner-text{color:var(--red);}
+    .btn-upgrade{background:var(--accent);color:#000;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+    /* TOPBAR */
+    .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100;}
+    .topbar-logo{font-size:15px;font-weight:800;}.topbar-logo span{color:var(--accent);}
+    .topbar-client{font-size:12px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;margin-left:8px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .topbar-right{display:flex;align-items:center;gap:8px;}
+    .trial-chip{font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid;}
+    .trial-chip.ok{background:var(--green-dim);color:var(--green);border-color:var(--green-border);}
+    .trial-chip.warn{background:rgba(255,200,0,.08);color:#ffc800;border-color:rgba(255,200,0,.2);}
+    .trial-chip.expired{background:var(--red-dim);color:var(--red);border-color:rgba(255,77,77,.2);}
+    .btn-logout{background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;}
+    .btn-logout:hover{border-color:var(--red);color:var(--red);}
+
+    /* TABS */
+    .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;flex-shrink:0;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab{background:none;border:none;border-bottom:2px solid transparent;padding:14px 18px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;}
+    .tab:hover{color:var(--text);}.tab.on{color:var(--accent);border-bottom-color:var(--accent);}
+
+    /* CONTENT */
+    .content{flex:1;overflow-y:auto;padding:20px;max-width:860px;width:100%;margin:0 auto;}
+    .page{display:none;}.page.active{display:block;}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .stat-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--hint);margin-bottom:8px;}
+    .stat-value{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;}
+    .stat-value.accent{color:var(--accent);}.stat-value.green{color:var(--green);}
+    .stat-sub{font-size:11px;color:var(--hint);margin-top:3px;}
+    .sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--hint);margin-bottom:10px;}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px;}
+
+    /* DEVICES */
+    .activate-card{background:var(--accent-dim);border:1px solid var(--accent-border);border-radius:12px;padding:16px;margin-bottom:14px;}
+    .activate-card-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:4px;}
+    .activate-card-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+    .activate-form{display:flex;gap:10px;flex-wrap:wrap;}
+    .activate-form .field{flex:1;min-width:180px;margin-bottom:0;}
+    .btn-activate{background:var(--accent);color:#000;border:none;border-radius:10px;padding:11px 20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;}
+    .device-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+    .device-item:last-child{border-bottom:none;}
+    .device-icon{width:40px;height:40px;border-radius:10px;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .device-info{flex:1;min-width:0;}
+    .device-name{font-size:14px;font-weight:600;}
+    .device-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+    .zone-chip-blue{font-size:11px;font-weight:700;text-transform:uppercase;padding:3px 8px;border-radius:6px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
+    .badge{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:20px;}
+    .badge-green{background:var(--green-dim);color:var(--green);border:1px solid var(--green-border);}
+    .badge-accent{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-border);}
+
+    /* BANNERS */
+    .banner-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:4px;}
+    .banner-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;}
+    .banner-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--surface3);}
+    .banner-img-ph{width:100%;aspect-ratio:16/9;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--hint);}
+    .banner-info{padding:10px;}
+    .banner-title{font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .banner-zones{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+    .zone-chip{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,159,255,.2);}
+    .banner-actions{display:flex;gap:6px;}
+    .btn-sm{flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:7px;padding:6px;font-size:11px;color:var(--muted);cursor:pointer;text-align:center;transition:all .2s;}
+    .btn-sm:hover{border-color:var(--red);color:var(--red);}
+    .btn-sm.on{border-color:var(--green);color:var(--green);background:var(--green-dim);}
+    .banner-status-badge{position:absolute;top:8px;right:8px;font-size:10px;font-weight:700;text-transform:uppercase;padding:3px 7px;border-radius:20px;}
+    .banner-status-badge.active{background:rgba(0,0,0,.6);color:var(--green);border:1px solid var(--green-border);}
+    .banner-status-badge.paused{background:rgba(0,0,0,.6);color:var(--muted);border:1px solid var(--border);}
+    .add-banner-form{display:flex;flex-direction:column;gap:10px;}
+    .zones-picker{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;}
+    .zone-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;transition:all .2s;}
+    .zone-btn:hover{border-color:var(--accent);color:var(--text);}
+    .zone-btn.selected{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);font-weight:600;}
+    .file-drop{border:2px dashed var(--border);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all .2s;position:relative;}
+    .file-drop:hover,.file-drop.over{border-color:var(--accent);background:var(--accent-dim);}
+    .file-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+    .file-drop-icon{font-size:28px;margin-bottom:8px;}
+    .file-drop-text{font-size:13px;color:var(--muted);}
+    .file-drop-text span{color:var(--accent);}
+    .file-preview{display:none;width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;margin-top:8px;}
+    .form-row{display:flex;gap:10px;flex-wrap:wrap;}
+    .form-row .field{flex:1;min-width:160px;margin-bottom:0;}
+
+    /* STATS */
+    .chart-bar-wrap{margin-bottom:16px;}
+    .chart-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px;}
+    .chart-bar-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+    .chart-bar-fill{height:100%;background:var(--accent);border-radius:4px;transition:width 1s ease;}
+    .chart-bar-fill.green{background:var(--green);}
+
+    /* EXPIRED OVERLAY */
+    .expired-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:none;align-items:center;justify-content:center;padding:24px;}
+    .expired-overlay.active{display:flex;}
+    .expired-card{background:var(--surface);border:1px solid rgba(255,77,77,.3);border-radius:20px;padding:32px;max-width:400px;width:100%;text-align:center;}
+    .expired-icon{font-size:48px;margin-bottom:16px;}
+    .expired-title{font-size:20px;font-weight:800;color:var(--red);margin-bottom:8px;}
+    .expired-sub{font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:24px;}
+    .btn-contact{width:100%;background:var(--accent);color:#000;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;}
+    .btn-contact-ghost{width:100%;background:none;border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;color:var(--muted);cursor:pointer;}
+
+    .lic-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .lic-item:last-child{border-bottom:none;}
+    .lic-code{font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:var(--accent);flex:1;letter-spacing:1px;}
+    .empty{text-align:center;padding:36px 20px;color:var(--hint);font-size:13px;}
+    .empty-icon{font-size:32px;margin-bottom:10px;}
+    .loading{text-align:center;padding:20px;color:var(--hint);font-size:13px;}
+
+    /* HELP MANUAL */
+    .help-btn{
+      background:none;border:1px solid var(--border);border-radius:20px;
+      padding:4px 10px;font-size:12px;color:var(--muted);cursor:pointer;
+      float:right;transition:all .2s;margin-left:8px;
+    }
+    .help-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .help-panel{
+      display:none;background:rgba(245,200,66,.04);
+      border:1px solid rgba(245,200,66,.15);border-radius:12px;
+      padding:16px;margin-bottom:16px;
+    }
+    .help-panel.open{display:block;}
+    .help-title{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;}
+    .help-step{
+      display:flex;gap:10px;padding:8px 0;
+      border-bottom:1px solid rgba(245,200,66,.08);font-size:13px;
+    }
+    .help-step:last-child{border-bottom:none;}
+    .help-step-num{
+      width:22px;height:22px;border-radius:50%;
+      background:rgba(245,200,66,.1);border:1px solid rgba(245,200,66,.2);
+      color:var(--accent);font-size:11px;font-weight:700;
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+    }
+    .help-step-text{color:var(--muted);line-height:1.5;}
+    .help-step-text strong{color:var(--text);}
+    .help-tip{
+      margin-top:10px;padding:10px;border-radius:8px;
+      background:rgba(61,220,132,.06);border:1px solid rgba(61,220,132,.15);
+      font-size:12px;color:var(--green);line-height:1.5;
+    }
+    .orient-btn{
+      flex:1;background:var(--surface2);border:2px solid var(--border);
+      border-radius:12px;padding:16px 12px;text-align:center;
+      cursor:pointer;transition:all .2s;color:var(--text);
+    }
+    .orient-btn:hover{border-color:var(--accent);}
+    .orient-btn.selected{
+      background:var(--accent-dim);border-color:var(--accent);
+    }
+    .size-row{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 0;border-bottom:1px solid var(--border);
+      font-size:13px;
+    }
+    .size-row:last-child{border-bottom:none;}
+    .size-type{flex:1;color:var(--muted);}
+    .size-val{font-weight:700;color:var(--accent);font-family:'SF Mono','Fira Code',monospace;font-size:12px;}
+    .size-ratio{font-size:11px;color:var(--hint);width:40px;text-align:right;}
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;pointer-events:none;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="login-wrap">
+    <div class="logo">
+      <div class="logo-mark">Кабінет клієнта</div>
+      <div class="logo-name">Ad<span>Screen</span></div>
+      <div class="logo-sub">3 дні безкоштовного тестування</div>
+    </div>
+    <div class="login-card">
+      <div class="login-tabs">
+        <button class="login-tab on" onclick="switchTab('login',this)">Увійти</button>
+        <button class="login-tab" onclick="switchTab('register',this)">Реєстрація</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <div class="field"><label>Email</label><input class="inp" id="login-email" type="email" placeholder="your@email.com"></div>
+        <div class="field"><label>Пароль</label><input class="inp" id="login-password" type="password" placeholder="••••••••"></div>
+        <button class="btn-primary" onclick="doLogin()">Увійти</button>
+        <a href="https://adscreen.online" style="display:block;text-align:center;margin-top:14px;font-size:13px;color:var(--muted);text-decoration:none;">← На головну adscreen.online</a>
+        <div class="err-msg" id="login-err"></div>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="tab-register" style="display:none;">
+        <div class="field"><label>Назва компанії</label><input class="inp" id="reg-company" placeholder="Піцерія Центр"></div>
+        <div class="field"><label>Місто</label><input class="inp" id="reg-city" placeholder="Вінниця"></div>
+        <div class="field"><label>Email</label><input class="inp" id="reg-email" type="email" placeholder="your@email.com"></div>
+        <div class="field"><label>Пароль</label><input class="inp" id="reg-password" type="password" placeholder="Мінімум 6 символів"></div>
+        <button class="btn-primary" onclick="doRegister()">Зареєструватись та тестувати</button>
+        <div class="err-msg" id="reg-err"></div>
+        <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:12px;">
+          Після реєстрації — 3 дні повного доступу безкоштовно
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CABINET -->
+<div class="screen" id="screen-cabinet">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;min-width:0;">
+      <div class="topbar-logo">Ad<span>Screen</span></div>
+      <div class="topbar-client" id="topbar-client-name">—</div>
+    </div>
+    <div class="topbar-right">
+      <div class="trial-chip" id="trial-chip">—</div>
+      <button class="btn-logout" onclick="doLogout()">Вийти</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
+    <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
+    <button class="tab" id="tab-banners" onclick="showTab('banners',this)">Банери</button>
+    <button class="tab" onclick="showTab('stats',this)">Статистика</button>
+    <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Огляд</div>
+        <button class="help-btn" onclick="toggleHelp('help-overview')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-overview">
+        <div class="help-title">📊 Як читати Огляд</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Пристрої</strong> — скільки планшетів/телевізорів підключено до вашого акаунту і показують рекламу</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Банери</strong> — скільки рекламних зображень зараз активні і показуються глядачам</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Покази</strong> — загальна кількість разів коли ваш банер показався на екрані</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>QR-сканів</strong> — скільки людей відсканували QR-код на вашому банері і перейшли на сайт</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Мої ліцензії</strong> — ваші ліцензійні коди. <strong>Вільна</strong> = ще не активована на пристрої. <strong>Активовано</strong> = пристрій підключений і показує рекламу</div></div>
+        <div class="help-tip">💡 Перший крок — перейдіть у вкладку <strong>Пристрої</strong> і активуйте ваш планшет або ТВ</div>
+      </div>
+      <div id="trial-banner-wrap"></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Банери</div><div class="stat-value accent" id="ov-banners">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Покази</div><div class="stat-value" id="ov-shows">—</div><div class="stat-sub">всього</div></div>
+        <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="ov-qr">—</div><div class="stat-sub">переходів</div></div>
+      </div>
+      <div class="card" id="ov-combined"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
+    </div>
+
+    <!-- DEVICES -->
+    <div class="page" id="page-devices">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Пристрої</div>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-add-license" class="help-btn" onclick="addNewLicense()">➕ Ще один пристрій</button>
+          <button class="help-btn" onclick="toggleHelp('help-devices')">? Допомога</button>
+        </div>
+      </div>
+      <div class="help-panel" id="help-devices">
+        <div class="help-title">📱 Як підключити планшет або телевізор</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Відкрийте браузер на планшеті або ТВ і перейдіть на <strong>adscreen.online/player.html</strong></div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Поверніться сюди → оберіть <strong>вільний ліцензійний код</strong> зі списку нижче</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Введіть <strong>назву пристрою</strong> — наприклад "Таксі №5" або "Зал А" — щоб потім зрозуміти де він стоїть</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Оберіть <strong>зону міста</strong> — де знаходиться пристрій. Реклама буде показуватись тільки релевантна для цього району</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Натисніть <strong>Активувати</strong> → введіть цей самий код на планшеті → плеєр запуститься автоматично</div></div>
+        <div class="help-tip">💡 Код вводиться тільки один раз. Після цього планшет запускає рекламу автоматично при кожному включенні</div>
+      </div>
+      <div class="activate-card">
+        <div class="activate-card-title">➕ Підключити пристрій</div>
+        <div class="activate-card-sub">Відкрийте плеєр на планшеті або ТВ, введіть код і оберіть зону</div>
+        <div class="activate-form">
+          <div class="field"><label>Ліцензійний код</label>
+            <select class="inp" id="act-code"><option value="">— Оберіть код —</option></select>
+          </div>
+          <div class="field"><label>Назва пристрою</label><input class="inp" id="act-name" placeholder="Таксі #12 / Зал А"></div>
+          <div class="field"><label>Зона</label>
+            <select class="inp" id="act-zone">
+              <option value="center">🏙 Центр</option>
+              <option value="north">⬆️ Північ</option>
+              <option value="south">⬇️ Південь</option>
+              <option value="west">⬅️ Захід</option>
+              <option value="east">➡️ Схід</option>
+            </select>
+          </div>
+          <div class="field" style="align-self:flex-end;">
+            <button class="btn-activate" onclick="activateDevice()">Активувати</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec-title">Мої пристрої</div>
+      <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
+    </div>
+
+    <!-- BANNERS -->
+    <div class="page" id="page-banners">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Банери</div>
+        <button class="help-btn" onclick="toggleHelp('help-banners')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-banners">
+        <div class="help-title">🖼 Як додати рекламний банер</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Назва банера</strong> — для вашої зручності, глядачі її не бачать. Наприклад "Піца -20% Червень"</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Тривалість</strong> — скільки секунд показується банер. Рекомендуємо <strong>30 сек</strong> — достатньо щоб запам'ятати</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Зони показу</strong> — оберіть райони де хочете показувати рекламу. Якщо ваш заклад на Центрі — обирайте "Центр". "Всі зони" — максимальне охоплення</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>Зображення</strong> — завантажте фото банера. Рекомендований розмір: <strong>1920×1080 px</strong> (горизонтальний) або <strong>1080×1920 px</strong> (вертикальний). Формат: JPG або PNG до 32MB</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Текст озвучки</strong> — необов'язково. Введіть текст який буде вимовлятись вголос коли з'явиться банер. Наприклад: "Увага! Піца зі знижкою 20% тільки сьогодні!"</div></div>
+        <div class="help-step"><div class="help-step-num">6</div><div class="help-step-text">Натисніть <strong>Опублікувати</strong> → банер з'явиться на всіх підключених екранах протягом 10 хвилин</div></div>
+        <div class="help-tip">💡 Банер можна <strong>призупинити</strong> (⏸) щоб тимчасово не показувати, або <strong>видалити</strong> (🗑️). Завантажуйте якісні зображення — нечіткі банери відлякують клієнтів</div>
+      </div>
+      <div class="sec-title">Додати банер</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="add-banner-form">
+          <div class="form-row">
+            <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Піца зі знижкою 20%"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Тривалість реклами (сек)</label>
+              <input class="inp" type="number" id="bn-duration" min="1" step="1" value="30" placeholder="30">
+            </div>
+            <div class="field"><label>Тривалість фону (сек)</label>
+              <input class="inp" type="number" id="bn-bg-duration" min="1" step="1" value="10" placeholder="10">
+            </div>
+          </div>
+          <div class="field">
+            <label>Текст озвучки (необов'язково)</label>
+            <input class="inp" id="bn-voice" placeholder="Увага! Піца зі знижкою 20% тільки сьогодні! Телефонуйте зараз!">
+          </div>
+          <div class="field"><label>Зони показу</label>
+            <div class="zones-picker" id="zones-picker">
+              <button class="zone-btn" data-zone="center" onclick="toggleZone(this)">🏙 Центр</button>
+              <button class="zone-btn" data-zone="north" onclick="toggleZone(this)">⬆️ Північ</button>
+              <button class="zone-btn" data-zone="south" onclick="toggleZone(this)">⬇️ Південь</button>
+              <button class="zone-btn" data-zone="west" onclick="toggleZone(this)">⬅️ Захід</button>
+              <button class="zone-btn" data-zone="east" onclick="toggleZone(this)">➡️ Схід</button>
+              <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Конкретні пристрої (необов'язково)</label>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Якщо обрати один чи кілька пристроїв — банер покажеться ТІЛЬКИ на них, незалежно від зони вище</div>
+            <div class="zones-picker" id="devices-picker">
+              <div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Зображення (JPG/PNG)</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Горизонтальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1920×1080</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Вертикальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1920</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Квадрат</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1080</div>
+              </div>
+            </div>
+            <div class="file-drop" id="file-drop">
+              <input type="file" id="bn-image" accept="*/*" onchange="previewImage(this)">
+              <div class="file-drop-icon" id="drop-icon">🖼</div>
+              <div class="file-drop-text" id="drop-text">Фото або відео — <span>оберіть файл</span></div>
+            </div>
+            <img class="file-preview" id="file-preview" src="" alt="">
+          </div>
+
+          <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
+        </div>
+      </div>
+      <div class="sec-title">Мої банери</div>
+      <div id="banners-grid"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page" id="page-stats">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Статистика</div>
+        <button class="help-btn" onclick="toggleHelp('help-stats')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-stats">
+        <div class="help-title">📈 Як читати статистику</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Всього показів</strong> — скільки разів ваші банери з'являлись на екранах. Один перегляд = один показ</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>QR-сканів</strong> — скільки людей відсканували QR-код на банері і перейшли на ваш сайт або сторінку</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Конверсія</strong> — відсоток людей які відсканували QR після перегляду. 3-5% — хороший результат для реклами в таксі</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>По зонах</strong> — в яких районах міста ваша реклама показується найчастіше. Допомагає зрозуміти де найбільше ваших потенційних клієнтів</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>По банерах</strong> — який банер показується найчастіше і який отримує більше QR-сканів. Порівнюйте ефективність різних оголошень</div></div>
+        <div class="help-tip">💡 Додайте QR-код прямо на зображення банера що веде на ваш сайт, меню або замовлення — це збільшить конверсію в 3-5 разів</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label">Всього показів</div><div class="stat-value" id="st-total">—</div></div>
+        <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="st-qr">—</div></div>
+        <div class="stat-card"><div class="stat-label">Конверсія</div><div class="stat-value green" id="st-conv">—</div></div>
+      </div>
+      <div class="sec-title">По зонах</div>
+      <div class="card" id="stats-zones"></div>
+      <div class="sec-title" style="margin-top:16px;">По банерах</div>
+      <div class="card" id="stats-banners"></div>
+    </div>
+
+    <!-- SETTINGS PAGE -->
+    <div class="page" id="page-settings">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Налаштування екрану</div>
+        <button class="help-btn" onclick="toggleHelp('help-settings')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-settings">
+        <div class="help-title">⚙️ Як налаштувати екран</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Орієнтація</strong> — оберіть як розташований планшет або ТВ. Горизонтальна = лежить. Вертикальна = стоїть</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Фоновий екран</strong> — зображення між рекламними банерами. Завантажте логотип або фото компанії</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Після завантаження натисніть <strong>Зберегти фон</strong> → з'явиться на всіх ваших екранах замість чорного</div></div>
+        <div class="help-tip">💡 Фоновий екран — це ваша "заставка" яку бачать глядачі між рекламою. Поставте логотип!</div>
+      </div>
+
+      <!-- Тайминг -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec-title" style="margin-bottom:12px;">⏱ Тайминг</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="field">
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ТРИВАЛІСТЬ ФОНУ (сек)</label>
+            <input class="inp" type="number" id="timing-bg" min="1" step="1" value="10" onchange="saveTimings()">
+          </div>
+          <div class="field">
+            <label style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;">ПАУЗА МІЖ РЕКЛАМОЮ (сек)</label>
+            <input class="inp" type="number" id="timing-pause" min="1" step="1" value="5" onchange="saveTimings()">
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Відео грає до кінця незалежно від тайминг банера. Ці значення — типові за замовчуванням; для кожного банера окремо можна задати свою тривалість у вкладці «Банери».</div>
+      </div>
+
+      <!-- Таблиця розмірів -->
+      <div class="card" style="margin-bottom:14px;">
+        <div class="sec-title" style="margin-bottom:4px;">Рекомендовані розміри зображень</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">При додаванні банера можна одразу завантажити всі варіанти — плеєр сам обере потрібний під конкретний екран.</div>
+        <div class="size-row"><div class="size-type">🖥 Горизонтальний банер/фон</div><div class="size-val">1920 × 1080 px</div><div class="size-ratio">16:9</div></div>
+        <div class="size-row"><div class="size-type">📱 Вертикальний банер/фон</div><div class="size-val">1080 × 1920 px</div><div class="size-ratio">9:16</div></div>
+        <div class="size-row"><div class="size-type">□ Квадрат (універсальний)</div><div class="size-val">1080 × 1080 px</div><div class="size-ratio">1:1</div></div>
+        <div class="size-row"><div class="size-type">📁 Макс. розмір файлу</div><div class="size-val">32 MB</div><div class="size-ratio">JPG/PNG</div></div>
+      </div>
+
+      <!-- Фоновий екран -->
+      <div class="card">
+        <div class="sec-title" style="margin-bottom:4px;">Фоновий екран між рекламою</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Показується між банерами. Логотип, фото, заставка компанії.</div>
+        <div style="font-size:10.5px;color:var(--hint);margin-bottom:14px;line-height:1.4;">
+          Якщо не завантажите власний фон — на екрані тимчасово показуватиметься рекламний фон AdScreen. Щойно завантажите свій — він одразу заміниться.
+        </div>
+        <div class="file-drop" style="margin-bottom:12px;">
+          <input type="file" id="bg-image" accept="image/*" onchange="previewBg(this)">
+          <div class="file-drop-icon" id="bg-drop-icon">🎨</div>
+          <div class="file-drop-text" id="bg-drop-text">Завантажте фонове зображення — <span>оберіть файл</span></div>
+        </div>
+        <img id="bg-preview" src="" alt="" style="display:none;width:100%;border-radius:8px;margin-bottom:12px;max-height:200px;object-fit:cover;">
+        <div id="bg-current" style="display:none;margin-bottom:12px;">
+          <div style="font-size:12px;color:var(--green);margin-bottom:8px;">✅ Поточний фон:</div>
+          <img id="bg-current-img" src="" style="width:100%;border-radius:8px;max-height:160px;object-fit:cover;">
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" onclick="saveBg()" style="flex:1;">Зберегти фон</button>
+          <button onclick="removeBg()" style="background:none;border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--muted);cursor:pointer;font-size:13px;">Видалити</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- EXPIRED OVERLAY -->
+<div class="expired-overlay" id="expired-overlay">
+  <div class="expired-card">
+    <div class="expired-icon">⏰</div>
+    <div class="expired-title">Тестовий період закінчився</div>
+    <div class="expired-sub">3 дні безкоштовного тестування завершені. Щоб продовжити — оберіть тариф або зв'яжіться з нами.</div>
+    <button class="btn-contact" onclick="contactAdmin()">📩 Написати адміністратору</button>
+    <button class="btn-contact-ghost" onclick="doLogout()">Вийти</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, Timestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC3Cbg9SN5Oeb3QMwtEnE_duCnSTtoqr7g",
+  authDomain: "reklama-7ed3d.firebaseapp.com",
+  projectId: "reklama-7ed3d",
+  storageBucket: "reklama-7ed3d.firebasestorage.app",
+  messagingSenderId: "992657806561",
+  appId: "1:992657806561:web:30a44b179c04b73f8c53a0"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const storage = getStorage(app);
+
+const ZONES = {center:'🏙 Центр',north:'⬆️ Північ',south:'⬇️ Південь',west:'⬅️ Захід',east:'➡️ Схід',all:'🌐 Всі зони'};
+const WORKER_URL = 'https://adscreen-upload.ckbbuild.workers.dev';
+const TRIAL_DAYS = 3;
+let currentUser = null;
+let clientData  = null;
+let isRegistering = false;
+
+// ── TRIAL HELPERS ──
+function trialDaysLeft(trialEnd) {
+  if (!trialEnd) return 0;
+  const end = trialEnd.toDate ? trialEnd.toDate() : new Date(trialEnd);
+  const diff = end - new Date();
+  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+}
+
+function renderTrialUI(daysLeft) {
+  const chip = document.getElementById('trial-chip');
+  const wrap = document.getElementById('trial-banner-wrap');
+
+  if (daysLeft > 1) {
+    chip.className = 'trial-chip ok';
+    chip.textContent = `Тріал: ${daysLeft}д`;
+    wrap.innerHTML = `<div class="trial-banner ok">
+      <div><div class="trial-banner-text">✅ Тестовий період активний</div>
+      <div class="trial-banner-sub">Залишилось ${daysLeft} ${daysLeft===1?'день':daysLeft<5?'дні':'днів'} безкоштовно</div></div>
+    </div>`;
+  } else if (daysLeft === 1) {
+    chip.className = 'trial-chip warn';
+    chip.textContent = 'Тріал: 1д';
+    wrap.innerHTML = `<div class="trial-banner warn">
+      <div><div class="trial-banner-text">⚠️ Останній день тестування!</div>
+      <div class="trial-banner-sub">Завтра доступ буде обмежено</div></div>
+      <button class="btn-upgrade" onclick="contactAdmin()">Продовжити</button>
+    </div>`;
+  } else {
+    chip.className = 'trial-chip expired';
+    chip.textContent = 'Тріал закінчився';
+    document.getElementById('expired-overlay').classList.add('active');
+  }
+}
+
+window.contactAdmin = () => {
+  window.location.href = 'mailto:ckbbuild@gmail.com?subject=AdScreen — Продовження тарифу&body=Привіт! Хочу продовжити доступ до AdScreen.';
+};
+
+// ── AUTH ──
+onAuthStateChanged(auth, async user => {
+  if (isRegistering) return;
+  if (user) {
+    const snap = await getDoc(doc(db, 'clients', user.uid));
+    if (snap.exists()) {
+      currentUser = user;
+      clientData  = { id: user.uid, ...snap.data() };
+      document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
+      const daysLeft = trialDaysLeft(clientData.trialEnd);
+      renderTrialUI(daysLeft);
+      showScreen('cabinet');
+      loadAll();
+      loadSettings();
+    } else {
+      await signOut(auth);
+      showErr('login', 'Акаунт не знайдено');
+    }
+  }
+});
+
+// ── LOGIN ──
+window.switchTab = (name, btn) => {
+  document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('tab-login').style.display   = name==='login'    ? 'block' : 'none';
+  document.getElementById('tab-register').style.display = name==='register' ? 'block' : 'none';
+};
+
+window.doLogin = async () => {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  showErr('login','');
+  if (!email||!pass) { showErr('login','Заповніть всі поля'); return; }
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) { showErr('login','Невірний email або пароль'); }
+};
+
+window.doRegister = async () => {
+  const company = document.getElementById('reg-company').value.trim();
+  const city    = document.getElementById('reg-city').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-password').value;
+  showErr('reg','');
+  if (!company||!city||!email||!pass) { showErr('reg','Заповніть всі поля'); return; }
+  if (pass.length < 6) { showErr('reg','Пароль мінімум 6 символів'); return; }
+  try {
+    isRegistering = true;
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid  = cred.user.uid;
+
+    // Тріал — 3 дні
+    const trialEnd = new Date();
+    trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
+
+    // Спочатку записуємо клієнта
+    await setDoc(doc(db, 'clients', uid), {
+      name: company, city, email,
+      emoji: getEmoji(company),
+      status: 'trial',
+      trialEnd: Timestamp.fromDate(trialEnd),
+      licenseCount: 1,
+      createdAt: serverTimestamp()
+    });
+
+    // Потім ліцензію
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const code = `ADS-${uid.slice(-4).toUpperCase()}-${part}-001`;
+    await addDoc(collection(db,'licenses'), {
+      code, clientId: uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+
+    // Тепер вмикаємо onAuthStateChanged і входимо
+    isRegistering = false;
+    currentUser = cred.user;
+    clientData  = { id: uid, name: company, city, email, emoji: getEmoji(company), status:'trial', trialEnd: Timestamp.fromDate(trialEnd), licenseCount: 1 };
+    document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
+    renderTrialUI(TRIAL_DAYS);
+    showScreen('cabinet');
+    loadAll();
+    loadSettings();
+    showToast('✅ Акаунт створено! Тестовий період: 3 дні');
+  } catch(e) {
+    isRegistering = false;
+    showErr('reg', e.code==='auth/email-already-in-use' ? 'Цей email вже зареєстровано' : e.message);
+  }
+};
+
+window.doLogout = async () => {
+  await signOut(auth);
+  window.location.href = 'https://adscreen.online';
+};
+
+// ── SCREENS / TABS ──
+function showScreen(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + n).classList.add('active');
+}
+window.showTab = (name, btn) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  btn.classList.add('on');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'stats') renderStats();
+};
+
+window.addNewLicense = async () => {
+  const btn = document.getElementById('btn-add-license');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Створення...'; }
+  try {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    // Порядковий номер ліцензії, щоб не було колізій з попередніми кодами
+    const existing = await getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid)));
+    const num = String(existing.size + 1).padStart(3,'0');
+    const code = `ADS-${uidPart}-${part}-${num}`;
+    await addDoc(collection(db,'licenses'), {
+      code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+    showToast('✅ Новий код створено: ' + code);
+    await loadAll();
+  } catch(e) {
+    showToast('⚠️ Помилка створення ліцензії');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '➕ Ще один пристрій'; }
+  }
+};
+
+// ── LOAD ALL ──
+async function loadAll() {
+  const [lics, devs, bans] = await Promise.all([
+    getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'devices'),  where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'banners'),  where('clientId','==',currentUser.uid)))
+  ]);
+  let licenses = lics.docs.map(d=>({id:d.id,...d.data()}));
+
+  // Якщо ліцензій немає — створюємо одну з правильним clientId
+  if (licenses.length === 0) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    const code = `ADS-${uidPart}-${part}-001`;
+    const licRef = await addDoc(collection(db,'licenses'), {
+      code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+    licenses = [{ id: licRef.id, code, clientId: currentUser.uid, status:'free' }];
+  }
+  const devices  = devs.docs.map(d=>({id:d.id,...d.data()}));
+  const banners  = bans.docs.map(d=>({id:d.id,...d.data()}));
+  const active   = banners.filter(b=>b.status==='active');
+  const shows    = banners.reduce((s,b)=>s+(b.shows||0),0);
+  const qr       = banners.reduce((s,b)=>s+(b.qrScans||0),0);
+
+  document.getElementById('ov-devices').textContent = devices.length;
+  document.getElementById('ov-banners').textContent = active.length;
+  document.getElementById('ov-shows').textContent   = shows;
+  document.getElementById('ov-qr').textContent      = qr;
+
+  renderLicenses(licenses);
+  renderActiveBanners(active);
+  renderDevices(devices, licenses);
+  renderDevicePicker(devices);
+  renderBanners(banners);
+}
+
+let _allLicenses = [];
+let _allBanners = [];
+
+function renderLicenses(licenses) {
+  _allLicenses = licenses;
+  renderCombined();
+}
+
+function renderActiveBanners(banners) {
+  _allBanners = banners;
+  renderCombined();
+}
+
+function renderCombined() {
+  const el = document.getElementById('ov-combined');
+  const licenses = _allLicenses;
+  const banners = _allBanners;
+  if (!licenses.length && !banners.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div>';
+    return;
+  }
+  const many = licenses.length > 2;
+  const licsHtml = licenses.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin-bottom:6px;">МОЇ ЛІЦЕНЗІЇ</div>
+    ${many ? `
+      <div class="lic-item" onclick="toggleLicModal()" style="cursor:pointer;">
+        <div class="lic-code">${licenses[0].code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${licenses[0].status==='used'?'badge-accent':'badge-green'}">${licenses[0].status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="event.stopPropagation();copyCode('${licenses[0].code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+          <span style="color:var(--muted);font-size:12px;">+${licenses.length-1} ▼</span>
+        </div>
+      </div>` :
+    licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('')}
+  ` : '';
+
+  const bannersHtml = banners.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin:10px 0 6px;">АКТИВНІ БАНЕРИ</div>
+    ${banners.map(b=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
+        <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
+        <span class="badge badge-green">Live</span>
+      </div>`).join('')}
+  ` : '';
+
+  el.innerHTML = licsHtml + bannersHtml;
+
+  // Модалка якщо багато ліцензій
+  if (many) {
+    if (!document.getElementById('lic-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'lic-modal';
+      modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;';
+      modal.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-weight:700;font-size:16px;">Всі ліцензії</div>
+          <button onclick="toggleLicModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div id="lic-modal-list"></div>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.onclick = e => { if(e.target===modal) toggleLicModal(); };
+    }
+    document.getElementById('lic-modal-list').innerHTML = licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+window.toggleLicModal = () => {
+  const m = document.getElementById('lic-modal');
+  if (m) m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+};
+
+window.copyCode = (code) => {
+  navigator.clipboard.writeText(code).then(() => showToast('✅ Код скопійовано!')).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = code; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('✅ Код скопійовано!');
+  });
+};
+
+
+
+function renderDevices(devices, licenses) {
+  const freeLics = licenses.filter(l=>l.status==='free');
+  const sel = document.getElementById('act-code');
+  sel.innerHTML = '<option value="">— Оберіть код —</option>' +
+    freeLics.map(l=>`<option value="${l.id}">${l.code}</option>`).join('');
+  const el = document.getElementById('devices-list');
+  if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
+  el.innerHTML = devices.map(d=>`
+    <div class="device-item">
+      <div class="device-icon">📱</div>
+      <div class="device-info">
+        <div class="device-name">${d.name}</div>
+        <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}</div>
+      </div>
+      <span class="zone-chip-blue">${ZONES[d.zone]||d.zone}</span>
+      <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
+      <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
+    </div>`).join('');
+}
+
+window.activateDevice = async () => {
+  const licId = document.getElementById('act-code').value;
+  const name  = document.getElementById('act-name').value.trim();
+  const zone  = document.getElementById('act-zone').value;
+  if (!licId) { showToast('⚠️ Оберіть ліцензійний код'); return; }
+  if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
+  const licSnap = await getDoc(doc(db,'licenses',licId));
+  const lic = licSnap.data();
+  const deviceData = {
+    clientId:currentUser.uid, licenseId:licId,
+    code:lic.code, name, zone,
+    activatedAt:serverTimestamp(), online:true
+  };
+  await addDoc(collection(db,'devices'), deviceData);
+  await updateDoc(doc(db,'licenses',licId), {status:'used'});
+  document.getElementById('act-name').value='';
+  showToast(`✅ "${name}" активовано!`);
+  loadAll();
+};
+
+window.removeDevice = async (deviceId, licenseId) => {
+  if (!confirm('Деактивувати пристрій?')) return;
+  await deleteDoc(doc(db,'devices',deviceId));
+  if (licenseId) await updateDoc(doc(db,'licenses',licenseId),{status:'free'});
+  showToast('🗑️ Пристрій деактивовано');
+  loadAll();
+};
+
+// ── BANNERS ──
+window.toggleZone = btn => {
+  const zone = btn.dataset.zone;
+  if (zone==='all') {
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  } else {
+    document.querySelector('[data-zone="all"]').classList.remove('selected');
+    btn.classList.toggle('selected');
+    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b=>b.classList.contains('selected'));
+    if (!any) document.querySelector('[data-zone="all"]').classList.add('selected');
+  }
+};
+
+function getSelectedZones() {
+  if (document.querySelector('[data-zone="all"]').classList.contains('selected')) return ['all'];
+  return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
+}
+
+function getSelectedDevices() {
+  return [...document.querySelectorAll('.device-btn.selected')].map(b=>b.dataset.code);
+}
+
+window.toggleDevice = (btn) => {
+  btn.classList.toggle('selected');
+};
+
+function renderDevicePicker(devices) {
+  const el = document.getElementById('devices-picker');
+  if (!devices.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--muted);">Пристроїв ще немає — спочатку активуйте хоча б один у вкладці «Пристрої»</div>';
+    return;
+  }
+  el.innerHTML = devices.map(d=>`
+    <button class="zone-btn device-btn" data-code="${d.code}" onclick="toggleDevice(this)">📱 ${d.name}</button>
+  `).join('');
+}
+
+window.previewImage = input => {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
+  document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('file-preview');
+    p.src = e.target.result; p.style.display='block';
+  };
+  reader.readAsDataURL(file);
+};
+
+const dropZone = document.getElementById('file-drop');
+dropZone.addEventListener('dragover', e=>{e.preventDefault();dropZone.classList.add('over');});
+dropZone.addEventListener('dragleave', ()=>dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('over');
+  const file = e.dataTransfer.files[0];
+  if (file&&file.type.startsWith('image/')) {
+    const dt=new DataTransfer(); dt.items.add(file);
+    document.getElementById('bn-image').files=dt.files;
+    window.previewImage(document.getElementById('bn-image'));
+  }
+});
+
+window.addBanner = async () => {
+  const title    = document.getElementById('bn-title').value.trim();
+  const duration = parseInt(document.getElementById('bn-duration').value);
+  const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
+  const zones    = getSelectedZones();
+  const deviceCodes = getSelectedDevices();
+  const imageFile = document.getElementById('bn-image').files[0];
+  if (!title) { 
+    document.getElementById('bn-title').style.borderColor = 'var(--red)';
+    document.getElementById('bn-title').focus();
+    showToast('⚠️ Введіть назву банера!'); 
+    return; 
+  }
+  document.getElementById('bn-title').style.borderColor = '';
+  if (!duration || duration < 1) {
+    document.getElementById('bn-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість реклами (сек)!');
+    return;
+  }
+  document.getElementById('bn-duration').style.borderColor = '';
+  if (!bgDuration || bgDuration < 1) {
+    document.getElementById('bn-bg-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість фону (сек)!');
+    return;
+  }
+  document.getElementById('bn-bg-duration').style.borderColor = '';
+  if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
+  showToast('⏳ Збереження...');
+  try {
+    let imageUrl = '';
+    let storagePath = null;
+    let isVideo = false;
+
+    if (imageFile) {
+      isVideo = imageFile.type.startsWith('video/');
+      if (isVideo && imageFile.size > 200 * 1024 * 1024) {
+        showToast('⚠️ Відео занадто велике. Максимум 200MB');
+        return;
+      }
+      // Завантажуємо через Worker
+      const idToken = await currentUser.getIdToken();
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('folder', 'banners');
+      const res = await fetch(`${WORKER_URL}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${idToken}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Upload failed');
+      imageUrl = data.url;
+      storagePath = data.key || null;
+    }
+
+    const voiceText = document.getElementById('bn-voice').value.trim();
+    await addDoc(collection(db,'banners'),{
+      clientId:currentUser.uid, title, duration, bgDuration, zones, deviceCodes,
+      imageUrl, storagePath,
+      type: isVideo ? 'video' : 'image',
+      voiceText: voiceText || '',
+      status:'active', shows:0, qrScans:0,
+      createdAt:serverTimestamp()
+    });
+    document.getElementById('bn-title').value='';
+    document.getElementById('bn-image').value='';
+
+    document.getElementById('bn-voice').value='';
+    const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
+    document.getElementById('drop-icon').textContent='🖼';
+    document.getElementById('drop-text').innerHTML='Перетягніть або <span>оберіть файл</span>';
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
+    document.querySelector('[data-zone="all"]').classList.add('selected');
+    showToast('✅ Банер опубліковано!');
+    loadAll();
+  } catch(e) { showToast('❌ '+e.message); }
+};
+
+function renderBanners(banners) {
+  const el = document.getElementById('banners-grid');
+  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
+  el.innerHTML=`<div class="banner-grid">${banners.map(b=>`
+    <div class="banner-card">
+      ${b.imageUrl ? (b.type==='video' ? `<video class="banner-img" src="${b.imageUrl}" muted autoplay loop></video>` : `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`) : '<div class="banner-img-ph">🖼</div>'}
+      <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
+      <div class="banner-info">
+        <div class="banner-title">${b.title}</div>
+        <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
+        ${(b.deviceCodes && b.deviceCodes.length) ? `<div class="banner-zones">${b.deviceCodes.map(c=>`<span class="zone-chip" style="background:var(--accent-dim);color:var(--accent);">📱 ${c}</span>`).join('')}</div>` : ''}
+        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів · ${b.qrScans||0} QR</div>
+        <div class="banner-actions">
+          <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
+            ${b.status==='active'?'⏸ Пауза':'▶️ Старт'}
+          </button>
+          <button class="btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️ Видалити</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+window.toggleBanner = async (id,current) => {
+  const s = current==='active'?'paused':'active';
+  await updateDoc(doc(db,'banners',id),{status:s});
+  showToast(s==='active'?'▶️ Активовано':'⏸ Призупинено');
+  loadAll();
+};
+
+window.deleteBanner = async (id,storagePath) => {
+  if (!confirm('Видалити банер?')) return;
+  await deleteDoc(doc(db,'banners',id));
+  if (storagePath) try { await deleteObject(ref(storage,storagePath)); } catch(e){}
+  showToast('🗑️ Видалено');
+  loadAll();
+};
+
+async function renderStats() {
+  const snap = await getDocs(query(collection(db,'banners'),where('clientId','==',currentUser.uid)));
+  const banners = snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total = banners.reduce((s,b)=>s+(b.shows||0),0);
+  const qr    = banners.reduce((s,b)=>s+(b.qrScans||0),0);
+  const conv  = total>0?((qr/total)*100).toFixed(1):0;
+  document.getElementById('st-total').textContent=total;
+  document.getElementById('st-qr').textContent=qr;
+  document.getElementById('st-conv').textContent=conv+'%';
+  const zd={center:0,north:0,south:0,west:0,east:0};
+  banners.forEach(b=>{
+    const zones=(b.zones||[]).includes('all')?Object.keys(zd):(b.zones||[]);
+    zones.forEach(z=>{if(zd[z]!==undefined)zd[z]+=(b.shows||0)/zones.length;});
+  });
+  const maxZ=Math.max(...Object.values(zd),1);
+  document.getElementById('stats-zones').innerHTML=Object.entries(zd).map(([z,v])=>`
+    <div class="chart-bar-wrap">
+      <div class="chart-label"><span>${ZONES[z]}</span><span>${Math.round(v)}</span></div>
+      <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${(v/maxZ*100).toFixed(1)}%"></div></div>
+    </div>`).join('')||'<div class="empty">Даних немає</div>';
+  const maxB=Math.max(...banners.map(b=>b.shows||0),1);
+  document.getElementById('stats-banners').innerHTML=banners.map(b=>`
+    <div class="chart-bar-wrap">
+      <div class="chart-label"><span>${b.title}</span><span>${b.shows||0} · ${b.qrScans||0} QR</span></div>
+      <div class="chart-bar-track"><div class="chart-bar-fill green" style="width:${((b.shows||0)/maxB*100).toFixed(1)}%"></div></div>
+    </div>`).join('')||'<div class="empty">Банерів немає</div>';
+}
+
+function getEmoji(name) {
+  const n=name.toLowerCase();
+  if(n.includes('піц')||n.includes('piz'))return'🍕';
+  if(n.includes('кав')||n.includes('cof'))return'☕';
+  if(n.includes('такс')||n.includes('taxi'))return'🚕';
+  if(n.includes('спорт')||n.includes('gym'))return'💪';
+  if(n.includes('клін'))return'🏥';
+  if(n.includes('ресто'))return'🍽️';
+  if(n.includes('готел'))return'🏨';
+  if(n.includes('гаджет')||n.includes('смарт'))return'📱';
+  return'🏢';
+}
+
+// ── SETTINGS ──
+window.previewBg = input => {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('bg-preview');
+    p.src = e.target.result; p.style.display = 'block';
+    document.getElementById('bg-drop-icon').textContent = '✅';
+    document.getElementById('bg-drop-text').innerHTML = `<span>${file.name}</span>`;
+  };
+  reader.readAsDataURL(file);
+};
+
+window.saveBg = async () => {
+  const file = document.getElementById('bg-image').files[0];
+  if (!file) { showToast('⚠️ Оберіть зображення'); return; }
+  showToast('⏳ Завантаження...');
+  try {
+    const idToken = await currentUser.getIdToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'backgrounds');
+    const res = await fetch(`${WORKER_URL}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${idToken}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Upload failed');
+    const bgUrl = data.url;
+    await saveSettingsToFirestore({ bgUrl });
+    // Show current
+    document.getElementById('bg-current').style.display = 'block';
+    document.getElementById('bg-current-img').src = bgUrl;
+    showToast('✅ Фон збережено!');
+  } catch(e) { showToast('❌ ' + e.message); }
+};
+
+window.removeBg = async () => {
+  await saveSettingsToFirestore({ bgUrl: '' });
+  document.getElementById('bg-current').style.display = 'none';
+  document.getElementById('bg-preview').style.display = 'none';
+  document.getElementById('bg-image').value = '';
+  document.getElementById('bg-drop-icon').textContent = '🎨';
+  document.getElementById('bg-drop-text').innerHTML = 'Завантажте фонове зображення — <span>оберіть файл</span>';
+  showToast('🗑️ Фон видалено');
+};
+
+window.saveTimings = async () => {
+  const bgTime = parseInt(document.getElementById('timing-bg').value);
+  const pauseTime = parseInt(document.getElementById('timing-pause').value);
+  if (!bgTime || bgTime < 1 || !pauseTime || pauseTime < 1) {
+    showToast('⚠️ Введіть коректну кількість секунд (більше 0)');
+    return;
+  }
+  await saveSettingsToFirestore({ 
+    bgTime, pauseTime,
+    bgUrl: clientData?.settings?.bgUrl || ''
+  });
+  showToast('✅ Тайминг збережено');
+};
+
+async function saveSettingsToFirestore(data) {
+  if (!currentUser) return;
+  const settings = data || {};
+  await updateDoc(doc(db,'clients',currentUser.uid), { settings });
+}
+
+async function loadSettings() {
+  if (!clientData?.settings) return;
+  const s = clientData.settings;
+  if (s.bgUrl) {
+    document.getElementById('bg-current').style.display = 'block';
+    document.getElementById('bg-current-img').src = s.bgUrl;
+  }
+  if (s.bgTime) document.getElementById('timing-bg').value = s.bgTime;
+  if (s.pauseTime) document.getElementById('timing-pause').value = s.pauseTime;
+}
+
+window.toggleHelp = (id) => {
+  const panel = document.getElementById(id);
+  panel.classList.toggle('open');
+  const btn = panel.previousElementSibling.querySelector('.help-btn');
+  if (btn) btn.textContent = panel.classList.contains('open') ? '✕ Закрити' : '? Допомога';
+};
+
+function showErr(form,msg){document.getElementById(form+'-err').textContent=msg;}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+</script>
+</body>
+</html>
