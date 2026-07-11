@@ -133,6 +133,7 @@
     <button class="tab" onclick="showTab('clients',this)">Клієнти</button>
     <button class="tab" onclick="showTab('licenses',this)">Ліцензії</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
+    <button class="tab" onclick="showTab('platformads',this)">⚽ Реклама табло</button>
   </div>
   <div class="content">
     <div class="page active" id="page-dashboard">
@@ -176,6 +177,23 @@
       <div class="sec-title">Активні пристрої</div>
       <div class="card" id="devices-list"><div class="loading">Завантаження...</div></div>
     </div>
+
+    <div class="page" id="page-platformads">
+      <div class="sec-title">Реклама AdScreen для табло (тайм-аут / початок перерви)</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+          Ці банери показуються на <b style="color:var(--text);">всіх</b> безкоштовних табло-екранах (школи, турніри) —
+          під час тайм-ауту та на початку кожної перерви. Судді нічого не завантажують самі.<br>
+          Розмір — <b style="color:var(--text);">горизонтальний, 1920×1080</b> (фото JPG/PNG до 32MB, відео до 200MB).
+        </div>
+        <div class="field"><label>Назва (для себе)</label><input class="inp" id="pa-title" placeholder="Напр. AdScreen — промо жовтень"></div>
+        <input type="file" id="pa-file" accept="image/*,video/*" style="width:100%;margin:10px 0;font-size:13px;color:var(--muted);">
+        <button class="btn-primary" onclick="uploadPlatformAd()" id="btn-pa-upload">⬆️ Завантажити</button>
+        <div id="pa-status" style="font-size:12px;margin-top:10px;color:var(--muted);"></div>
+      </div>
+      <div class="sec-title">Завантажені банери</div>
+      <div class="card" id="platformads-list"><div class="loading">Завантаження...</div></div>
+    </div>
   </div>
 </div>
 
@@ -214,6 +232,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const SUPER_ADMIN = "ckbbuild@gmail.com";
+const WORKER_URL = 'https://adscreen-upload.ckbbuild.workers.dev';
 
 let currentModal = null;
 
@@ -260,6 +279,7 @@ window.showTab = (name, btn) => {
   document.getElementById('page-' + name).classList.add('active');
   if (name === 'licenses') loadLicenses();
   if (name === 'devices') loadDevices();
+  if (name === 'platformads') loadPlatformAds();
 };
 
 // ── LOAD ALL ──
@@ -424,6 +444,85 @@ async function loadDevices() {
     </div>`;
   }).join('');
 }
+
+// ── PLATFORM ADS (реклама AdScreen для табло) ──
+window.uploadPlatformAd = async () => {
+  const titleEl = document.getElementById('pa-title');
+  const fileInput = document.getElementById('pa-file');
+  const status = document.getElementById('pa-status');
+  const btn = document.getElementById('btn-pa-upload');
+  const file = fileInput.files[0];
+  const title = titleEl.value.trim() || 'AdScreen';
+  if (!file) { status.textContent = '⚠️ Оберіть файл'; status.style.color = 'var(--red)'; return; }
+
+  const isVideo = file.type.startsWith('video/');
+  if (isVideo && file.size > 200*1024*1024) { status.textContent = '⚠️ Відео завелике (макс. 200MB)'; status.style.color='var(--red)'; return; }
+  if (!isVideo && file.size > 32*1024*1024) { status.textContent = '⚠️ Фото завелике (макс. 32MB)'; status.style.color='var(--red)'; return; }
+
+  btn.disabled = true;
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ Завантаження...';
+  try {
+    const idToken = await auth.currentUser.getIdToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', 'platform-ads');
+    const res = await fetch(`${WORKER_URL}/upload`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${idToken}` },
+      body: formData
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Помилка завантаження');
+
+    await addDoc(collection(db,'platformAds'), {
+      title, imageUrl: data.url, storagePath: data.key || null,
+      type: isVideo ? 'video' : 'image',
+      status: 'active', createdAt: serverTimestamp()
+    });
+
+    status.style.color = 'var(--green)';
+    status.textContent = '✅ Завантажено';
+    titleEl.value = ''; fileInput.value = '';
+    loadPlatformAds();
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = '❌ ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+async function loadPlatformAds() {
+  const el = document.getElementById('platformads-list');
+  el.innerHTML = '<div class="loading">Завантаження...</div>';
+  const snap = await getDocs(collection(db,'platformAds'));
+  if (!snap.size) { el.innerHTML = '<div class="empty"><div class="empty-icon">⚽</div>Ще немає завантажених банерів</div>'; return; }
+  el.innerHTML = snap.docs.map(d => {
+    const a = d.data();
+    const isOn = a.status === 'active';
+    return `<div class="client-item">
+      <div class="client-avatar">${a.type === 'video' ? '🎬' : '🖼'}</div>
+      <div class="client-info">
+        <div class="client-name">${a.title || 'AdScreen'}</div>
+        <div class="client-meta">${a.type === 'video' ? 'Відео' : 'Фото'} · ${isOn ? 'Активний' : 'На паузі'}</div>
+      </div>
+      <button class="btn-secondary" style="margin-right:8px;" onclick="togglePlatformAd('${d.id}',${isOn})">${isOn ? '⏸ Пауза' : '▶ Увімкнути'}</button>
+      <button class="btn-secondary" style="border-color:var(--red);color:var(--red);" onclick="deletePlatformAd('${d.id}','${a.storagePath||''}')">🗑️</button>
+    </div>`;
+  }).join('');
+}
+
+window.togglePlatformAd = async (id, isOn) => {
+  await updateDoc(doc(db,'platformAds',id), { status: isOn ? 'paused' : 'active' });
+  loadPlatformAds();
+};
+
+window.deletePlatformAd = async (id, storagePath) => {
+  if (!confirm('Видалити цей банер табло?')) return;
+  await deleteDoc(doc(db,'platformAds',id));
+  loadPlatformAds();
+};
 
 // ── RENDER CLIENTS ──
 function renderClientList(clients, elId, limit) {
