@@ -310,10 +310,16 @@
         <div class="activate-card-title">➕ Підключити пристрій</div>
         <div class="activate-card-sub">Відкрийте плеєр на планшеті або ТВ, введіть код і оберіть зону</div>
         <div class="activate-form">
-          <div class="field"><label>Ліцензійний код</label>
-            <select class="inp" id="act-code"><option value="">— Оберіть код —</option></select>
-          </div>
+          <input type="hidden" id="act-code">
           <div class="field"><label>Назва пристрою</label><input class="inp" id="act-name" placeholder="Таксі #12 / Зал А"></div>
+          <div class="field"><label>Місто</label>
+            <button type="button" class="inp" id="act-city-btn" onclick="openCityModal()"
+              style="text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+              <span id="act-city-label" style="color:var(--hint);">— Оберіть місто —</span>
+              <span style="color:var(--muted);">🔍</span>
+            </button>
+            <input type="hidden" id="act-city">
+          </div>
           <div class="field"><label>Зона</label>
             <select class="inp" id="act-zone">
               <option value="center">🏙 Центр</option>
@@ -341,6 +347,18 @@
           <div class="field" style="align-self:flex-end;">
             <button class="btn-activate" onclick="activateDevice()">Активувати</button>
           </div>
+        </div>
+      </div>
+
+      <!-- Модалка вибору міста (як у Новій пошті) -->
+      <div id="city-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:flex-start;justify-content:center;padding-top:60px;">
+        <div class="card" style="max-width:400px;width:90%;max-height:80vh;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="font-size:16px;font-weight:700;">Оберіть місто</div>
+            <button onclick="closeCityModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+          </div>
+          <input class="inp" id="city-search" oninput="filterCities()" placeholder="🔍 Почніть вводити назву міста..." style="margin-bottom:12px;" autofocus>
+          <div id="city-list" style="overflow-y:auto;flex:1;"></div>
         </div>
       </div>
       <div class="sec-title">Мої пристрої</div>
@@ -637,12 +655,53 @@ const CATEGORY_LABELS = {
 
 let _allDevices = [];
 
+// ── МІСТО (модалка як у Новій пошті) ──
+const UA_CITIES = [
+  'Київ','Харків','Одеса','Дніпро','Донецьк','Запоріжжя','Львів','Кривий Ріг',
+  'Миколаїв','Маріуполь','Луганськ','Вінниця','Макіївка','Севастополь','Симферополь',
+  'Херсон','Полтава','Чернігів','Черкаси','Житомир','Суми','Хмельницький','Чернівці',
+  'Горлівка','Рівне','Кам\'янське','Кропивницький','Івано-Франківськ','Тернопіль',
+  'Луцьк','Біла Церква','Краматорськ','Мелітополь','Керч','Нікополь','Слов\'янськ',
+  'Ужгород','Бердянськ','Алчевськ','Павлоград','Сєвєродонецьк','Лисичанськ',
+  'Кам\'янець-Подільський','Умань','Бровари','Ірпінь','Буча'
+];
+
+window.openCityModal = () => {
+  document.getElementById('city-modal').style.display = 'flex';
+  document.getElementById('city-search').value = '';
+  renderCityList(UA_CITIES);
+  document.getElementById('city-search').focus();
+};
+window.closeCityModal = () => {
+  document.getElementById('city-modal').style.display = 'none';
+};
+window.filterCities = () => {
+  const q = document.getElementById('city-search').value.trim().toLowerCase();
+  const filtered = q ? UA_CITIES.filter(c => c.toLowerCase().includes(q)) : UA_CITIES;
+  renderCityList(filtered);
+};
+function renderCityList(list) {
+  const el = document.getElementById('city-list');
+  if (!list.length) { el.innerHTML = '<div class="empty" style="padding:20px 0;">Місто не знайдено</div>'; return; }
+  el.innerHTML = list.map(c => `
+    <div onclick="selectCity('${c.replace(/'/g,"\\'")}')"
+      style="padding:12px 10px;cursor:pointer;border-bottom:1px solid var(--border);font-size:14px;"
+      onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+      📍 ${c}
+    </div>`).join('');
+}
+window.selectCity = (city) => {
+  document.getElementById('act-city').value = city;
+  document.getElementById('act-city-label').textContent = '📍 ' + city;
+  document.getElementById('act-city-label').style.color = 'var(--text)';
+  closeCityModal();
+};
+
 function renderDevices(devices, licenses) {
   _allDevices = devices;
   const freeLics = licenses.filter(l=>l.status==='free');
-  const sel = document.getElementById('act-code');
-  sel.innerHTML = '<option value="">— Оберіть код —</option>' +
-    freeLics.map(l=>`<option value="${l.id}">${l.code}</option>`).join('');
+  // Ліцензійний код більше не обирається вручну — автоматично береться перший вільний
+  document.getElementById('act-code').value = freeLics.length ? freeLics[0].id : '';
   renderDeviceList(devices);
 }
 
@@ -651,6 +710,7 @@ window.filterDevices = () => {
   if (!q) { renderDeviceList(_allDevices); return; }
   const filtered = _allDevices.filter(d =>
     (d.name||'').toLowerCase().includes(q) ||
+    (d.city||'').toLowerCase().includes(q) ||
     (CATEGORY_LABELS[d.category]||'').toLowerCase().includes(q) ||
     (ZONES[d.zone]||d.zone||'').toLowerCase().includes(q)
   );
@@ -665,7 +725,7 @@ function renderDeviceList(devices) {
       <div class="device-icon">📱</div>
       <div class="device-info">
         <div class="device-name">${d.name}</div>
-        <div class="device-meta">${d.code} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.hours ? ' · 🕐 '+d.hours : ''}</div>
+        <div class="device-meta">${d.code}${d.city ? ' · 📍'+d.city : ''} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.hours ? ' · 🕐 '+d.hours : ''}</div>
       </div>
       ${d.mapsUrl ? `<a href="${d.mapsUrl}" target="_blank" style="color:var(--blue);font-size:18px;text-decoration:none;margin-right:8px;" title="Google Maps">📍</a>` : ''}
       <span class="zone-chip-blue">${ZONES[d.zone]||d.zone}</span>
@@ -685,14 +745,16 @@ window.showTab = (name, btn) => {
 window.activateDevice = async () => {
   const licId = document.getElementById('act-code').value;
   const name  = document.getElementById('act-name').value.trim();
+  const city  = document.getElementById('act-city').value.trim();
   const zone  = document.getElementById('act-zone').value;
-  if (!licId) { showToast('⚠️ Оберіть ліцензійний код'); return; }
+  if (!licId) { showToast('⚠️ Немає вільних ліцензійних кодів — зверніться до адміністратора'); return; }
   if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
+  if (!city)  { showToast('⚠️ Оберіть місто'); return; }
   const licSnap = await getDoc(doc(db,'licenses',licId));
   const lic = licSnap.data();
   const deviceData = {
     clientId:currentUser.uid, licenseId:licId,
-    code:lic.code, name, zone,
+    code:lic.code, name, zone, city,
     category: document.getElementById('act-category').value,
     hours: document.getElementById('act-hours').value.trim(),
     mapsUrl: document.getElementById('act-maps').value.trim(),
@@ -701,6 +763,9 @@ window.activateDevice = async () => {
   await addDoc(collection(db,'devices'), deviceData);
   await updateDoc(doc(db,'licenses',licId), {status:'used'});
   document.getElementById('act-name').value='';
+  document.getElementById('act-city').value='';
+  document.getElementById('act-city-label').textContent='— Оберіть місто —';
+  document.getElementById('act-city-label').style.color='var(--hint)';
   showToast(`✅ "${name}" активовано!`);
   loadAll();
 };
