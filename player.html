@@ -758,6 +758,9 @@ window.promptMatchCode = () => {
 };
 
 let matchUnsub = null;
+let lastMatchPhase = null;
+const BREAK_START_AD_DURATION = 30000; // реклама на початку перерви, мс
+
 function subscribeMatch(code) {
   if (matchUnsub) { matchUnsub(); matchUnsub = null; }
   matchUnsub = onSnapshot(doc(db, 'matches', code), snap => {
@@ -765,30 +768,39 @@ function subscribeMatch(code) {
     const d = snap.data();
     lastMatchData = d;
     const now = Date.now();
+
+    // Тайм-аут (кнопка судді)
     if (d.timeoutEnd && d.timeoutEnd > now) {
-      if (!matchTimeoutActive) startMatchTimeoutAd(d.clientId, d.timeoutEnd - now);
-    } else if (matchTimeoutActive) {
+      if (!matchTimeoutActive) startMatchTimeoutAd(d.timeoutEnd - now);
+      lastMatchPhase = d.phase;
+      return;
+    }
+    if (matchTimeoutActive) {
       // Тайм-аут скасовано достроково з панелі судді
       clearTimeout(matchTimeoutRevertTimer);
       endMatchTimeoutAd();
-    } else {
+    }
+
+    // Початок нової перерви — теж короткий показ реклами AdScreen
+    if (d.phase === 'break' && lastMatchPhase !== 'break' && !matchTimeoutActive) {
+      startMatchTimeoutAd(BREAK_START_AD_DURATION);
+    } else if (!matchTimeoutActive) {
       renderMatchBoard(d);
     }
+    lastMatchPhase = d.phase;
   }, err => showDebug('⚠ табло: ' + (err.code||err.message)));
 }
 
-async function startMatchTimeoutAd(clientId, ms) {
+async function startMatchTimeoutAd(ms) {
   matchTimeoutActive = true;
   hideMatchBoard();
   const bannerFrame = document.getElementById('banner-frame');
   bannerFrame.style.display = '';
   try {
-    if (clientId) {
-      const snap = await getDocs(query(collection(db,'banners'), where('status','==','active'), where('clientId','==',clientId)));
-      const all = snap.docs.map(d=>({id:d.id,...d.data()}));
-      const ads = all.filter(b => b.timeoutOnly).length ? all.filter(b => b.timeoutOnly) : all;
-      if (ads.length) showTimeoutBanner(ads[Math.floor(Math.random()*ads.length)]);
-    }
+    // Реклама AdScreen — спільна для всіх табло, керується централізовано адміном
+    const snap = await getDocs(query(collection(db,'platformAds'), where('status','==','active')));
+    const ads = snap.docs.map(d=>({id:d.id,...d.data()}));
+    if (ads.length) showTimeoutBanner(ads[Math.floor(Math.random()*ads.length)]);
   } catch(e) {}
   matchTimeoutRevertTimer = setTimeout(endMatchTimeoutAd, Math.max(ms, 0));
 }
