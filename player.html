@@ -516,6 +516,7 @@ let adActive = true;
 let bannerTimeout = null;
 let isMuted = false;
 let currentGenre = null;
+let currentTag = 'lounge';
 let currentUtterance = null;
 
 // ── FORMAT CODE ──
@@ -984,14 +985,35 @@ function showBanner(banner) {
     if (wasPlaying) radio.pause();
     const resumeRadio = () => {
       if (!wasPlaying) return;
-      // Радіостанції часто рвуть з'єднання після паузи — просто play()
-      // на старому потоці зависає. Перепідключаємось з нуля.
-      radio.load();
-      radio.play().catch(() => setTimeout(() => radio.play().catch(()=>{}), 1500));
+      // Радіостанції часто не дозволяють переpid'єднатись до того самого потоку —
+      // тому просто беремо нову випадкову станцію того самого жанру
+      startRadioByTag(currentTag, currentGenre || 'Лаунж');
     };
-    video.oncanplay = () => { video.play(); activate(); };
-    video.onerror = () => { resumeRadio(); scheduleNext(); };
-    video.onended = () => { resumeRadio(); };
+    // Відео завжди грає до свого природного кінця — ніякого фіксованого
+    // таймера тут немає, щоб не обрізати ролик і не "губити" момент,
+    // коли треба повернути радіо
+    const finishVideo = () => {
+      resumeRadio();
+      lastBannerBgDuration = banner.bgDuration || null;
+      scheduleNext();
+    };
+    video.oncanplay = () => {
+      video.play();
+      document.getElementById('idle-frame').style.opacity = '0';
+      frame.classList.add('active');
+      try { updateDoc(doc(db,'banners',banner.id), { shows:(banner.shows||0)+1 }); } catch(e){}
+      if (banner.voiceText) setTimeout(() => speak(banner.voiceText), 800);
+      // Прогрес-бар синхронізуємо з РЕАЛЬНОЮ тривалістю відео, а не з полем "тривалість"
+      const realDur = (video.duration && isFinite(video.duration)) ? video.duration * 1000 : dur;
+      progress.style.transition = 'none';
+      progress.style.width = '0%';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        progress.style.transition = `width ${realDur}ms linear`;
+        progress.style.width = '100%';
+      }));
+    };
+    video.onerror = () => finishVideo();
+    video.onended = () => finishVideo();
   } else {
     video.style.display = 'none'; img.style.display = 'block';
     img.src = banner.imageUrl || '';
@@ -1015,7 +1037,7 @@ async function startRadioByTag(tag, name) {
   document.querySelector('.genre-btn.mute')?.classList.remove('active');
   const matchBtn = document.querySelector(`.genre-btn[data-tag="${tag}"]`);
   if (matchBtn) matchBtn.classList.add('active');
-  currentGenre = name; isMuted = false;
+  currentGenre = name; currentTag = tag; isMuted = false;
   document.getElementById('music-now').textContent = `♪ ${name}`;
 
   try {
