@@ -517,6 +517,7 @@ let bannerTimeout = null;
 let isMuted = false;
 let currentGenre = null;
 let currentTag = 'lounge';
+let videoIsPlaying = false; // поки true — радіо не має звучати (навіть якщо змінили жанр)
 let currentUtterance = null;
 
 // ── FORMAT CODE ──
@@ -983,10 +984,13 @@ function showBanner(banner) {
     const radio = document.getElementById('radio');
     const wasPlaying = !radio.paused;
     if (wasPlaying) radio.pause();
+    videoIsPlaying = true;
     const resumeRadio = () => {
-      if (!wasPlaying) return;
+      videoIsPlaying = false;
+      if (isMuted) return; // людина явно вимкнула звук — лишаємо тишу
       // Радіостанції часто не дозволяють переpid'єднатись до того самого потоку —
-      // тому просто беремо нову випадкову станцію того самого жанру
+      // тому просто беремо нову випадкову станцію того самого жанру (враховуючи
+      // можливу зміну жанру, зроблену прямо під час відео)
       startRadioByTag(currentTag, currentGenre || 'Лаунж');
     };
     // Відео завжди грає до свого природного кінця — ніякого фіксованого
@@ -1053,10 +1057,11 @@ async function startRadioByTag(tag, name) {
     radio.src = ''; radio.load();
     radio.src = pick.url_resolved || pick.url;
     radio.volume = 1;
+    document.getElementById('music-now').textContent = `♪ ${pick.name}`;
+    if (videoIsPlaying) return; // відео зі своїм звуком зараз важливіше — не накладаємо радіо зверху
     radio.play().then(hideSoundUnlock).catch(() => {
       setTimeout(() => radio.play().then(hideSoundUnlock).catch(showSoundUnlock), 1500);
     });
-    document.getElementById('music-now').textContent = `♪ ${pick.name}`;
   } catch(e) { showToast('❌ Помилка радіо'); }
 }
 
