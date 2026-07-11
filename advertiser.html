@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AdScreen — Кабінет клієнта</title>
+  <title>AdScreen — Кабінет рекламодавця</title>
   <style>
     :root{--bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;--border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;--accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);--text:#f0f0f0;--muted:#888;--hint:#555;--green:#3ddc84;--green-dim:rgba(61,220,132,.08);--green-border:rgba(61,220,132,.2);--red:#ff4d4d;--red-dim:rgba(255,77,77,.08);--blue:#4d9fff;--blue-dim:rgba(77,159,255,.08);}
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -206,7 +206,7 @@
 <div class="screen active" id="screen-login">
   <div class="login-wrap">
     <div class="logo">
-      <div class="logo-mark">Кабінет клієнта</div>
+      <div class="logo-mark">Кабінет рекламодавця</div>
       <div class="logo-name">Ad<span>Screen</span></div>
       <div class="logo-sub">3 дні безкоштовного тестування</div>
     </div>
@@ -257,7 +257,7 @@
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
-    <button class="tab" id="tab-banners" onclick="showTab('banners',this)">Банери</button>
+    <button class="tab" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
   </div>
@@ -375,6 +375,19 @@
               <button class="zone-btn" data-zone="west" onclick="toggleZone(this)">⬅️ Захід</button>
               <button class="zone-btn" data-zone="east" onclick="toggleZone(this)">➡️ Схід</button>
               <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Категорії закладів (необов'язково)</label>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Банер покажеться на екранах будь-яких власників з обраною категорією закладу — незалежно від того, чий це акаунт</div>
+            <div class="zones-picker" id="category-picker">
+              <button class="zone-btn category-btn" data-cat="cafe" onclick="toggleCategory(this)">☕ Кафе / ресторан</button>
+              <button class="zone-btn category-btn" data-cat="barbershop" onclick="toggleCategory(this)">💈 Барбершоп</button>
+              <button class="zone-btn category-btn" data-cat="beauty" onclick="toggleCategory(this)">💅 Б'юті-салон</button>
+              <button class="zone-btn category-btn" data-cat="spa" onclick="toggleCategory(this)">🧖 Спа</button>
+              <button class="zone-btn category-btn" data-cat="gym" onclick="toggleCategory(this)">🏋️ Спортзал</button>
+              <button class="zone-btn category-btn" data-cat="mall" onclick="toggleCategory(this)">🛍️ ТРЦ / магазин</button>
+              <button class="zone-btn category-btn" data-cat="other" onclick="toggleCategory(this)">📍 Інше</button>
             </div>
           </div>
           <div class="field">
@@ -592,8 +605,15 @@ onAuthStateChanged(auth, async user => {
   if (user) {
     const snap = await getDoc(doc(db, 'clients', user.uid));
     if (snap.exists()) {
+      const data = snap.data();
+      if (data.role && data.role !== 'advertiser') {
+        await signOut(auth);
+        const names = {owner:'Власника екрана (owner.html)', exchange:'Обмінника (exchange.html)'};
+        showErr('login', `Цей акаунт зареєстрований як ${names[data.role]||data.role}. Увійдіть через відповідний кабінет.`);
+        return;
+      }
       currentUser = user;
-      clientData  = { id: user.uid, ...snap.data() };
+      clientData  = { id: user.uid, ...data };
       document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
       const daysLeft = trialDaysLeft(clientData.trialEnd);
       renderTrialUI(daysLeft);
@@ -647,6 +667,7 @@ window.doRegister = async () => {
       name: company, city, email,
       emoji: getEmoji(company),
       status: 'trial',
+      role: 'advertiser',
       trialEnd: Timestamp.fromDate(trialEnd),
       licenseCount: 1,
       createdAt: serverTimestamp()
@@ -928,6 +949,14 @@ function getSelectedDevices() {
   return [...document.querySelectorAll('.device-btn.selected')].map(b=>b.dataset.code);
 }
 
+function getSelectedCategories() {
+  return [...document.querySelectorAll('.category-btn.selected')].map(b=>b.dataset.cat);
+}
+
+window.toggleCategory = (btn) => {
+  btn.classList.toggle('selected');
+};
+
 window.toggleDevice = (btn) => {
   btn.classList.toggle('selected');
 };
@@ -974,6 +1003,7 @@ window.addBanner = async () => {
   const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
   const zones    = getSelectedZones();
   const deviceCodes = getSelectedDevices();
+  const categories = getSelectedCategories();
   const imageFile = document.getElementById('bn-image').files[0];
   if (!title) { 
     document.getElementById('bn-title').style.borderColor = 'var(--red)';
@@ -1025,7 +1055,7 @@ window.addBanner = async () => {
 
     const voiceText = document.getElementById('bn-voice').value.trim();
     await addDoc(collection(db,'banners'),{
-      clientId:currentUser.uid, title, duration, bgDuration, zones, deviceCodes,
+      clientId:currentUser.uid, title, duration, bgDuration, zones, deviceCodes, categories,
       imageUrl, storagePath,
       type: isVideo ? 'video' : 'image',
       voiceText: voiceText || '',
@@ -1057,6 +1087,7 @@ function renderBanners(banners) {
         <div class="banner-title">${b.title}</div>
         <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
         ${(b.deviceCodes && b.deviceCodes.length) ? `<div class="banner-zones">${b.deviceCodes.map(c=>`<span class="zone-chip" style="background:var(--accent-dim);color:var(--accent);">📱 ${c}</span>`).join('')}</div>` : ''}
+        ${(b.categories && b.categories.length) ? `<div class="banner-zones">${b.categories.map(c=>`<span class="zone-chip" style="background:var(--blue-dim);color:var(--blue);">🏷 ${c}</span>`).join('')}</div>` : ''}
         <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів · ${b.qrScans||0} QR</div>
         <div class="banner-actions">
           <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
