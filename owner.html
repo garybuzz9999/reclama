@@ -341,7 +341,15 @@
             </select>
           </div>
           <div class="field"><label>Години роботи</label>
-            <input class="inp" id="act-hours" placeholder="Пн-Пт 9:00–21:00, Сб-Нд 10:00–18:00"></div>
+            <button type="button" class="inp" id="act-hours-btn" onclick="openHoursModal()"
+              style="text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
+              <span id="act-hours-label" style="color:var(--hint);">— Вкажіть графік —</span>
+              <span style="color:var(--muted);">🕐</span>
+            </button>
+            <input type="hidden" id="act-hours-start" value="09:00">
+            <input type="hidden" id="act-hours-end" value="21:00">
+            <input type="hidden" id="act-hours-24" value="0">
+          </div>
           <div class="field"><label>Посилання на Google Maps</label>
             <input class="inp" id="act-maps" placeholder="https://maps.app.goo.gl/..."></div>
           <div class="field" style="align-self:flex-end;">
@@ -359,6 +367,32 @@
           </div>
           <input class="inp" id="city-search" oninput="filterCities()" placeholder="🔍 Почніть вводити назву міста..." style="margin-bottom:12px;" autofocus>
           <div id="city-list" style="overflow-y:auto;flex:1;"></div>
+        </div>
+      </div>
+
+      <!-- Модалка годин роботи -->
+      <div id="hours-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;align-items:center;justify-content:center;">
+        <div class="card" style="max-width:360px;width:90%;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="font-size:16px;font-weight:700;">🕐 Графік роботи</div>
+            <button onclick="closeHoursModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+          </div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:16px;">
+            <input type="checkbox" id="hours-24-check" onchange="toggle24h()" style="width:18px;height:18px;">
+            <span style="font-size:14px;">Працюємо цілодобово (24/7)</span>
+          </label>
+          <div id="hours-range-fields" style="display:flex;gap:10px;margin-bottom:8px;">
+            <div style="flex:1;">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Початок роботи</div>
+              <input class="inp" type="time" id="hours-start-input" value="09:00">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Кінець роботи</div>
+              <input class="inp" type="time" id="hours-end-input" value="21:00">
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:16px;">Це також визначає, у який період доби перевіряється геолокація екрана.</div>
+          <button class="btn-pub" style="width:100%;" onclick="saveHours()">Зберегти</button>
         </div>
       </div>
       <div class="sec-title">Мої пристрої</div>
@@ -697,6 +731,38 @@ window.selectCity = (city) => {
   closeCityModal();
 };
 
+// ── ГОДИНИ РОБОТИ ──
+window.openHoursModal = () => {
+  const is24 = document.getElementById('act-hours-24').value === '1';
+  document.getElementById('hours-24-check').checked = is24;
+  document.getElementById('hours-start-input').value = document.getElementById('act-hours-start').value || '09:00';
+  document.getElementById('hours-end-input').value = document.getElementById('act-hours-end').value || '21:00';
+  document.getElementById('hours-range-fields').style.display = is24 ? 'none' : 'flex';
+  document.getElementById('hours-modal').style.display = 'flex';
+};
+window.closeHoursModal = () => {
+  document.getElementById('hours-modal').style.display = 'none';
+};
+window.toggle24h = () => {
+  const is24 = document.getElementById('hours-24-check').checked;
+  document.getElementById('hours-range-fields').style.display = is24 ? 'none' : 'flex';
+};
+window.saveHours = () => {
+  const is24 = document.getElementById('hours-24-check').checked;
+  document.getElementById('act-hours-24').value = is24 ? '1' : '0';
+  if (is24) {
+    document.getElementById('act-hours-label').textContent = '🕐 Цілодобово (24/7)';
+  } else {
+    const start = document.getElementById('hours-start-input').value || '09:00';
+    const end = document.getElementById('hours-end-input').value || '21:00';
+    document.getElementById('act-hours-start').value = start;
+    document.getElementById('act-hours-end').value = end;
+    document.getElementById('act-hours-label').textContent = `🕐 ${start}–${end}`;
+  }
+  document.getElementById('act-hours-label').style.color = 'var(--text)';
+  closeHoursModal();
+};
+
 function renderDevices(devices, licenses) {
   _allDevices = devices;
   const freeLics = licenses.filter(l=>l.status==='free');
@@ -720,18 +786,26 @@ window.filterDevices = () => {
 function renderDeviceList(devices) {
   const el = document.getElementById('devices-list');
   if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
-  el.innerHTML = devices.map(d=>`
+  el.innerHTML = devices.map(d=>{
+    const geoOk = d.lastGeoAt && (Date.now() - d.lastGeoAt.toDate().getTime()) < 2*24*60*60*1000;
+    const geoBadge = d.lastGeoAt
+      ? (geoOk
+          ? `<span class="badge badge-green" title="Останнє підтвердження: ${d.lastGeoAt.toDate().toLocaleString('uk-UA')}">📍 Підтверджено</span>`
+          : `<span class="badge" style="background:rgba(255,200,0,.1);color:#ffc800;" title="Останнє підтвердження: ${d.lastGeoAt.toDate().toLocaleString('uk-UA')}">⚠ Давно не підтверджено</span>`)
+      : `<span class="badge" style="background:rgba(255,77,77,.1);color:var(--red);" title="Екран ще жодного разу не підтвердив своє фізичне розташування">⚠ Не підтверджено</span>`;
+    return `
     <div class="device-item">
       <div class="device-icon">📱</div>
       <div class="device-info">
         <div class="device-name">${d.name}</div>
-        <div class="device-meta">${d.code}${d.city ? ' · 📍'+d.city : ''} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.hours ? ' · 🕐 '+d.hours : ''}</div>
+        <div class="device-meta">${d.code}${d.city ? ' · 📍'+d.city : ''} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.is24h ? ' · 🕐 24/7' : (d.hoursStart ? ` · 🕐 ${d.hoursStart}–${d.hoursEnd}` : '')}</div>
       </div>
       ${d.mapsUrl ? `<a href="${d.mapsUrl}" target="_blank" style="color:var(--blue);font-size:18px;text-decoration:none;margin-right:8px;" title="Google Maps">📍</a>` : ''}
-      <span class="zone-chip-blue">${ZONES[d.zone]||d.zone}</span>
-      <span class="badge badge-green" style="margin-left:8px;">Онлайн</span>
+      ${geoBadge}
+      <span class="zone-chip-blue" style="margin-left:8px;">${ZONES[d.zone]||d.zone}</span>
       <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 window.showTab = (name, btn) => {
@@ -756,7 +830,9 @@ window.activateDevice = async () => {
     clientId:currentUser.uid, licenseId:licId,
     code:lic.code, name, zone, city,
     category: document.getElementById('act-category').value,
-    hours: document.getElementById('act-hours').value.trim(),
+    is24h: document.getElementById('act-hours-24').value === '1',
+    hoursStart: document.getElementById('act-hours-start').value,
+    hoursEnd: document.getElementById('act-hours-end').value,
     mapsUrl: document.getElementById('act-maps').value.trim(),
     activatedAt:serverTimestamp(), online:true
   };
@@ -766,6 +842,11 @@ window.activateDevice = async () => {
   document.getElementById('act-city').value='';
   document.getElementById('act-city-label').textContent='— Оберіть місто —';
   document.getElementById('act-city-label').style.color='var(--hint)';
+  document.getElementById('act-hours-24').value='0';
+  document.getElementById('act-hours-start').value='09:00';
+  document.getElementById('act-hours-end').value='21:00';
+  document.getElementById('act-hours-label').textContent='— Вкажіть графік —';
+  document.getElementById('act-hours-label').style.color='var(--hint)';
   showToast(`✅ "${name}" активовано!`);
   loadAll();
 };
