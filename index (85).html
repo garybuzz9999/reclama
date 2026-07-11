@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdScreen — Вхід</title>
+<style>
+  :root{
+    --bg:#0d0d0d;--surface:#161616;--surface2:#1f1f1f;--surface3:#282828;
+    --border:#2a2a2a;--accent:#f5c842;--accent2:#e8b800;
+    --accent-dim:rgba(245,200,66,.08);--accent-border:rgba(245,200,66,.2);
+    --text:#f0f0f0;--muted:#888;--hint:#555;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--bg);color:var(--text);min-height:100dvh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:32px 20px;
+  }
+  .logo-mark{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:center;}
+  .logo-name{font-size:34px;font-weight:900;letter-spacing:-1px;margin-bottom:6px;text-align:center;}
+  .logo-name span{color:var(--accent);}
+  .subtitle{font-size:14px;color:var(--muted);margin-bottom:36px;text-align:center;}
+
+  .card{
+    background:var(--surface);border:1px solid var(--border);border-radius:18px;
+    padding:28px;width:100%;max-width:420px;
+  }
+  .field-label{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em;margin-bottom:6px;display:block;}
+  .inp{
+    width:100%;background:var(--surface2);border:1px solid var(--border);
+    border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);
+    outline:none;transition:border-color .2s;margin-bottom:22px;
+  }
+  .inp:focus{border-color:var(--accent2);}
+
+  .role-title{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.05em;margin-bottom:12px;}
+  .role-grid{display:flex;flex-direction:column;gap:10px;}
+  .role-btn{
+    display:flex;align-items:center;gap:14px;
+    background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:12px;padding:14px 16px;cursor:pointer;
+    text-decoration:none;color:var(--text);transition:all .15s;
+  }
+  .role-btn:hover{border-color:var(--accent);background:var(--accent-dim);}
+  .role-icon{font-size:24px;flex-shrink:0;width:32px;text-align:center;}
+  .role-text{display:flex;flex-direction:column;gap:2px;}
+  .role-name{font-size:15px;font-weight:700;}
+  .role-desc{font-size:12px;color:var(--muted);}
+
+  .divider{
+    border:none;border-top:1px solid var(--border);margin:22px 0;
+    position:relative;
+  }
+  .divider-label{
+    position:absolute;top:-9px;left:50%;transform:translateX(-50%);
+    background:var(--surface);padding:0 10px;font-size:11px;color:var(--hint);
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+
+  .service-row{display:flex;gap:10px;}
+  .service-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;
+    background:var(--surface2);border:1.5px solid var(--border);
+    border-radius:12px;padding:14px 8px;cursor:pointer;
+    text-decoration:none;color:var(--muted);font-size:12px;font-weight:700;
+    transition:all .15s;
+  }
+  .service-btn:hover{border-color:var(--accent);color:var(--text);}
+  .service-icon{font-size:20px;}
+</style>
+</head>
+<body>
+
+  <div class="logo-mark">Платформа цифрової реклами</div>
+  <div class="logo-name">Ad<span>Screen</span></div>
+  <div class="subtitle">Оберіть, як ви користуєтесь AdScreen</div>
+
+  <div class="card">
+    <label class="field-label">Email</label>
+    <input class="inp" type="email" id="entry-email" placeholder="you@example.com">
+
+    <div class="role-title">Я хочу...</div>
+    <div class="role-grid">
+      <a class="role-btn" href="client.html?role=advertiser">
+        <div class="role-icon">📢</div>
+        <div class="role-text">
+          <div class="role-name">Рекламодавець</div>
+          <div class="role-desc">Запускати рекламу на екранах</div>
+        </div>
+      </a>
+      <a class="role-btn" href="client.html?role=owner">
+        <div class="role-icon">🏢</div>
+        <div class="role-text">
+          <div class="role-name">Власник екрана</div>
+          <div class="role-desc">Показувати рекламу у своєму закладі</div>
+        </div>
+      </a>
+      <a class="role-btn" href="client.html?role=exchange">
+        <div class="role-icon">💱</div>
+        <div class="role-text">
+          <div class="role-name">Обмінник</div>
+          <div class="role-desc">Табло курсу валют + реклама</div>
+        </div>
+      </a>
+      <a class="role-btn" href="scoreboard.html">
+        <div class="role-icon">⚽</div>
+        <div class="role-text">
+          <div class="role-name">Табло</div>
+          <div class="role-desc">Безкоштовне табло для школи/турніру</div>
+        </div>
+      </a>
+    </div>
+
+    <div class="divider"><span class="divider-label">Інше</span></div>
+
+    <div class="service-row">
+      <a class="service-btn" href="player.html">
+        <div class="service-icon">📺</div>
+        Екран
+      </a>
+      <a class="service-btn" href="admin.html">
+        <div class="service-icon">🔐</div>
+        Адмін
+      </a>
+    </div>
+  </div>
+
+<script>
+  // Email (якщо введений) прокидається в наступний кабінет, щоб не вводити двічі
+  document.querySelectorAll('.role-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const email = document.getElementById('entry-email').value.trim();
+      if (email) {
+        const url = new URL(btn.href);
+        url.searchParams.set('email', email);
+        btn.href = url.toString();
+      }
+    });
+  });
+</script>
+</body>
+</html>
