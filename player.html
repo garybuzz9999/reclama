@@ -231,6 +231,9 @@
       transition:all .2s;flex-shrink:0;
     }
     .genre-btn:hover{border-color:var(--accent);color:var(--text);}
+    .genre-btn:disabled{
+      opacity:.3;cursor:not-allowed;pointer-events:none;
+    }
     .genre-btn.active{
       background:rgba(245,200,66,.1);
       border-color:var(--accent);color:var(--accent);
@@ -409,7 +412,6 @@
     <!-- Водій -->
     <div class="driver-row">
       <button class="btn-shell" id="btn-fullscreen" onclick="toggleFullscreen()">⛶ Екран</button>
-      <button class="btn-shell" id="btn-match" onclick="promptMatchCode()">⚽ Табло</button>
       <button class="btn-reset" id="btn-reset" onclick="resetPlayer()" title="Скинути екран">🔄 Скинути екран</button>
     </div>
     <!-- Клієнт -->
@@ -521,6 +523,10 @@ let isMuted = false;
 let currentGenre = null;
 let currentTag = 'lounge';
 let videoIsPlaying = false; // поки true — радіо не має звучати (навіть якщо змінили жанр)
+
+function setGenreButtonsEnabled(enabled) {
+  document.querySelectorAll('.genre-btn').forEach(b => b.disabled = !enabled);
+}
 let currentUtterance = null;
 
 // ── FORMAT CODE ──
@@ -988,8 +994,10 @@ function showBanner(banner) {
     const wasPlaying = !radio.paused;
     if (wasPlaying) radio.pause();
     videoIsPlaying = true;
+    setGenreButtonsEnabled(false);
     const resumeRadio = () => {
       videoIsPlaying = false;
+      setGenreButtonsEnabled(true);
       if (isMuted) return; // людина явно вимкнула звук — лишаємо тишу
       // Радіостанції часто не дозволяють переpid'єднатись до того самого потоку —
       // тому просто беремо нову випадкову станцію того самого жанру (враховуючи
