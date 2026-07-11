@@ -325,6 +325,9 @@
               <option value="east">➡️ Схід</option>
             </select>
           </div>
+          <div class="field"><label>Філія (для курсу валют, необов'язково)</label>
+            <select class="inp" id="act-branch"><option value="">— Без філії —</option></select>
+          </div>
           <div class="field" style="align-self:flex-end;">
             <button class="btn-activate" onclick="activateDevice()">Активувати</button>
           </div>
@@ -486,6 +489,9 @@
       <div class="card">
         <div class="sec-title" style="margin-bottom:4px;">Фоновий екран між рекламою</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Показується між банерами. Логотип, фото, заставка компанії.</div>
+        <div style="font-size:10.5px;color:var(--hint);margin-bottom:14px;line-height:1.4;">
+          Якщо не завантажите власний фон — на екрані тимчасово показуватиметься рекламний фон AdScreen. Щойно завантажите свій — він одразу заміниться.
+        </div>
         <div class="file-drop" style="margin-bottom:12px;">
           <input type="file" id="bg-image" accept="image/*" onchange="previewBg(this)">
           <div class="file-drop-icon" id="bg-drop-icon">🎨</div>
@@ -504,26 +510,56 @@
     </div>
 
     <div class="page" id="page-currency">
-      <div class="sec-title">💱 Курс валют</div>
-      <div class="card" style="margin-bottom:16px;">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Введіть курси — вони одразу відображаться на екрані плеєра</div>
-        <div id="currency-rows">
-          <div class="cur-row" style="display:grid;grid-template-columns:32px 1fr 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px;font-size:11px;color:var(--muted);">
-            <div></div><div>Валюта</div><div>Купівля</div><div>Продаж</div>
-          </div>
-        </div>
-        <button onclick="saveCurrency()" class="btn-pub" style="width:100%;margin-top:12px;">💾 Зберегти курс</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">💱 Курс валют</div>
+        <button class="help-btn" onclick="openAddBranchModal()">➕ Додати філію</button>
       </div>
-      <div class="card">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Активний курс на екрані:</div>
-        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
-          <input type="checkbox" id="currency-active" onchange="toggleCurrencyActive(this.checked)" style="width:18px;height:18px;">
-          <span style="font-size:14px;">Показувати курс на екрані</span>
-        </label>
-        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Курс показується як окремий банер між рекламою</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">
+        Кожна філія (місто/точка) має свій власний курс. Екран показує курс тієї філії, до якої прив'язаний при підключенні (вкладка «Пристрої»).
+      </div>
+      <div id="branch-tabs" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;"></div>
+
+      <div id="no-branches-msg" class="card" style="display:none;text-align:center;color:var(--muted);padding:30px;">
+        Ще немає жодної філії. Натисніть "➕ Додати філію", щоб створити першу — навіть якщо у вас лише одна точка, це потрібно зробити один раз.
+      </div>
+
+      <div id="branch-editor" style="display:none;">
+        <div class="card" style="margin-bottom:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:12px;color:var(--muted);">Введіть курси — вони одразу відображаться на екранах цієї філії</div>
+            <button class="btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteBranch()">🗑️ Видалити філію</button>
+          </div>
+          <div id="currency-rows">
+            <div class="cur-row" style="display:grid;grid-template-columns:32px 1fr 1fr 1fr;gap:8px;align-items:center;margin-bottom:8px;font-size:11px;color:var(--muted);">
+              <div></div><div>Валюта</div><div>Купівля</div><div>Продаж</div>
+            </div>
+          </div>
+          <button onclick="saveCurrency()" class="btn-pub" style="width:100%;margin-top:12px;">💾 Зберегти курс</button>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Активний курс на екрані:</div>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="checkbox" id="currency-active" onchange="toggleCurrencyActive(this.checked)" style="width:18px;height:18px;">
+            <span style="font-size:14px;">Показувати курс на екрані</span>
+          </label>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px;">Курс показується як окремий банер між рекламою</div>
+        </div>
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- Модалка додавання філії -->
+<div class="modal-overlay" id="modal-add-branch" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center;">
+  <div class="card" style="max-width:360px;width:90%;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">➕ Нова філія</div>
+    <div class="field"><label>Назва філії</label><input class="inp" id="new-branch-name" placeholder="Київ-Центр"></div>
+    <div class="field"><label>Місто</label><input class="inp" id="new-branch-city" placeholder="Київ"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="btn-sm" style="flex:1;" onclick="closeAddBranchModal()">Скасувати</button>
+      <button class="btn-pub" style="flex:1;" onclick="createBranch()">Створити</button>
+    </div>
   </div>
 </div>
 <!-- EXPIRED OVERLAY -->
@@ -705,7 +741,7 @@ function showScreen(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + n).classList.add('active');
 }
-// ── CURRENCY ──
+// ── CURRENCY (з філіями) ──
 const CURRENCIES = [
   {code:'USD', flag:'🇺🇸', name:'Долар'},
   {code:'EUR', flag:'🇪🇺', name:'Євро'},
@@ -716,17 +752,44 @@ const CURRENCIES = [
   {code:'CHF', flag:'🇨🇭', name:'Франк'},
 ];
 
+let branches = [];
+let currentBranchId = null;
 let currencyData = {};
 
 async function loadCurrency() {
-  const ref = doc(db, 'currency', currentUser.uid);
-  const snap = await getDoc(ref);
-  if (snap.exists()) {
-    currencyData = snap.data();
+  const snap = await getDocs(collection(db, 'currency', currentUser.uid, 'branches'));
+  branches = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderBranchTabs();
+  if (!branches.length) {
+    document.getElementById('no-branches-msg').style.display = 'block';
+    document.getElementById('branch-editor').style.display = 'none';
+    return;
   }
+  document.getElementById('no-branches-msg').style.display = 'none';
+  if (!currentBranchId || !branches.find(b => b.id === currentBranchId)) {
+    currentBranchId = branches[0].id;
+  }
+  selectBranch(currentBranchId);
+}
+
+function renderBranchTabs() {
+  const el = document.getElementById('branch-tabs');
+  el.innerHTML = branches.map(b => `
+    <button class="zone-btn${b.id === currentBranchId ? ' selected' : ''}" onclick="selectBranch('${b.id}')">
+      📍 ${b.name}${b.city ? ' · ' + b.city : ''}
+    </button>
+  `).join('');
+}
+
+window.selectBranch = (branchId) => {
+  currentBranchId = branchId;
+  const branch = branches.find(b => b.id === branchId);
+  currencyData = branch || {};
+  document.getElementById('branch-editor').style.display = 'block';
+  renderBranchTabs();
   renderCurrencyRows();
   document.getElementById('currency-active').checked = currencyData.active || false;
-}
+};
 
 function renderCurrencyRows() {
   const container = document.getElementById('currency-rows');
@@ -741,14 +804,45 @@ function renderCurrencyRows() {
         id="cur_${c.code}_sell"
         style="background:var(--input);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--text);font-size:13px;width:100%;">
     </div>`).join('');
-  // Залишаємо заголовок (перший child) і додаємо рядки
   const header = container.children[0];
   container.innerHTML = '';
   container.appendChild(header);
   container.insertAdjacentHTML('beforeend', rows);
 }
 
+window.openAddBranchModal = () => {
+  document.getElementById('new-branch-name').value = '';
+  document.getElementById('new-branch-city').value = '';
+  document.getElementById('modal-add-branch').style.display = 'flex';
+};
+window.closeAddBranchModal = () => {
+  document.getElementById('modal-add-branch').style.display = 'none';
+};
+
+window.createBranch = async () => {
+  const name = document.getElementById('new-branch-name').value.trim();
+  const city = document.getElementById('new-branch-city').value.trim();
+  if (!name) { showToast('⚠️ Введіть назву філії'); return; }
+  const ref = await addDoc(collection(db, 'currency', currentUser.uid, 'branches'), {
+    name, city, active: false, createdAt: serverTimestamp()
+  });
+  closeAddBranchModal();
+  currentBranchId = ref.id;
+  showToast('✅ Філію створено');
+  await loadCurrency();
+};
+
+window.deleteBranch = async () => {
+  if (!currentBranchId) return;
+  if (!confirm('Видалити цю філію разом з її курсом? Екрани, прив\'язані до неї, перестануть показувати курс.')) return;
+  await deleteDoc(doc(db, 'currency', currentUser.uid, 'branches', currentBranchId));
+  currentBranchId = null;
+  showToast('🗑️ Філію видалено');
+  await loadCurrency();
+};
+
 window.saveCurrency = async () => {
+  if (!currentBranchId) { showToast('⚠️ Спочатку створіть філію'); return; }
   const data = { active: document.getElementById('currency-active').checked, updatedAt: serverTimestamp() };
   CURRENCIES.forEach(c => {
     const buy = parseFloat(document.getElementById('cur_'+c.code+'_buy').value) || 0;
@@ -756,13 +850,16 @@ window.saveCurrency = async () => {
     data[c.code+'_buy'] = buy;
     data[c.code+'_sell'] = sell;
   });
-  await setDoc(doc(db, 'currency', currentUser.uid), data);
-  currencyData = data;
+  await setDoc(doc(db, 'currency', currentUser.uid, 'branches', currentBranchId), data, { merge: true });
+  currencyData = { ...currencyData, ...data };
+  const idx = branches.findIndex(b => b.id === currentBranchId);
+  if (idx > -1) branches[idx] = { ...branches[idx], ...data };
   showToast('✅ Курс збережено!');
 };
 
 window.toggleCurrencyActive = async (val) => {
-  await setDoc(doc(db, 'currency', currentUser.uid), { active: val }, { merge: true });
+  if (!currentBranchId) return;
+  await setDoc(doc(db, 'currency', currentUser.uid, 'branches', currentBranchId), { active: val }, { merge: true });
   showToast(val ? '✅ Курс увімкнено' : '⏸ Курс вимкнено');
 };
 
@@ -834,6 +931,7 @@ async function loadAll() {
   renderLicenses(licenses);
   renderActiveBanners(active);
   renderDevices(devices, licenses);
+  populateBranchSelect();
   renderDevicePicker(devices);
   renderBanners(banners);
 }
@@ -935,6 +1033,17 @@ window.copyCode = (code) => {
   });
 };
 
+async function populateBranchSelect() {
+  const sel = document.getElementById('act-branch');
+  if (!sel) return;
+  try {
+    const snap = await getDocs(collection(db, 'currency', currentUser.uid, 'branches'));
+    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    sel.innerHTML = '<option value="">— Без філії —</option>' +
+      list.map(b => `<option value="${b.id}">📍 ${b.name}${b.city ? ' · ' + b.city : ''}</option>`).join('');
+  } catch(e) {}
+}
+
 function renderDevices(devices, licenses) {
   const freeLics = licenses.filter(l=>l.status==='free');
   const sel = document.getElementById('act-code');
@@ -959,13 +1068,14 @@ window.activateDevice = async () => {
   const licId = document.getElementById('act-code').value;
   const name  = document.getElementById('act-name').value.trim();
   const zone  = document.getElementById('act-zone').value;
+  const branchId = document.getElementById('act-branch').value || null;
   if (!licId) { showToast('⚠️ Оберіть ліцензійний код'); return; }
   if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
   const licSnap = await getDoc(doc(db,'licenses',licId));
   const lic = licSnap.data();
   await addDoc(collection(db,'devices'), {
     clientId:currentUser.uid, licenseId:licId,
-    code:lic.code, name, zone,
+    code:lic.code, name, zone, branchId,
     activatedAt:serverTimestamp(), online:true
   });
   await updateDoc(doc(db,'licenses',licId), {status:'used'});
