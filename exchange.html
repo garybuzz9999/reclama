@@ -228,9 +228,9 @@
       <!-- REGISTER -->
       <div id="tab-register" style="display:none;">
         <div class="field"><label>Назва компанії</label><input class="inp" id="reg-company" placeholder="Піцерія Центр"></div>
-        <div class="field"><label>Місто</label><input class="inp" id="reg-city" placeholder="Вінниця"></div>
         <div class="field"><label>Email</label><input class="inp" id="reg-email" type="email" placeholder="your@email.com"></div>
         <div class="field"><label>Пароль</label><input class="inp" id="reg-password" type="password" placeholder="Мінімум 6 символів"></div>
+        <div class="field"><label>Повторіть пароль</label><input class="inp" id="reg-password2" type="password" placeholder="Ще раз пароль"></div>
         <button class="btn-primary" onclick="doRegister()">Зареєструватись та тестувати</button>
         <div class="err-msg" id="reg-err"></div>
         <div style="font-size:11px;color:var(--hint);text-align:center;margin-top:12px;">
@@ -606,12 +606,13 @@ window.doLogin = async () => {
 
 window.doRegister = async () => {
   const company = document.getElementById('reg-company').value.trim();
-  const city    = document.getElementById('reg-city').value.trim();
   const email   = document.getElementById('reg-email').value.trim();
   const pass    = document.getElementById('reg-password').value;
+  const pass2   = document.getElementById('reg-password2').value;
   showErr('reg','');
-  if (!company||!city||!email||!pass) { showErr('reg','Заповніть всі поля'); return; }
+  if (!company||!email||!pass||!pass2) { showErr('reg','Заповніть всі поля'); return; }
   if (pass.length < 6) { showErr('reg','Пароль мінімум 6 символів'); return; }
+  if (pass !== pass2) { showErr('reg','Паролі не збігаються'); return; }
   try {
     isRegistering = true;
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
@@ -623,7 +624,7 @@ window.doRegister = async () => {
 
     // Спочатку записуємо клієнта
     await setDoc(doc(db, 'clients', uid), {
-      name: company, city, email,
+      name: company, email,
       emoji: getEmoji(company),
       status: 'trial',
       role: 'exchange',
@@ -644,7 +645,7 @@ window.doRegister = async () => {
     // Тепер вмикаємо onAuthStateChanged і входимо
     isRegistering = false;
     currentUser = cred.user;
-    clientData  = { id: uid, name: company, city, email, emoji: getEmoji(company), status:'trial', trialEnd: Timestamp.fromDate(trialEnd), licenseCount: 1 };
+    clientData  = { id: uid, name: company, email, emoji: getEmoji(company), status:'trial', trialEnd: Timestamp.fromDate(trialEnd), licenseCount: 1 };
     document.getElementById('topbar-client-name').textContent = `${clientData.emoji||''} ${clientData.name}`;
     renderTrialUI(TRIAL_DAYS);
     showScreen('cabinet');
