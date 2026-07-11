@@ -674,6 +674,14 @@ function renderDeviceList(devices) {
     </div>`).join('');
 }
 
+window.showTab = (name, btn) => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  btn.classList.add('on');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'stats') renderStats();
+};
+
 window.activateDevice = async () => {
   const licId = document.getElementById('act-code').value;
   const name  = document.getElementById('act-name').value.trim();
