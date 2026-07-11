@@ -260,7 +260,7 @@
     <button class="tab" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
-    <button class="tab" onclick="showTab('currency',this)">💱 Курс</button>
+    <button class="tab" id="tab-currency" onclick="showTab('currency',this)">💱 Курс</button>
   </div>
 
   <div class="content">
@@ -654,12 +654,20 @@ onAuthStateChanged(auth, async user => {
       showScreen('cabinet');
       loadAll();
       loadSettings();
+      applyRoleUI();
     } else {
       await signOut(auth);
       showErr('login', 'Акаунт не знайдено');
     }
   }
 });
+
+// ── ROLE UI (з вхідного хабу index.html: ?role=advertiser|owner|exchange) ──
+function applyRoleUI() {
+  const role = new URLSearchParams(location.search).get('role');
+  const currencyTab = document.getElementById('tab-currency');
+  if (currencyTab) currencyTab.style.display = (role === 'advertiser' || role === 'owner') ? 'none' : '';
+}
 
 // ── LOGIN ──
 window.switchTab = (name, btn) => {
