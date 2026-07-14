@@ -257,6 +257,7 @@
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
     <button class="tab" onclick="showTab('devices',this)">Канали</button>
+    <button class="tab" onclick="showTab('banners',this)">Банери</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
   </div>
@@ -403,6 +404,79 @@
       <div class="sec-title">Мої канали</div>
       <input class="inp" id="device-search" oninput="filterDevices()" placeholder="🔎 Пошук каналу за назвою, категорією, зоною..." style="margin-bottom:12px;">
       <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
+    </div>
+
+    <!-- BANNERS -->
+    <div class="page" id="page-banners">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div class="sec-title" style="margin-bottom:0;">Банери</div>
+        <button class="help-btn" onclick="toggleHelp('help-banners')">? Допомога</button>
+      </div>
+      <div class="help-panel" id="help-banners">
+        <div class="help-title">🖼 Як додати рекламний банер на свій канал</div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Назва банера</strong> — для вашої зручності, глядачі її не бачать</div></div>
+        <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Тривалість</strong> — скільки секунд показується банер</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Зони показу</strong> — на яких з ваших каналів показувати саме цей банер</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>Зображення/відео</strong> — рекомендований розмір: <strong>1920×1080 px</strong> (горизонтальний) або <strong>1080×1920 px</strong> (вертикальний)</div></div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Натисніть <strong>Опублікувати</strong> → банер з'явиться на ваших каналах протягом 10 хвилин</div></div>
+      </div>
+      <div class="sec-title">Додати банер</div>
+      <div class="card" style="margin-bottom:20px;">
+        <div class="add-banner-form">
+          <div class="form-row">
+            <div class="field"><label>Назва банера</label><input class="inp" id="bn-title" placeholder="Акція -20% на все"></div>
+          </div>
+          <div class="form-row">
+            <div class="field"><label>Тривалість реклами (сек)</label>
+              <input class="inp" type="number" id="bn-duration" min="1" step="1" value="30" placeholder="30">
+            </div>
+            <div class="field"><label>Тривалість фону (сек)</label>
+              <input class="inp" type="number" id="bn-bg-duration" min="1" step="1" value="10" placeholder="10">
+            </div>
+          </div>
+          <div class="field">
+            <label>Текст озвучки (необов'язково)</label>
+            <input class="inp" id="bn-voice" placeholder="Увага! Акція діє тільки сьогодні!">
+          </div>
+          <div class="field"><label>Зони показу</label>
+            <div class="zones-picker" id="zones-picker">
+              <button class="zone-btn" data-zone="center" onclick="toggleZone(this)">🏙 Центр</button>
+              <button class="zone-btn" data-zone="north" onclick="toggleZone(this)">⬆️ Північ</button>
+              <button class="zone-btn" data-zone="south" onclick="toggleZone(this)">⬇️ Південь</button>
+              <button class="zone-btn" data-zone="west" onclick="toggleZone(this)">⬅️ Захід</button>
+              <button class="zone-btn" data-zone="east" onclick="toggleZone(this)">➡️ Схід</button>
+              <button class="zone-btn selected" data-zone="all" onclick="toggleZone(this)">🌐 Всі зони</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Зображення (JPG/PNG) або відео</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Горизонтальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1920×1080</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Вертикальний</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1920</div>
+              </div>
+              <div style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center;">
+                <div style="font-size:10px;color:var(--muted);">Квадрат</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);font-family:monospace;">1080×1080</div>
+              </div>
+            </div>
+            <div class="file-drop" id="file-drop">
+              <input type="file" id="bn-image" accept="*/*" onchange="previewImage(this)">
+              <div class="file-drop-icon" id="drop-icon">🖼</div>
+              <div class="file-drop-text" id="drop-text">Фото або відео — <span>оберіть файл</span></div>
+            </div>
+            <img class="file-preview" id="file-preview" src="" alt="">
+          </div>
+
+          <button class="btn-primary" onclick="addBanner()" style="max-width:200px;">Опублікувати</button>
+        </div>
+      </div>
+      <div class="sec-title">Мої банери</div>
+      <div id="banners-grid"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
 
@@ -766,6 +840,307 @@ window.saveHours = () => {
   }
   document.getElementById('act-hours-label').style.color = 'var(--text)';
   closeHoursModal();
+};
+
+// ── BANNERS (власний контент на власні канали) ──
+window.toggleZone = btn => {
+  const zone = btn.dataset.zone;
+  if (zone==='all') {
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+  } else {
+    document.querySelector('[data-zone="all"]').classList.remove('selected');
+    btn.classList.toggle('selected');
+    const any = [...document.querySelectorAll('.zone-btn:not([data-zone="all"])')].some(b=>b.classList.contains('selected'));
+    if (!any) document.querySelector('[data-zone="all"]').classList.add('selected');
+  }
+};
+
+function getSelectedZones() {
+  if (document.querySelector('[data-zone="all"]').classList.contains('selected')) return ['all'];
+  return [...document.querySelectorAll('.zone-btn.selected')].map(b=>b.dataset.zone);
+}
+
+window.previewImage = input => {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('drop-icon').textContent = file.type.startsWith('video/') ? '🎬' : '✅';
+  document.getElementById('drop-text').innerHTML = `<span>${file.name}</span>`;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const p = document.getElementById('file-preview');
+    p.src = e.target.result; p.style.display='block';
+  };
+  reader.readAsDataURL(file);
+};
+
+window.addBanner = async () => {
+  const title    = document.getElementById('bn-title').value.trim();
+  const duration = parseInt(document.getElementById('bn-duration').value);
+  const bgDuration = parseInt(document.getElementById('bn-bg-duration').value);
+  const zones    = getSelectedZones();
+  const imageFile = document.getElementById('bn-image').files[0];
+  if (!title) {
+    document.getElementById('bn-title').style.borderColor = 'var(--red)';
+    document.getElementById('bn-title').focus();
+    showToast('⚠️ Введіть назву банера!');
+    return;
+  }
+  document.getElementById('bn-title').style.borderColor = '';
+  if (!duration || duration < 1) {
+    document.getElementById('bn-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість реклами (сек)!');
+    return;
+  }
+  document.getElementById('bn-duration').style.borderColor = '';
+  if (!bgDuration || bgDuration < 1) {
+    document.getElementById('bn-bg-duration').style.borderColor = 'var(--red)';
+    showToast('⚠️ Введіть тривалість фону (сек)!');
+    return;
+  }
+  document.getElementById('bn-bg-duration').style.borderColor = '';
+  if (!imageFile) { showToast('⚠️ Оберіть зображення'); return; }
+  showToast('⏳ Збереження...');
+  try {
+    let imageUrl = '';
+    let storagePath = null;
+    let isVideo = false;
+
+    if (imageFile) {
+      isVideo = imageFile.type.startsWith('video/');
+      if (isVideo && imageFile.size > 200 * 1024 * 1024) {
+        showToast('⚠️ Відео занадто велике. Максимум 200MB');
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
+      const formData = new FormData();
+      formData.append('file', imageFile);
+      formData.append('folder', 'banners');
+      const res = await fetch(`${WORKER_URL}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${idToken}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Upload failed');
+      imageUrl = data.url;
+      storagePath = data.key || null;
+    }
+
+    const voiceText = document.getElementById('bn-voice').value.trim();
+    await addDoc(collection(db,'banners'),{
+      clientId:currentUser.uid, title, duration, bgDuration, zones,
+      imageUrl, storagePath,
+      type: isVideo ? 'video' : 'image',
+      voiceText: voiceText || '',
+      status:'active', shows:0, qrScans:0,
+      createdAt:serverTimestamp()
+    });
+    document.getElementById('bn-title').value='';
+    document.getElementById('bn-image').value='';
+    document.getElementById('bn-voice').value='';
+    const p=document.getElementById('file-preview'); p.style.display='none'; p.src='';
+    document.getElementById('drop-icon').textContent='🖼';
+    document.getElementById('drop-text').innerHTML='Фото або відео — <span>оберіть файл</span>';
+    document.querySelectorAll('.zone-btn').forEach(b=>b.classList.remove('selected'));
+    document.querySelector('[data-zone="all"]').classList.add('selected');
+    showToast('✅ Банер опубліковано!');
+    loadAll();
+  } catch(e) { showToast('❌ '+e.message); }
+};
+
+function renderBanners(banners) {
+  const el = document.getElementById('banners-grid');
+  if (!banners.length) { el.innerHTML='<div class="empty"><div class="empty-icon">🖼</div>Банерів ще немає</div>'; return; }
+  el.innerHTML=`<div class="banner-grid">${banners.map(b=>`
+    <div class="banner-card">
+      ${b.imageUrl ? (b.type==='video' ? `<video class="banner-img" src="${b.imageUrl}" muted autoplay loop></video>` : `<img class="banner-img" src="${b.imageUrl}" alt="${b.title}">`) : '<div class="banner-img-ph">🖼</div>'}
+      <div class="banner-status-badge ${b.status}">${b.status==='active'?'● Live':'⏸ Пауза'}</div>
+      <div class="banner-info">
+        <div class="banner-title">${b.title}</div>
+        <div class="banner-zones">${(b.zones||[]).map(z=>`<span class="zone-chip">${ZONES[z]||z}</span>`).join('')}</div>
+        <div style="font-size:11px;color:var(--hint);margin-bottom:8px;">${b.duration}с · ${b.shows||0} показів</div>
+        <div class="banner-actions">
+          <button class="btn-sm ${b.status==='active'?'on':''}" onclick="toggleBanner('${b.id}','${b.status}')">
+            ${b.status==='active'?'⏸ Пауза':'▶️ Старт'}
+          </button>
+          <button class="btn-sm" style="border-color:var(--red);color:var(--red);" onclick="deleteBanner('${b.id}','${b.storagePath||''}')">🗑️ Видалити</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+window.toggleBanner = async (id,current) => {
+  const s = current==='active'?'paused':'active';
+  await updateDoc(doc(db,'banners',id),{status:s});
+  showToast(s==='active'?'▶️ Активовано':'⏸ Призупинено');
+  loadAll();
+};
+
+window.deleteBanner = async (id,storagePath) => {
+  if (!confirm('Видалити банер?')) return;
+  await deleteDoc(doc(db,'banners',id));
+  if (storagePath) try { await deleteObject(ref(storage,storagePath)); } catch(e){}
+  showToast('🗑️ Видалено');
+  loadAll();
+};
+
+window.addNewLicense = async () => {
+  const btn = document.getElementById('btn-add-license');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Створення...'; }
+  try {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    // Порядковий номер ліцензії, щоб не було колізій з попередніми кодами
+    const existing = await getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid)));
+    const num = String(existing.size + 1).padStart(3,'0');
+    const code = `ADS-${uidPart}-${part}-${num}`;
+    await addDoc(collection(db,'licenses'), {
+      code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+    showToast('✅ Новий код створено: ' + code);
+    await loadAll();
+  } catch(e) {
+    showToast('⚠️ Помилка створення ліцензії');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '➕ Ще один канал'; }
+  }
+};
+
+// ── LOAD ALL ──
+async function loadAll() {
+  const [lics, devs, bans] = await Promise.all([
+    getDocs(query(collection(db,'licenses'), where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'devices'),  where('clientId','==',currentUser.uid))),
+    getDocs(query(collection(db,'banners'),  where('clientId','==',currentUser.uid)))
+  ]);
+  let licenses = lics.docs.map(d=>({id:d.id,...d.data()}));
+
+  // Якщо ліцензій немає — створюємо одну з правильним clientId
+  if (licenses.length === 0) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let part = '';
+    for (let i=0; i<4; i++) part += chars[Math.floor(Math.random()*chars.length)];
+    const uidPart = currentUser.uid.slice(0,4).toUpperCase();
+    const code = `ADS-${uidPart}-${part}-001`;
+    const licRef = await addDoc(collection(db,'licenses'), {
+      code, clientId: currentUser.uid, status:'free', deviceId:null, createdAt:serverTimestamp()
+    });
+    licenses = [{ id: licRef.id, code, clientId: currentUser.uid, status:'free' }];
+  }
+  const devices  = devs.docs.map(d=>({id:d.id,...d.data()}));
+  const banners  = bans.docs.map(d=>({id:d.id,...d.data()}));
+  const active   = banners.filter(b=>b.status==='active');
+  const shows    = banners.reduce((s,b)=>s+(b.shows||0),0);
+  const qr       = banners.reduce((s,b)=>s+(b.qrScans||0),0);
+
+  document.getElementById('ov-devices').textContent = devices.length;
+  document.getElementById('ov-banners').textContent = active.length;
+  document.getElementById('ov-shows').textContent   = shows;
+  document.getElementById('ov-qr').textContent      = qr;
+
+  renderLicenses(licenses);
+  renderActiveBanners(active);
+  renderDevices(devices, licenses);
+  renderBanners(banners);
+}
+
+let _allLicenses = [];
+let _allBanners = [];
+
+function renderLicenses(licenses) {
+  _allLicenses = licenses;
+  renderCombined();
+}
+
+function renderActiveBanners(banners) {
+  _allBanners = banners;
+  renderCombined();
+}
+
+function renderCombined() {
+  const el = document.getElementById('ov-combined');
+  const licenses = _allLicenses;
+  const banners = _allBanners;
+  if (!licenses.length && !banners.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div>';
+    return;
+  }
+  const many = licenses.length > 2;
+  const licsHtml = licenses.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin-bottom:6px;">МОЇ ЛІЦЕНЗІЇ</div>
+    ${many ? `
+      <div class="lic-item" onclick="toggleLicModal()" style="cursor:pointer;">
+        <div class="lic-code">${licenses[0].code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${licenses[0].status==='used'?'badge-accent':'badge-green'}">${licenses[0].status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="event.stopPropagation();copyCode('${licenses[0].code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+          <span style="color:var(--muted);font-size:12px;">+${licenses.length-1} ▼</span>
+        </div>
+      </div>` :
+    licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('')}
+  ` : '';
+
+  const bannersHtml = banners.length ? `
+    <div style="font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.05em;margin:10px 0 6px;">АКТИВНІ БАНЕРИ</div>
+    ${banners.map(b=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <div style="flex:1;font-size:13px;font-weight:600;">${b.title}</div>
+        <div style="font-size:11px;color:var(--muted);">${b.duration}с</div>
+        <span class="badge badge-green">Live</span>
+      </div>`).join('')}
+  ` : '';
+
+  el.innerHTML = licsHtml + bannersHtml;
+
+  // Модалка якщо багато ліцензій
+  if (many) {
+    if (!document.getElementById('lic-modal')) {
+      const modal = document.createElement('div');
+      modal.id = 'lic-modal';
+      modal.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center;';
+      modal.innerHTML = `<div style="background:var(--card);border-radius:16px;padding:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <div style="font-weight:700;font-size:16px;">Всі ліцензії</div>
+          <button onclick="toggleLicModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        <div id="lic-modal-list"></div>
+      </div>`;
+      document.body.appendChild(modal);
+      modal.onclick = e => { if(e.target===modal) toggleLicModal(); };
+    }
+    document.getElementById('lic-modal-list').innerHTML = licenses.map(l=>`
+      <div class="lic-item">
+        <div class="lic-code">${l.code}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge ${l.status==='used'?'badge-accent':'badge-green'}">${l.status==='used'?'● Активовано':'● Вільна'}</span>
+          <button onclick="copyCode('${l.code}')" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:2px 8px;font-size:11px;cursor:pointer;">📋</button>
+        </div>
+      </div>`).join('');
+  }
+}
+
+window.toggleLicModal = () => {
+  const m = document.getElementById('lic-modal');
+  if (m) m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+};
+
+window.copyCode = (code) => {
+  navigator.clipboard.writeText(code).then(() => showToast('✅ Код скопійовано!')).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = code; document.body.appendChild(el);
+    el.select(); document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast('✅ Код скопійовано!');
+  });
 };
 
 function renderDevices(devices, licenses) {
