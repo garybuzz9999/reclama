@@ -256,7 +256,7 @@
 
   <div class="tabs">
     <button class="tab on" onclick="showTab('overview',this)">Огляд</button>
-    <button class="tab" onclick="showTab('devices',this)">Пристрої</button>
+    <button class="tab" onclick="showTab('devices',this)">Канали</button>
     <button class="tab" onclick="showTab('stats',this)">Статистика</button>
     <button class="tab" onclick="showTab('settings',this)">⚙️ Екран</button>
   </div>
@@ -271,16 +271,16 @@
       </div>
       <div class="help-panel" id="help-overview">
         <div class="help-title">📊 Як читати Огляд</div>
-        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Пристрої</strong> — скільки планшетів/телевізорів підключено до вашого акаунту і показують рекламу</div></div>
+        <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text"><strong>Канали</strong> — скільки планшетів/телевізорів підключено до вашого акаунту і показують рекламу</div></div>
         <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text"><strong>Банери</strong> — скільки рекламних зображень зараз активні і показуються глядачам</div></div>
         <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text"><strong>Покази</strong> — загальна кількість разів коли ваш банер показався на екрані</div></div>
         <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text"><strong>QR-сканів</strong> — скільки людей відсканували QR-код на вашому банері і перейшли на сайт</div></div>
-        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Мої ліцензії</strong> — ваші ліцензійні коди. <strong>Вільна</strong> = ще не активована на пристрої. <strong>Активовано</strong> = пристрій підключений і показує рекламу</div></div>
-        <div class="help-tip">💡 Перший крок — перейдіть у вкладку <strong>Пристрої</strong> і активуйте ваш планшет або ТВ</div>
+        <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text"><strong>Мої ліцензії</strong> — ваші ліцензійні коди. <strong>Вільна</strong> = ще не активована на каналі. <strong>Активовано</strong> = канал підключений і показує рекламу</div></div>
+        <div class="help-tip">💡 Перший крок — перейдіть у вкладку <strong>Канали</strong> і активуйте ваш планшет або ТВ</div>
       </div>
       <div id="trial-banner-wrap"></div>
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-label">Пристрої</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
+        <div class="stat-card"><div class="stat-label">Канали</div><div class="stat-value green" id="ov-devices">—</div><div class="stat-sub">активних</div></div>
         <div class="stat-card"><div class="stat-label">Банери</div><div class="stat-value accent" id="ov-banners">—</div><div class="stat-sub">активних</div></div>
         <div class="stat-card"><div class="stat-label">Покази</div><div class="stat-value" id="ov-shows">—</div><div class="stat-sub">всього</div></div>
         <div class="stat-card"><div class="stat-label">QR-сканів</div><div class="stat-value accent" id="ov-qr">—</div><div class="stat-sub">переходів</div></div>
@@ -291,9 +291,9 @@
     <!-- DEVICES -->
     <div class="page" id="page-devices">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="sec-title" style="margin-bottom:0;">Пристрої</div>
+        <div class="sec-title" style="margin-bottom:0;">Канали</div>
         <div style="display:flex;gap:8px;">
-          <button id="btn-add-license" class="help-btn" onclick="addNewLicense()">➕ Ще один пристрій</button>
+          <button id="btn-add-license" class="help-btn" onclick="addNewLicense()">➕ Ще один канал</button>
           <button class="help-btn" onclick="toggleHelp('help-devices')">? Допомога</button>
         </div>
       </div>
@@ -301,17 +301,24 @@
         <div class="help-title">📱 Як підключити планшет або телевізор</div>
         <div class="help-step"><div class="help-step-num">1</div><div class="help-step-text">Відкрийте браузер на планшеті або ТВ і перейдіть на <strong>adscreen.online/player.html</strong></div></div>
         <div class="help-step"><div class="help-step-num">2</div><div class="help-step-text">Поверніться сюди → оберіть <strong>вільний ліцензійний код</strong> зі списку нижче</div></div>
-        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Введіть <strong>назву пристрою</strong> — наприклад "Таксі №5" або "Зал А" — щоб потім зрозуміти де він стоїть</div></div>
-        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Оберіть <strong>зону міста</strong> — де знаходиться пристрій. Реклама буде показуватись тільки релевантна для цього району</div></div>
+        <div class="help-step"><div class="help-step-num">3</div><div class="help-step-text">Введіть <strong>назву каналу</strong> — наприклад "Таксі №5" або "Зал А" — щоб потім зрозуміти де він стоїть</div></div>
+        <div class="help-step"><div class="help-step-num">4</div><div class="help-step-text">Оберіть <strong>зону міста</strong> — де знаходиться канал. Реклама буде показуватись тільки релевантна для цього району</div></div>
         <div class="help-step"><div class="help-step-num">5</div><div class="help-step-text">Натисніть <strong>Активувати</strong> → введіть цей самий код на планшеті → плеєр запуститься автоматично</div></div>
         <div class="help-tip">💡 Код вводиться тільки один раз. Після цього планшет запускає рекламу автоматично при кожному включенні</div>
       </div>
       <div class="activate-card">
-        <div class="activate-card-title">➕ Підключити пристрій</div>
+        <div class="activate-card-title">➕ Підключити канал</div>
         <div class="activate-card-sub">Відкрийте плеєр на планшеті або ТВ, введіть код і оберіть зону</div>
         <div class="activate-form">
-          <input type="hidden" id="act-code">
-          <div class="field"><label>Назва пристрою</label><input class="inp" id="act-name" placeholder="Таксі #12 / Зал А"></div>
+          <div class="field"><label>Код для плеєра (введіть цей код на екрані)</label>
+            <button type="button" class="inp" id="act-code-display" onclick="copyActCode()"
+              style="text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-family:monospace;font-weight:700;color:var(--accent);">
+              <span id="act-code-label">—</span>
+              <span style="color:var(--muted);font-family:inherit;font-weight:400;">📋</span>
+            </button>
+            <input type="hidden" id="act-code">
+          </div>
+          <div class="field"><label>Назва каналу</label><input class="inp" id="act-name" placeholder="Таксі #12 / Зал А"></div>
           <div class="field"><label>Місто</label>
             <button type="button" class="inp" id="act-city-btn" onclick="openCityModal()"
               style="text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;">
@@ -350,8 +357,6 @@
             <input type="hidden" id="act-hours-end" value="21:00">
             <input type="hidden" id="act-hours-24" value="0">
           </div>
-          <div class="field"><label>Посилання на Google Maps</label>
-            <input class="inp" id="act-maps" placeholder="https://maps.app.goo.gl/..."></div>
           <div class="field" style="align-self:flex-end;">
             <button class="btn-activate" onclick="activateDevice()">Активувати</button>
           </div>
@@ -395,8 +400,8 @@
           <button class="btn-pub" style="width:100%;" onclick="saveHours()">Зберегти</button>
         </div>
       </div>
-      <div class="sec-title">Мої пристрої</div>
-      <input class="inp" id="device-search" oninput="filterDevices()" placeholder="🔎 Пошук за назвою, категорією, зоною..." style="margin-bottom:12px;">
+      <div class="sec-title">Мої канали</div>
+      <input class="inp" id="device-search" oninput="filterDevices()" placeholder="🔎 Пошук каналу за назвою, категорією, зоною..." style="margin-bottom:12px;">
       <div class="card" id="devices-list"><div class="empty"><div class="empty-icon">📭</div>Поки що порожньо</div></div>
     </div>
 
@@ -767,9 +772,18 @@ function renderDevices(devices, licenses) {
   _allDevices = devices;
   const freeLics = licenses.filter(l=>l.status==='free');
   // Ліцензійний код більше не обирається вручну — автоматично береться перший вільний
-  document.getElementById('act-code').value = freeLics.length ? freeLics[0].id : '';
+  const lic = freeLics.length ? freeLics[0] : null;
+  document.getElementById('act-code').value = lic ? lic.id : '';
+  document.getElementById('act-code-label').textContent = lic ? lic.code : 'Немає вільних кодів — зверніться до адміністратора';
   renderDeviceList(devices);
 }
+
+window.copyActCode = () => {
+  const text = document.getElementById('act-code-label').textContent;
+  if (!text || text.includes('Немає')) return;
+  navigator.clipboard?.writeText(text);
+  showToast('📋 Код скопійовано: ' + text);
+};
 
 window.filterDevices = () => {
   const q = document.getElementById('device-search').value.trim().toLowerCase();
@@ -785,7 +799,7 @@ window.filterDevices = () => {
 
 function renderDeviceList(devices) {
   const el = document.getElementById('devices-list');
-  if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Пристроїв ще немає</div>'; return; }
+  if (!devices.length) { el.innerHTML='<div class="empty"><div class="empty-icon">📱</div>Каналів ще немає</div>'; return; }
   el.innerHTML = devices.map(d=>{
     const geoOk = d.lastGeoAt && (Date.now() - d.lastGeoAt.toDate().getTime()) < 2*24*60*60*1000;
     const geoBadge = d.lastGeoAt
@@ -800,7 +814,6 @@ function renderDeviceList(devices) {
         <div class="device-name">${d.name}</div>
         <div class="device-meta">${d.code}${d.city ? ' · 📍'+d.city : ''} · ${ZONES[d.zone]||d.zone}${d.category ? ' · '+CATEGORY_LABELS[d.category] : ''}${d.is24h ? ' · 🕐 24/7' : (d.hoursStart ? ` · 🕐 ${d.hoursStart}–${d.hoursEnd}` : '')}</div>
       </div>
-      ${d.mapsUrl ? `<a href="${d.mapsUrl}" target="_blank" style="color:var(--blue);font-size:18px;text-decoration:none;margin-right:8px;" title="Google Maps">📍</a>` : ''}
       ${geoBadge}
       <span class="zone-chip-blue" style="margin-left:8px;">${ZONES[d.zone]||d.zone}</span>
       <button onclick="removeDevice('${d.id}','${d.licenseId||''}')" style="background:none;border:none;color:var(--hint);cursor:pointer;font-size:16px;margin-left:8px;">🗑️</button>
@@ -822,7 +835,7 @@ window.activateDevice = async () => {
   const city  = document.getElementById('act-city').value.trim();
   const zone  = document.getElementById('act-zone').value;
   if (!licId) { showToast('⚠️ Немає вільних ліцензійних кодів — зверніться до адміністратора'); return; }
-  if (!name)  { showToast('⚠️ Введіть назву пристрою'); return; }
+  if (!name)  { showToast('⚠️ Введіть назву каналу'); return; }
   if (!city)  { showToast('⚠️ Оберіть місто'); return; }
   const licSnap = await getDoc(doc(db,'licenses',licId));
   const lic = licSnap.data();
@@ -833,7 +846,6 @@ window.activateDevice = async () => {
     is24h: document.getElementById('act-hours-24').value === '1',
     hoursStart: document.getElementById('act-hours-start').value,
     hoursEnd: document.getElementById('act-hours-end').value,
-    mapsUrl: document.getElementById('act-maps').value.trim(),
     activatedAt:serverTimestamp(), online:true
   };
   await addDoc(collection(db,'devices'), deviceData);
@@ -847,15 +859,15 @@ window.activateDevice = async () => {
   document.getElementById('act-hours-end').value='21:00';
   document.getElementById('act-hours-label').textContent='— Вкажіть графік —';
   document.getElementById('act-hours-label').style.color='var(--hint)';
-  showToast(`✅ "${name}" активовано!`);
+  showToast(`✅ "${name}" готовий! Введіть код ${lic.code} на екрані`);
   loadAll();
 };
 
 window.removeDevice = async (deviceId, licenseId) => {
-  if (!confirm('Деактивувати пристрій?')) return;
+  if (!confirm('Деактивувати канал?')) return;
   await deleteDoc(doc(db,'devices',deviceId));
   if (licenseId) await updateDoc(doc(db,'licenses',licenseId),{status:'free'});
-  showToast('🗑️ Пристрій деактивовано');
+  showToast('🗑️ Канал деактивовано');
   loadAll();
 };
 
